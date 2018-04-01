@@ -1,4 +1,4 @@
-package com.vkyoungcn.learningtools.Models;
+package com.vkyoungcn.learningtools.models;
 
 import java.util.List;
 
@@ -10,10 +10,25 @@ public class Mission {
     private int db_id;
     private String name;
     private String description;
+    private String tableItem_suffix;
+
+
+
     private List<Integer> subGroups_ids;
+
+    //空构造器
+    public Mission() {
+    }
 
     public Mission(String name) {
         this.name = name;
+    }
+
+    //三字串构造器
+    public Mission(String name, String description, String tableItem_suffix) {
+        this.name = name;
+        this.description = description;
+        this.tableItem_suffix = tableItem_suffix;
     }
 
     public int getDb_id() {
@@ -46,5 +61,13 @@ public class Mission {
 
     public void setSubGroups_ids(List<Integer> subGroups_ids) {
         this.subGroups_ids = subGroups_ids;
+    }
+
+    public String getTableItem_suffix() {
+        return tableItem_suffix;
+    }
+
+    public void setTableItem_suffix(String tableItem_suffix) {
+        this.tableItem_suffix = tableItem_suffix;
     }
 }

@@ -31,6 +31,7 @@ public final class YouMemoryContract {
         public static final String TABLE_NAME = "missions";
         public static final String COLUMN_NAME ="mission_name";
         public static final String COLUMN_DESCRIPTION = "mission_description";
+        public static final String COLUMN_TABLE_ITEM_SUFFIX = "table_item_suffix";
     }
 
     public static class MissionCrossGroup implements BaseColumns{
@@ -40,7 +41,7 @@ public final class YouMemoryContract {
     }
 
     public static class Group implements BaseColumns{
-        public static final String TABLE_NAME = "group";
+        public static final String TABLE_NAME = "group_table";
         public static final String COLUMN_DESCRIPTION = "description";
         public static final String COLUMN_INIT_PICK_TIME = "init_pick_time";
         public static final String COLUMN_LAST_PICK_TIME ="last_pick_time";

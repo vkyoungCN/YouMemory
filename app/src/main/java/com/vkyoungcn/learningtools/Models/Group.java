@@ -1,4 +1,4 @@
-package com.vkyoungcn.learningtools.Models;
+package com.vkyoungcn.learningtools.models;
 
 import java.util.Date;
 import java.util.List;
