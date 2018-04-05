@@ -7,6 +7,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
 import com.vkyoungcn.learningtools.adapter.AllMissionRvAdapter;
+import com.vkyoungcn.learningtools.models.Mission;
 import com.vkyoungcn.learningtools.sqlite.YouMemoryDbHelper;
 
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ public class MainActivity extends AppCompatActivity {
 
     private RecyclerView allMissionRecyclerView;
     private YouMemoryDbHelper memoryDbHelper;
-    private ArrayList<String> allMissionTitles;
+    private ArrayList<Mission> allMissions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,8 +27,8 @@ public class MainActivity extends AppCompatActivity {
 
         //从数据库获取数据源：所有Mission的标题（name字段）
         memoryDbHelper = YouMemoryDbHelper.getInstance(getApplicationContext());
-        allMissionTitles = (ArrayList<String>) memoryDbHelper.getAllMissionTitles();
-        Log.i(TAG+"0000", "onCreate: allMissionTitle = "+allMissionTitles);
+        allMissions = (ArrayList<Mission>) memoryDbHelper.getAllMissions();
+//        Log.i(TAG+"0000", "onCreate: allMissionTitle = "+allMissionTitles);
 
         //找到RecyclerView控件……
         allMissionRecyclerView = (RecyclerView) findViewById(R.id.all_missions_rv);
@@ -35,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
 
         allMissionRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         Log.i(TAG, "onCreate: setLayoutManager for Rv.");
-        allMissionRecyclerView.setAdapter(new AllMissionRvAdapter(allMissionTitles));
+        allMissionRecyclerView.setAdapter(new AllMissionRvAdapter(allMissions,this));
 
     }
 }

@@ -1,4 +1,39 @@
 <resources>
     <string name="app_name">优记</string>
     <string name="current_missions">当前任务</string>
+    <string name="mission_detail">任务详情</string>
+    <string name="groups_info">任务分组执行情况</string>
+    <string name="add">新增</string>
+    <string name="sharp_x1_default">#</string>
+    <string name="sharp_x3_default">###</string>
+    <string name="sharp_x3x3_default">###-###</string>
+    <string name="sharp_x5_default">#####</string>
+    <string name="sharp_x15_default">xxxxxxxxxxxxxxx</string>
+    <string name="sharp_x2_default">##</string>
+    <string name="sharp_x24_default">########################</string>
+    <string name="mission_id">01</string>
+    <string name="mission_name_default">默认任务1</string>
+    <string name="mission_description">任务描述文字</string>
+    <string name="mission_description_extra">任务描述文字（文本足够长，内容足够多；文本足够长，内容足够多。）</string>
+    <string name="add_group">新建分组</string>
+    <string name="presaved_button">预留按键</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="num_36">36</string>
+    <string name="num_54">54</string>
+    <string name="num_72">72</string>
+    <string name="num_90">90</string>
+    <string name="group_size">分组大小</string>
+    <string name="Order">顺序</string>
+    <string name="random">随机</string>
+    <string name="manner_of_item_picking">分组方式</string>
+    <string name="manner_of_item_picking2">内容选取方式</string>
+    <string name="explanations">在随机模式中被抽取掉的项目，不会出现在顺序模式生成的列表里。</string>
+    <string name="default_group_decs">分组描述，默认值。</string>
+    <string name="desc_desc">分组描述：</string>
+    <string name="default_group_decs2">（可使用默认值）</string>
+    <string name="cancel">取消</string>
+    <string name="add_new_group">创建新任务分组</string>
+    <string name="default_group_decs3">默认可自动生成</string>
 </resources>

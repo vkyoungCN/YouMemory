@@ -7,7 +7,7 @@ import java.util.List;
  */
 
 public class Mission {
-    private int db_id;
+    private int id;
     private String name;
     private String description;
     private String tableItem_suffix;
@@ -31,12 +31,12 @@ public class Mission {
         this.tableItem_suffix = tableItem_suffix;
     }
 
-    public int getDb_id() {
-        return db_id;
+    public int getId() {
+        return id;
     }
 
-    public void setDb_id(int db_id) {
-        this.db_id = db_id;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getName() {

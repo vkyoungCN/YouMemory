@@ -9,16 +9,11 @@
 
     <TextView
         android:layout_width="wrap_content"
-        android:layout_height="200dp"
+        android:layout_height="160dp"
         android:text="Hello World!"
         android:textSize="24sp"
         android:layout_gravity="center"
         android:gravity="center"
-        />
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#ff666666"
         />
     <TextView
         android:layout_width="wrap_content"
@@ -27,7 +22,15 @@
         android:textSize="20sp"
         android:layout_gravity="center"
         android:gravity="center"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="4dp"
         />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#ff666666"
+        />
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/all_missions_rv"
         android:layout_width="match_parent"

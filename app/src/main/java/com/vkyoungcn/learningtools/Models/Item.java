@@ -10,7 +10,8 @@ import java.util.List;
 public class Item {
     private int id;
     private int name;
-    private List<String> extending_list;
+    private String extending_list_1;
+    private String extending_list_2;
     private List<Date> picking_log; //对应item-pickingTime交叉表；
 
 
@@ -30,12 +31,20 @@ public class Item {
         this.name = name;
     }
 
-    public List<String> getExtending_list() {
-        return extending_list;
+    public String getExtending_list_1() {
+        return extending_list_1;
     }
 
-    public void setExtending_list(List<String> extending_list) {
-        this.extending_list = extending_list;
+    public void setExtending_list_1(String extending_list_1) {
+        this.extending_list_1 = extending_list_1;
+    }
+
+    public String getExtending_list_2() {
+        return extending_list_2;
+    }
+
+    public void setExtending_list_2(String extending_list_2) {
+        this.extending_list_2 = extending_list_2;
     }
 
     public List<Date> getPicking_log() {

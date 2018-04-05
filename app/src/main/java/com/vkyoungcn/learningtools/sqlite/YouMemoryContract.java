@@ -40,13 +40,14 @@ public final class YouMemoryContract {
         public static final String COLUMN_GROUP_ID = "group_id";
     }
 
+    /* version 4 */
     public static class Group implements BaseColumns{
         public static final String TABLE_NAME = "group_table";
         public static final String COLUMN_DESCRIPTION = "description";
-        public static final String COLUMN_INIT_PICK_TIME = "init_pick_time";
-        public static final String COLUMN_LAST_PICK_TIME ="last_pick_time";
-        public static final String COLUMN_TIME_PICKED = "time_picked";
         public static final String COLUMN_SPECIAL_MARK = "special_mark";
+        public static final String COLUMN_MISSION_ID = "mission_id";//v5新增，替代n:1任务-分组表
+        public static final String COLUMN_GROUP_LOGS = "group_logs";//v4新增；替代1:n日志交叉表
+        public static final String COLUMN_SUB_ITEM_IDS = "sub_item_ids";//v4新增；替代1:n交叉表
     }
 
     public static class GroupCrossItem implements BaseColumns{
@@ -65,8 +66,10 @@ public final class YouMemoryContract {
     public static class ItemBasic implements BaseColumns{
         public static final String TABLE_NAME = "item_";
         public static final String COLUMN_NAME = "name";
-        public static final String COLUMN_EXTENDING_LIST = "extending_list";
+        public static final String COLUMN_EXTENDING_LIST_1 = "extending_list_1";
+        public static final String COLUMN_EXTENDING_LIST_2 = "extending_list_2";
         public static final String COLUMN_PICKING_TIME_LIST = "picking_time_list";
+        public static final String COLUMN_HAS_BEEN_CHOSE = "been_chose";//v6新增
     }
 
 }
