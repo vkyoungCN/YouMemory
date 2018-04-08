@@ -1,22 +1,21 @@
 package com.vkyoungcn.learningtools.models;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 /*
 * 主要用于向数据库存记录（的最后与DB交互）时使用，以及从数据库取数据（最初从DB取出数据）时使用
 * 若要将数据应用到UI，需转化为Group类。
 * */
-public class DBRwaGroup implements GroupSpecialMarks {
+public class DBRwaGroup {
     private static final String TAG = "Group";
-    private int id;//DB列
-    private String description;//DB列。默认填入该组“起始-末尾”词汇
-    private int special_mark;//DB列。是不是掉队重组词汇
-    private String groupLogs;//DB列本组记忆与复习日志；
-    private String subItems_ids;//DB列。本组所属Items的id集合（替代了额外1：N的那个交叉表）。实际应是List<Integer>类型。
+    private int id = 0;//DB列
+    private String description="";//DB列。默认填入该组“起始-末尾”词汇
+    private boolean isFallBehind =false;//DB列。是不是掉队重组词汇
+    private boolean isObsoleted = false;//v7新增列。是否因超时废止，相应ITEMs应改回未抽取；color应为红色。
+    private String groupLogs="";//DB列本组记忆与复习日志；
+    private String subItems_ids="";//DB列。本组所属Items的id集合（替代了额外1：N的那个交叉表）。实际应是List<Integer>类型。
     //格式上，要求不同id记录间以英文分号分隔。
-    private int mission_id;//v5新增。
+    private int mission_id=0;//v5新增。
 
 
     /* 备用字段
@@ -30,7 +29,7 @@ public class DBRwaGroup implements GroupSpecialMarks {
     public DBRwaGroup(UIGroup group) {
         this.id = group.getId();
         this.description = group.getDescription();
-        this.special_mark = group.getSpecial_mark();
+        this.isFallBehind = group.getFallBehind();
 
         //"N#YYYY-MM-DD hh:mm:ss#false;"
         List<LogModel> logs = group.getGroupLogs();
@@ -44,7 +43,7 @@ public class DBRwaGroup implements GroupSpecialMarks {
             sbForStringLogs.append(sdf.format(new Date(l.getTimeInMilli())));
 
             sbForStringLogs.append("#");
-            sbForStringLogs.append(l.isMISS());
+            sbForStringLogs.append(l.isMiss());
             sbForStringLogs.append(";");
         }
         this.groupLogs = sbForStringLogs.toString();
@@ -52,10 +51,20 @@ public class DBRwaGroup implements GroupSpecialMarks {
     }*/
 
 
-    public DBRwaGroup(int id, String description, int special_mark, String groupLogs, String subItems_ids, int mission_id) {
+    public DBRwaGroup(int id, String description, boolean isFallBehind, String groupLogs, String subItems_ids, int mission_id) {
         this.id = id;
         this.description = description;
-        this.special_mark = special_mark;
+        this.isFallBehind = isFallBehind;
+        this.groupLogs = groupLogs;
+        this.subItems_ids = subItems_ids;
+        this.mission_id = mission_id;
+    }
+
+    public DBRwaGroup(int id, String description, boolean isFallBehind, boolean isObsoleted, String groupLogs, String subItems_ids, int mission_id) {
+        this.id = id;
+        this.description = description;
+        this.isFallBehind = isFallBehind;
+        this.isObsoleted = isObsoleted;
         this.groupLogs = groupLogs;
         this.subItems_ids = subItems_ids;
         this.mission_id = mission_id;
@@ -69,12 +78,20 @@ public class DBRwaGroup implements GroupSpecialMarks {
         this.id = id;
     }
 
-    public int getSpecial_mark() {
-        return special_mark;
+    public boolean isFallBehind() {
+        return isFallBehind;
     }
 
-    public void setSpecial_mark(int special_mark) {
-        this.special_mark = special_mark;
+    public void setFallBehind(boolean fallBehind) {
+        isFallBehind = fallBehind;
+    }
+
+    public boolean isObsoleted() {
+        return isObsoleted;
+    }
+
+    public void setObsoleted(boolean obsoleted) {
+        isObsoleted = obsoleted;
     }
 
     public String getDescription() {
@@ -124,5 +141,21 @@ public class DBRwaGroup implements GroupSpecialMarks {
         return sbIds.toString();
     }
 
+    public String toStingIdsWithParenthesisForWhereSql(){
+        if(subItems_ids==null||subItems_ids.isEmpty()){
+            return "()";
+        }
+        String[] str =  this.subItems_ids.split(";");
+        StringBuilder sbr = new StringBuilder();
+        sbr.append("( ");
+        for (String s: str) {
+            sbr.append(s);
+            sbr.append(", ");
+        }
+        sbr.deleteCharAt(str.length-2);
+        sbr.append(")");
+        return sbr.toString();
+
+    }
 
 }

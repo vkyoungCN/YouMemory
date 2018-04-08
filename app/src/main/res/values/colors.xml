@@ -3,4 +3,9 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="colorGP_Newly">#9964dd17</color>
+    <color name="colorGP_AVAILABLE">#aa1976d2</color>
+    <color name="colorGP_Miss_ONCE">#bbff6e40</color>
+    <color name="colorGP_Miss_TWICE">#ccef5350</color>
+    <color name="colorGP_STILL_NOT">#cce0e0e0</color>
 </resources>

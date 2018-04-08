@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".GroupDetailActivity"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:background="#55e0e0e0"
+        >
+
+        <TextView
+            android:id="@+id/tv_group_detail_des"
+            android:layout_margin="4dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="@string/sharp_x15_default"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:layout_marginStart="6dp"
+            android:text="@string/order2" />
+        <TextView
+            android:id="@+id/tv_group_detail_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:text="@string/sharp_x3_default" />
+
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+
+        >
+        <TextView
+            android:id="@+id/tv_group_detail_csColor"
+            android:layout_margin="14dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            />
+        <TextView
+            android:id="@+id/tv_group_detail_csString"
+            android:layout_toEndOf="@id/tv_group_detail_csColor"
+            android:layout_margin="14dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+
+            android:text="@string/sharp_x15_default"/>
+
+        <Button
+            android:id="@+id/tv_group_detail_repick"
+            android:layout_toStartOf="@id/tv_group_detail_logs"
+            android:layout_margin="4dp"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:text="@string/go2_repick"
+            android:visibility="gone"
+            />
+        <Button
+            android:id="@+id/tv_group_detail_learn"
+            android:layout_toStartOf="@id/tv_group_detail_logs"
+            android:layout_margin="4dp"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:text="@string/go1"
+            android:visibility="gone"
+            />
+        <Button
+            android:id="@+id/tv_group_detail_logs"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="4dp"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:text="@string/logs"
+            android:onClick="showLogs"/>
+
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        >
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:text="@string/sharp_x15_default"
+            android:gravity="center"/>
+
+    </RelativeLayout>
+
+    <!--分割线 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#ff666666"
+        />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:background="#22b2ff59"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:text="@string/includingItemsInfo2"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:layout_marginStart="8dp"
+            android:text="@string/number1"/>
+        <TextView
+            android:id="@+id/tv_group_detail_rv_title_with_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:text="@string/sharp_x3_default"/>
+    </LinearLayout>
+
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/items_in_single_group_rv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        />
+
+
+</LinearLayout>

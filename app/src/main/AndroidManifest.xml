@@ -16,7 +16,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MissionDetailActivity"></activity>
+        <activity android:name=".MissionDetailActivity" />
+        <activity android:name=".GroupDetailActivity"></activity>
     </application>
 
 </manifest>

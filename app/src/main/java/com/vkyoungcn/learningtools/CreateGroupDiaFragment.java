@@ -2,18 +2,17 @@ package com.vkyoungcn.learningtools;
 
 import android.app.DialogFragment;
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.vkyoungcn.learningtools.models.DBRwaGroup;
 import com.vkyoungcn.learningtools.sqlite.YouMemoryDbHelper;
@@ -197,6 +196,14 @@ public class CreateGroupDiaFragment extends DialogFragment implements View.OnCli
                         //按顺序，获取指定数量的Items
                         itemIds = memoryDbHelper.getCertainAmountItemIdsOrderly(groupSize,suffix);
 
+                        if(itemIds.size()==0){
+                            Toast.makeText(getContext(), "抽取items数量0，错误号#601", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        if(itemIds.size()<36){
+                            Toast.makeText(getContext(), "抽取items数量不足36", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
                         //为描述字段获取首词name
                         String firstItemName = memoryDbHelper.getSingleItemNameById((long)itemIds.get(0),suffix);
 
@@ -215,6 +222,14 @@ public class CreateGroupDiaFragment extends DialogFragment implements View.OnCli
                         //随机获取指定数量的Items
                         itemIds = memoryDbHelper.getCertainAmountItemIdsRandomly(groupSize,suffix);
 
+                        if(itemIds.size()==0){
+                            Toast.makeText(getContext(), "抽取items数量0，错误号#601", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        if(itemIds.size()<36){
+                            Toast.makeText(getContext(), "抽取items数量不足36", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
                         //如果描述字段留空，构建默认描述字段“随机分组-时间”
                         if(s.isEmpty()){
                             descriptionSB.append("随机分组-");
@@ -231,11 +246,11 @@ public class CreateGroupDiaFragment extends DialogFragment implements View.OnCli
                 dbRwaGroup.setDescription(descString);
                 dbRwaGroup.setMission_id(missionId);
                 dbRwaGroup.setSubItems_ids(DBRwaGroup.subItemIdsListIntToString(itemIds));
-                dbRwaGroup.setSpecial_mark(dbRwaGroup.NORMAL_GROUP);
+                dbRwaGroup.setFallBehind(false);
 
                 //插入DB
-                /*根据文档，lines返回刚插入的记录的row ID，出错时返回-1*/
-                long lines = memoryDbHelper.createGroup(dbRwaGroup);
+                /*根据文档，lines为刚插入的记录的row ID，出错时返回-1*/
+                long lines = memoryDbHelper.createGroup(dbRwaGroup,suffix);
 
                 //根据返回情况，通知act成功或失败；
                 mListener.onFragmentInteraction(lines);//【问，这里ACT不在前端能执行吗？】

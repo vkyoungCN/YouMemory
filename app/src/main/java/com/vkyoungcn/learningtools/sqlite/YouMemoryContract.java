@@ -40,11 +40,21 @@ public final class YouMemoryContract {
         public static final String COLUMN_GROUP_ID = "group_id";
     }
 
-    /* version 4 */
+   /* v6
     public static class Group implements BaseColumns{
         public static final String TABLE_NAME = "group_table";
         public static final String COLUMN_DESCRIPTION = "description";
         public static final String COLUMN_SPECIAL_MARK = "special_mark";
+        public static final String COLUMN_MISSION_ID = "mission_id";//v5新增，替代n:1任务-分组表
+        public static final String COLUMN_GROUP_LOGS = "group_logs";//v4新增；替代1:n日志交叉表
+        public static final String COLUMN_SUB_ITEM_IDS = "sub_item_ids";//v4新增；替代1:n交叉表
+    }*/
+/* version 8 */
+    public static class Group implements BaseColumns{
+        public static final String TABLE_NAME = "group_table";
+        public static final String COLUMN_DESCRIPTION = "description";
+        public static final String COLUMN_IS_FALL_BEHIND= "is_fall_behind";//v8
+        public static final String COLUMN_IS_OBSOLETED= "is_obsoleted";//v8
         public static final String COLUMN_MISSION_ID = "mission_id";//v5新增，替代n:1任务-分组表
         public static final String COLUMN_GROUP_LOGS = "group_logs";//v4新增；替代1:n日志交叉表
         public static final String COLUMN_SUB_ITEM_IDS = "sub_item_ids";//v4新增；替代1:n交叉表
@@ -68,7 +78,7 @@ public final class YouMemoryContract {
         public static final String COLUMN_NAME = "name";
         public static final String COLUMN_EXTENDING_LIST_1 = "extending_list_1";
         public static final String COLUMN_EXTENDING_LIST_2 = "extending_list_2";
-        public static final String COLUMN_PICKING_TIME_LIST = "picking_time_list";
+        public static final String COLUMN_PICKING_TIME_LIST = "picking_time_list";//v9已取消
         public static final String COLUMN_HAS_BEEN_CHOSE = "been_chose";//v6新增
     }
 

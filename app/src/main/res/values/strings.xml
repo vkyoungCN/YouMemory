@@ -36,4 +36,17 @@
     <string name="cancel">取消</string>
     <string name="add_new_group">创建新任务分组</string>
     <string name="default_group_decs3">默认可自动生成</string>
+    <string name="detail01">详情</string>
+    <string name="reserved">预留</string>
+    <string name="items_belongs_to_group">所属项目列表</string>
+    <string name="group_detail">分组详情</string>
+    <string name="log_view">查看日志</string>
+    <string name="logs">日志</string>
+    <string name="order2">序号#</string>
+    <string name="includingItemsInfo">组内项目总览</string>
+    <string name="includingItemsInfo2">项目列表</string>
+    <string name="number1">数量：</string>
+    <string name="go1">学习</string>
+    <string name="go2_repick">复习</string>
+    <string name="log_detail">学习（复习）日志详情</string>
 </resources>

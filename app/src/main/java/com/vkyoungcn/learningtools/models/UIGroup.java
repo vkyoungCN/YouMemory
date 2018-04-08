@@ -1,9 +1,12 @@
 package com.vkyoungcn.learningtools.models;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 
 import com.vkyoungcn.learningtools.spiralCore.LogList;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -15,14 +18,16 @@ public class UIGroup {
     private static final String TAG = "UIGroup";
 
     private int id = 0;//DB列。从DB取回时本列有意义。存入时由于Helper不写id列，值无所谓。
-    private String description;//DB列。默认填入该组“起始-末尾”词汇
-    private int special_mark;//DB列。是不是掉队重组词汇
-    private int mission_id;//v5新增
+    private String description="";//DB列。默认填入该组“起始-末尾”词汇
+    private boolean isFallBehind =false;//DB列。是不是掉队重组词汇。本组废弃后也应置废弃。
+    private boolean isObsoleted=false;//v7新增列，是否因未及时复习而废止分组。对应Items应改回未抽取。
+    private int mission_id = 0;//v5新增
 
-    private List<LogModel> groupLogs;//DB列本组记忆与复习日志；
+    private List<LogModel> groupLogs = new ArrayList<>();//DB列本组记忆与复习日志；
+    //防止调用时的空指针，需要在此实例化。
 
-    private int subItemsTotalNumber;//非DB列
-    private CurrentState groupCurrentState = null;//非DB列。本组当前状态；
+    private int subItemsTotalNumber = 0;//非DB列
+    private CurrentState groupCurrentState = new CurrentState();//非DB列。本组当前状态；
 
     /* 备用字段
     private short additionalRePickingTimes_24 = 0;//额外加班补充的次数（24小时内）
@@ -35,7 +40,8 @@ public class UIGroup {
         Log.i(TAG, "UIGroup: constructor from raw.");
         this.id = dbRwaGroup.getId();
         this.description = dbRwaGroup.getDescription();
-        this.special_mark = dbRwaGroup.getSpecial_mark();
+        this.isFallBehind = dbRwaGroup.isFallBehind();
+        this.isObsoleted = dbRwaGroup.isObsoleted();
         this.groupLogs = LogList.textListLogToListLog(dbRwaGroup.getGroupLogs());
         this.mission_id = dbRwaGroup.getMission_id();
         this.subItemsTotalNumber =dbRwaGroup.getItemAmount();
@@ -44,11 +50,21 @@ public class UIGroup {
         LogList.setCurrentStateForGroup(this.groupCurrentState,this.groupLogs);
     }
 
-
-    public UIGroup(int id, String description, int special_mark, int mission_id, List<LogModel> groupLogs, int subItemsTotalNumber, CurrentState groupCurrentState) {
+    public UIGroup(int id, String description, boolean isFallBehind, boolean isObsoleted, int mission_id, List<LogModel> groupLogs, int subItemsTotalNumber, CurrentState groupCurrentState) {
         this.id = id;
         this.description = description;
-        this.special_mark = special_mark;
+        this.isFallBehind = isFallBehind;
+        this.isObsoleted = isObsoleted;
+        this.mission_id = mission_id;
+        this.groupLogs = groupLogs;
+        this.subItemsTotalNumber = subItemsTotalNumber;
+        this.groupCurrentState = groupCurrentState;
+    }
+
+    public UIGroup(int id, String description, boolean isFallBehind, int mission_id, List<LogModel> groupLogs, int subItemsTotalNumber, CurrentState groupCurrentState) {
+        this.id = id;
+        this.description = description;
+        this.isFallBehind = isFallBehind;
         this.mission_id = mission_id;
         this.groupLogs = groupLogs;
         this.subItemsTotalNumber = subItemsTotalNumber;
@@ -58,10 +74,10 @@ public class UIGroup {
     /*
     * 第五项可以传入List<Long>，降低耦合性
     * */
-    public UIGroup(int id, String description, int special_mark, List<LogModel> groupLogs, List<Long> subItems, CurrentState groupCurrentState) {
+    public UIGroup(int id, String description, boolean isFallBehind, List<LogModel> groupLogs, List<Long> subItems, CurrentState groupCurrentState) {
         this.id = id;
         this.description = description;
-        this.special_mark = special_mark;
+        this.isFallBehind = isFallBehind;
         this.groupLogs = groupLogs;
         this.subItemsTotalNumber = subItems.size();
         this.groupCurrentState = groupCurrentState;
@@ -77,12 +93,20 @@ public class UIGroup {
         this.id = id;
     }
 
-    public int getSpecial_mark() {
-        return special_mark;
+    public boolean isFallBehind() {
+        return isFallBehind;
     }
 
-    public void setSpecial_mark(int special_mark) {
-        this.special_mark = special_mark;
+    public void setFallBehind(boolean fallBehind) {
+        isFallBehind = fallBehind;
+    }
+
+    public boolean isObsoleted() {
+        return isObsoleted;
+    }
+
+    public void setObsoleted(boolean obsoleted) {
+        isObsoleted = obsoleted;
     }
 
     public String getDescription() {
@@ -124,4 +148,47 @@ public class UIGroup {
     public void setMission_id(int mission_id) {
         this.mission_id = mission_id;
     }
+
+
+    /*
+     * Parcelable接口所要求覆写的一些内容
+     * */
+    /*public int describeContents(){
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeInt(id);
+        parcel.writeString(description);
+        parcel.writeByte((byte)(isObsoleted? 1:0));
+        parcel.writeByte((byte)(isFallBehind? 1:0));
+        parcel.writeInt(mission_id);
+        parcel.writeList(groupLogs);
+        parcel.writeInt(subItemsTotalNumber);
+        parcel.writeParcelable(groupCurrentState,0);
+
+    }
+
+    public static final Parcel.Creator<UIGroup> CREATOR = new Parcelable.Creator<UIGroup>(){
+        @Override
+        public UIGroup createFromParcel(Parcel parcel) {
+            return new UIGroup(parcel);
+        }
+
+        @Override
+        public UIGroup[] newArray(int size) {
+            return new UIGroup[size];
+        }
+    };
+
+    private UIGroup(Parcel in){
+        id = in.readInt();
+        description = in.readString();
+        isObsoleted = in.readByte()==1;
+        isFallBehind = in.readByte()==1;
+        mission_id = in.readInt();
+        groupLogs = in.readList();
+    }*/
+
 }

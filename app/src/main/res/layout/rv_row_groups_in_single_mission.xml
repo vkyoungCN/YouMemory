@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 <LinearLayout
     android:layout_width="match_parent"
-    android:layout_height="48dp">
+    android:layout_height="48dp"
+    android:gravity="center">
     <TextView
         android:id="@+id/group_id"
         android:layout_width="wrap_content"
@@ -50,22 +51,15 @@
         android:text="@string/sharp_x15_default"
         />
     <Button
-        android:id="@+id/group_go"
+        android:id="@+id/rv_group_detail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="4dp"
         android:gravity="center"
-        android:text="@string/sharp_x3_default"
+        android:text="@string/detail01"
         />
 
 </LinearLayout>
-
-
-
-
-
-
-
 
 
 </LinearLayout>

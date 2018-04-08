@@ -8,12 +8,23 @@ import java.util.List;
  */
 
 public class Item {
-    private int id;
-    private int name;
-    private String extending_list_1;
-    private String extending_list_2;
-    private List<Date> picking_log; //对应item-pickingTime交叉表；
+    private int id =0;
+    private String name="";
+    private String extending_list_1="";
+    private String extending_list_2="";
+    private Boolean isChose=false;
 
+
+    public Item() {
+    }
+
+    public Item(int id, String name, String extending_list_1, String extending_list_2, Boolean isChose ) {
+        this.id = id;
+        this.name = name;
+        this.extending_list_1 = extending_list_1;
+        this.extending_list_2 = extending_list_2;
+        this.isChose = isChose;
+    }
 
     public int getId() {
         return id;
@@ -23,11 +34,11 @@ public class Item {
         this.id = id;
     }
 
-    public int getName() {
+    public String getName() {
         return name;
     }
 
-    public void setName(int name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -47,11 +58,12 @@ public class Item {
         this.extending_list_2 = extending_list_2;
     }
 
-    public List<Date> getPicking_log() {
-        return picking_log;
+    public Boolean isChose() {
+        return isChose;
     }
 
-    public void setPicking_log(List<Date> picking_log) {
-        this.picking_log = picking_log;
+    public void setChose(Boolean chose) {
+        isChose = chose;
     }
+
 }

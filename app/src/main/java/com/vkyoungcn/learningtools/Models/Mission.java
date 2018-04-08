@@ -7,10 +7,10 @@ import java.util.List;
  */
 
 public class Mission {
-    private int id;
-    private String name;
-    private String description;
-    private String tableItem_suffix;
+    private int id=0;
+    private String name="";
+    private String description="";
+    private String tableItem_suffix="";
 
 
 
