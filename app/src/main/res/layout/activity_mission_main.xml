@@ -96,13 +96,36 @@
 
     </LinearLayout>
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="12dp"
-        android:textSize="18dp"
+        android:orientation="horizontal"
         android:gravity="center"
-        android:text="@string/groups_info"/>
+        >
+
+    <TextView
+        android:id="@+id/rv_title_show_groups"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="12dp"
+        android:textSize="18sp"
+        android:gravity="center"
+        android:text="@string/show_groups"
+        android:onClick="showGroups"/>
+    <TextView
+        android:id="@+id/rv_title_hide_groups"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="12dp"
+        android:textSize="18sp"
+        android:gravity="center"
+        android:text="@string/groups_info"
+        android:visibility="gone"/>
+
+
+
+    </LinearLayout>
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="1dp"

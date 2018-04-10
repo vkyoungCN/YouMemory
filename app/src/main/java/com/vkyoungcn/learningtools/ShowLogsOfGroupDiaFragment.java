@@ -3,19 +3,16 @@ package com.vkyoungcn.learningtools;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.graphics.Point;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
 import com.vkyoungcn.learningtools.adapter.LogsOfSingleGroupAdapter;
 import com.vkyoungcn.learningtools.models.LogModel;
@@ -31,7 +28,7 @@ import java.util.List;
 public class ShowLogsOfGroupDiaFragment extends DialogFragment {
     private static final String TAG = "ShowLogsOfGroupDiaFragm";
     private static final String ARG_PARAM_Logs = "LOGS";
-    private List<LogModel> groupLogs;
+    private String strGroupLogs;
     private RecyclerView logRv;
 
 
@@ -45,10 +42,10 @@ public class ShowLogsOfGroupDiaFragment extends DialogFragment {
      *
      * @return A new instance of fragment ShowLogsOfGroupDiaFragment.
      */
-    public static ShowLogsOfGroupDiaFragment newInstance(List<LogModel> groupLogs) {
+    public static ShowLogsOfGroupDiaFragment newInstance(String strGroupLogs) {
         ShowLogsOfGroupDiaFragment fragment = new ShowLogsOfGroupDiaFragment();
         Bundle args = new Bundle();
-        args.putParcelableArrayList(ARG_PARAM_Logs, (ArrayList<? extends Parcelable>) groupLogs);
+        args.putString(ARG_PARAM_Logs, strGroupLogs);
 //        Log.i(TAG, "newInstance: put");
         fragment.setArguments(args);
         return fragment;
@@ -58,7 +55,7 @@ public class ShowLogsOfGroupDiaFragment extends DialogFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            groupLogs = getArguments().getParcelableArrayList(ARG_PARAM_Logs);
+            strGroupLogs = getArguments().getString(ARG_PARAM_Logs);
 //            Log.i(TAG, "onCreate: get");
         }
     }
@@ -78,13 +75,14 @@ public class ShowLogsOfGroupDiaFragment extends DialogFragment {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         LinearLayout.LayoutParams gLp = new LinearLayout.LayoutParams((int)(point.x*0.75),(int)(point.y*0.7));
         llt.setLayoutParams(gLp);
 
 
         logRv =  (RecyclerView) rootView.findViewById(R.id.rv_logs_list);
         logRv.setLayoutManager(new LinearLayoutManager(getActivity()));
-        logRv.setAdapter(new LogsOfSingleGroupAdapter(groupLogs));
+        logRv.setAdapter(new LogsOfSingleGroupAdapter(strGroupLogs));
         logRv.setHasFixedSize(true);
 
         return rootView;

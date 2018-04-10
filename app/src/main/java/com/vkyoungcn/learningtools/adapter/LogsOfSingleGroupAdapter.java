@@ -1,7 +1,6 @@
 package com.vkyoungcn.learningtools.adapter;
 
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,13 +10,12 @@ import com.vkyoungcn.learningtools.R;
 import com.vkyoungcn.learningtools.models.LogModel;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.List;
 
 public class LogsOfSingleGroupAdapter extends RecyclerView.Adapter<LogsOfSingleGroupAdapter.ViewHolder> {
     private static final String TAG = "LogsOfSingleGroupAdapter";
 
-    private List<LogModel> logModels ;//【这里初始化无意义的，如果传入的是null一样挂。已出错记录】
+    private String[] strGroupLogs;//【这里初始化无意义的，如果传入的是null一样挂。已出错记录】
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         private final TextView logs_num;
@@ -46,22 +44,20 @@ public class LogsOfSingleGroupAdapter extends RecyclerView.Adapter<LogsOfSingleG
         }
     }
 
-    public LogsOfSingleGroupAdapter(List<LogModel> logModels) {
-        this.logModels = logModels;
+    public LogsOfSingleGroupAdapter(String strGroupLogsInOne) {
+        this.strGroupLogs = strGroupLogsInOne.split(";");
+
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 //        Log.i(TAG, "onBindViewHolder: be");
-        LogModel logModel = logModels.get(position);
+        String strSingleLog = strGroupLogs[position];
+        String[] strLogSection = strSingleLog.split("#");
 
-        holder.getLogs_num().setText(String.valueOf(logModel.getN()));
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-DD hh:mm:ss");
-        simpleDateFormat.format(logModel.getTimeInMilli());
-        holder.getLogs_time().setText(simpleDateFormat.format(logModel.getTimeInMilli()));
-        holder.getLog_isMiss().setText(logModel.isMiss()?"MISS":"");
-
-
+        holder.getLogs_num().setText(strLogSection[0]);
+        holder.getLogs_time().setText(strLogSection[1]);
+        holder.getLog_isMiss().setText(strLogSection[2]);
     }
 
 
@@ -73,6 +69,6 @@ public class LogsOfSingleGroupAdapter extends RecyclerView.Adapter<LogsOfSingleG
 
     @Override
     public int getItemCount() {
-        return logModels.size();
+        return strGroupLogs.length;
     }
 }

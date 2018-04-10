@@ -468,8 +468,8 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         return l;
     }
 
-    public List<DBRwaGroup> getAllGroupsByMissionId(int missionsId){
-        List<DBRwaGroup> groups = new ArrayList<>();
+    public List<UIGroup> getAllGroupsByMissionId(int missionsId){
+        List<UIGroup> groups = new ArrayList<>();
         String selectQuery = "SELECT * FROM "+ YouMemoryContract.Group.TABLE_NAME+
                 " WHERE "+YouMemoryContract.Group.COLUMN_MISSION_ID+" = "+missionsId;
 
@@ -479,11 +479,11 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
 
         if(cursor.moveToFirst()){
             do{
-                DBRwaGroup group = new DBRwaGroup();
+                UIGroup group = new UIGroup();
                 group.setId(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group._ID)));
                 group.setDescription(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_DESCRIPTION)));
-                group.setSubItems_ids(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_SUB_ITEM_IDS)));
-                group.setGroupLogs(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_GROUP_LOGS)));
+                group.setStrSubItemsIds(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_SUB_ITEM_IDS)));
+                group.setStrGroupLogs(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_GROUP_LOGS)));
                 group.setMission_id(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_MISSION_ID)));
                 group.setFallBehind(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_IS_FALL_BEHIND))==1);
                 group.setObsoleted(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_IS_OBSOLETED))==1);

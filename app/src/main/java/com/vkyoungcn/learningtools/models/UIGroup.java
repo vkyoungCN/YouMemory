@@ -22,12 +22,14 @@ public class UIGroup {
     private boolean isFallBehind =false;//DB列。是不是掉队重组词汇。本组废弃后也应置废弃。
     private boolean isObsoleted=false;//v7新增列，是否因未及时复习而废止分组。对应Items应改回未抽取。
     private int mission_id = 0;//v5新增
-
-    private List<LogModel> groupLogs = new ArrayList<>();//DB列本组记忆与复习日志；
+//    private List<LogModel> groupLogs = new ArrayList<>();//DB列本组记忆与复习日志；改用String
+    private String strGroupLogs ="";//DB列
     //防止调用时的空指针，需要在此实例化。
+    //改为直接用字串后，logDfg还不用DATE转型了
 
-    private int subItemsTotalNumber = 0;//非DB列
-    private CurrentState groupCurrentState = new CurrentState();//非DB列。本组当前状态；
+    private String strSubItemsIds = "";//DBb列
+//    private int subItemsTotalNumber = 0;//非DB列
+//    private CurrentState groupCurrentState = new CurrentState();//非DB列。本组当前状态；//不再保留引用，随用随计算。
 
     /* 备用字段
     private short additionalRePickingTimes_24 = 0;//额外加班补充的次数（24小时内）
@@ -37,53 +39,19 @@ public class UIGroup {
     }
 
     public UIGroup(DBRwaGroup dbRwaGroup) {
-        Log.i(TAG, "UIGroup: constructor from raw.");
+//        Log.i(TAG, "UIGroup: constructor from raw.");
         this.id = dbRwaGroup.getId();
         this.description = dbRwaGroup.getDescription();
         this.isFallBehind = dbRwaGroup.isFallBehind();
         this.isObsoleted = dbRwaGroup.isObsoleted();
-        this.groupLogs = LogList.textListLogToListLog(dbRwaGroup.getGroupLogs());
+//        this.groupLogs = LogList.textListLogToListLog(dbRwaGroup.getGroupLogs());
+        this.strGroupLogs = dbRwaGroup.getGroupLogs();
         this.mission_id = dbRwaGroup.getMission_id();
-        this.subItemsTotalNumber =dbRwaGroup.getItemAmount();
-        this.groupCurrentState= new CurrentState();
-        Log.i(TAG, "UIGroup: ready for current state.");
-        LogList.setCurrentStateForGroup(this.groupCurrentState,this.groupLogs);
+        this.strSubItemsIds =dbRwaGroup.getSubItems_ids();
+//        this.groupCurrentState= new CurrentState();
+//        Log.i(TAG, "UIGroup: ready for current state.");
+//        LogList.setCurrentStateForGroup(this.groupCurrentState,strGroupLogs);
     }
-
-    public UIGroup(int id, String description, boolean isFallBehind, boolean isObsoleted, int mission_id, List<LogModel> groupLogs, int subItemsTotalNumber, CurrentState groupCurrentState) {
-        this.id = id;
-        this.description = description;
-        this.isFallBehind = isFallBehind;
-        this.isObsoleted = isObsoleted;
-        this.mission_id = mission_id;
-        this.groupLogs = groupLogs;
-        this.subItemsTotalNumber = subItemsTotalNumber;
-        this.groupCurrentState = groupCurrentState;
-    }
-
-    public UIGroup(int id, String description, boolean isFallBehind, int mission_id, List<LogModel> groupLogs, int subItemsTotalNumber, CurrentState groupCurrentState) {
-        this.id = id;
-        this.description = description;
-        this.isFallBehind = isFallBehind;
-        this.mission_id = mission_id;
-        this.groupLogs = groupLogs;
-        this.subItemsTotalNumber = subItemsTotalNumber;
-        this.groupCurrentState = groupCurrentState;
-    }
-
-    /*
-    * 第五项可以传入List<Long>，降低耦合性
-    * */
-    public UIGroup(int id, String description, boolean isFallBehind, List<LogModel> groupLogs, List<Long> subItems, CurrentState groupCurrentState) {
-        this.id = id;
-        this.description = description;
-        this.isFallBehind = isFallBehind;
-        this.groupLogs = groupLogs;
-        this.subItemsTotalNumber = subItems.size();
-        this.groupCurrentState = groupCurrentState;
-    }
-
-
 
     public int getId() {
         return id;
@@ -117,29 +85,39 @@ public class UIGroup {
         this.description = description;
     }
 
-    public List<LogModel> getGroupLogs() {
+    public String getStrSubItemsIds() {
+        return strSubItemsIds;
+    }
+
+    public void setStrSubItemsIds(String strSubItemsIds) {
+        this.strSubItemsIds = strSubItemsIds;
+    }
+
+    /* public List<LogModel> getGroupLogs() {
         return groupLogs;
     }
 
     public void setGroupLogs(List<LogModel> groupLogs) {
         this.groupLogs = groupLogs;
+    }*/
+
+    public String getStrGroupLogs() {
+        return strGroupLogs;
     }
 
-    public CurrentState getGroupCurrentState() {
+    public void setStrGroupLogs(String strGroupLogs) {
+        this.strGroupLogs = strGroupLogs;
+    }
+
+   /* public CurrentState getGroupCurrentState() {
         return groupCurrentState;
     }
 
     public void setGroupCurrentState(CurrentState groupCurrentState) {
         this.groupCurrentState = groupCurrentState;
-    }
+    }*/
 
-    public int getSubItemsTotalNumber() {
-        return subItemsTotalNumber;
-    }
 
-    public void setSubItemsTotalNumber(int subItemsTotalNumber) {
-        this.subItemsTotalNumber = subItemsTotalNumber;
-    }
 
     public int getMission_id() {
         return mission_id;
@@ -147,6 +125,11 @@ public class UIGroup {
 
     public void setMission_id(int mission_id) {
         this.mission_id = mission_id;
+    }
+
+    public int getSubItemsTotalNumber() {
+        String[] subItemsStr = strSubItemsIds.split(";");
+        return subItemsStr.length;
     }
 
 

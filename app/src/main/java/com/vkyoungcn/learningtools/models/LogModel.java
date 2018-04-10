@@ -4,6 +4,10 @@ package com.vkyoungcn.learningtools.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /*
 * 对应各组任务的一次学习和复习的记录
 * 可以整理成简单的字串形式"N#YYYY-MM-DD hh:mm:ss#false;"
@@ -17,6 +21,24 @@ public class LogModel implements Parcelable {
     private boolean isMiss = false;//本次记忆是否未在规定时限内完成（未完成=miss=true）。
 
     public LogModel() {
+    }
+
+    public LogModel(String strLog) {
+        if(strLog==null||strLog.isEmpty()){
+            return;
+        }
+        String[] logSection = strLog.split("#");
+        this.n = Short.valueOf(logSection[0]);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-DD hh:mm:ss");
+
+        try {
+            Date date  = simpleDateFormat.parse(logSection[1]);
+            this.timeInMilli = date.getTime();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        this.isMiss = logSection[2].equals("true");
+
     }
 
     public LogModel(short n, long timeInMilli, boolean isMiss) {

@@ -15,9 +15,11 @@ import android.widget.Toast;
 
 import com.vkyoungcn.learningtools.adapter.ItemsOfSingleGroupAdapter;
 import com.vkyoungcn.learningtools.models.DBRwaGroup;
+import com.vkyoungcn.learningtools.models.GroupState;
 import com.vkyoungcn.learningtools.models.Item;
 import com.vkyoungcn.learningtools.models.UIGroup;
 import com.vkyoungcn.learningtools.spiralCore.GroupManager;
+import com.vkyoungcn.learningtools.spiralCore.LogList;
 import com.vkyoungcn.learningtools.sqlite.YouMemoryDbHelper;
 
 import java.util.ArrayList;
@@ -70,8 +72,10 @@ public class GroupDetailActivity extends Activity {
             //将group的信息填充到UI
             groupId.setText(String.valueOf(group.getId()));
             groupDes.setText(group.getDescription());
-            groupCsColor.setBackgroundResource(group.getGroupCurrentState().getColorResId());
-            groupCsStr.setText(GroupManager.getCurrentStateTimeAmountStringFromUIGroup(group));
+            int resourceColor = 0;
+            GroupState groupState = LogList.getGroupStateBaseOnGroupLogs(group.getStrGroupLogs());
+            groupCsColor.setBackgroundResource(groupState.getColorResId());
+            groupCsStr.setText(GroupManager.getCurrentStateTimeAmountStringFromUIGroup(groupState));
             groupRvTitle.setText(String.valueOf(items.size()));
         }
 
@@ -84,7 +88,7 @@ public class GroupDetailActivity extends Activity {
     }
 
     public void showLogs(View view){
-        if(group.getGroupLogs().size()==0){
+        if(group.getStrGroupLogs()==null||group.getStrGroupLogs().isEmpty()){
             Toast.makeText(this, "没有复习日志", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -96,7 +100,7 @@ public class GroupDetailActivity extends Activity {
             Log.i(TAG, "showLogs: ");
             transaction.remove(prev);
         }
-        DialogFragment dialogFragment = ShowLogsOfGroupDiaFragment.newInstance(group.getGroupLogs());
+        DialogFragment dialogFragment = ShowLogsOfGroupDiaFragment.newInstance(group.getStrGroupLogs());
 //        Log.i(TAG, "createGroup: before show.");
         dialogFragment.show(transaction,"SHOW_LOGS");
     }

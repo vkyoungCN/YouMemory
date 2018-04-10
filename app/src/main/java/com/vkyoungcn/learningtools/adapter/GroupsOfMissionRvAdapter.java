@@ -12,8 +12,10 @@ import android.widget.TextView;
 
 import com.vkyoungcn.learningtools.GroupDetailActivity;
 import com.vkyoungcn.learningtools.R;
+import com.vkyoungcn.learningtools.models.GroupState;
 import com.vkyoungcn.learningtools.models.UIGroup;
 import com.vkyoungcn.learningtools.spiralCore.GroupManager;
+import com.vkyoungcn.learningtools.spiralCore.LogList;
 
 import java.util.List;
 
@@ -120,8 +122,10 @@ public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissi
         holder.getGroup_description().setText(group.getDescription());
         holder.getItem_amount().setText(String.valueOf("("+group.getSubItemsTotalNumber()+")"));
 
-        holder.getCurrent_state_time().setText(GroupManager.getCurrentStateTimeAmountStringFromUIGroup(group));
-        holder.getCurrent_state_time().setBackgroundResource(group.getGroupCurrentState().getColorResId());
+        GroupState groupState = LogList.getGroupStateBaseOnGroupLogs(group.getStrGroupLogs());
+
+        holder.getCurrent_state_time().setText(GroupManager.getCurrentStateTimeAmountStringFromUIGroup(groupState));
+        holder.getCurrent_state_time().setBackgroundResource(groupState.getColorResId());
     }
 
     @Override
