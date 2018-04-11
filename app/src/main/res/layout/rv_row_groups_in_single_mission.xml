@@ -6,11 +6,21 @@
     android:layout_width="match_parent"
     android:layout_height="48dp"
     android:gravity="center">
+
+    <!-- id前的#号 -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:gravity="center"
+        android:text="@string/sharp_x1_default"
+        />
+
     <TextView
         android:id="@+id/group_id"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
         android:padding="4dp"
+        android:layout_marginEnd="4dp"
         android:gravity="center"
         android:text="@string/sharp_x2_default"
         />
@@ -22,6 +32,16 @@
         android:gravity="center"
         android:text="@string/sharp_x24_default"
         />
+
+    <!-- 数量前的（号 -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_marginStart="12dp"
+        android:gravity="center"
+        android:text="@string/left_parenthesis"
+        />
+
     <TextView
         android:id="@+id/item_amount"
         android:layout_width="wrap_content"
@@ -29,6 +49,14 @@
         android:padding="4dp"
         android:gravity="center"
         android:text="@string/sharp_x2_default"
+        />
+
+    <!-- 数量后的）号 -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:gravity="center"
+        android:text="@string/right_parenthesis"
         />
 
 </LinearLayout>

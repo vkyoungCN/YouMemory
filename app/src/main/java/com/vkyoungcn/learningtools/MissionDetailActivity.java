@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,12 +11,12 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.vkyoungcn.learningtools.adapter.GroupsOfMissionRvAdapter;
 import com.vkyoungcn.learningtools.models.DBRwaGroup;
+import com.vkyoungcn.learningtools.models.GroupState;
 import com.vkyoungcn.learningtools.models.Mission;
-import com.vkyoungcn.learningtools.models.UIGroup;
+import com.vkyoungcn.learningtools.models.RvGroup;
 import com.vkyoungcn.learningtools.sqlite.YouMemoryDbHelper;
 
 import java.util.ArrayList;
@@ -29,17 +28,22 @@ import java.util.TimerTask;
  * 单个Mission的详情页；Mission详情及所属任务分组的集合展示（Rv）；
  * 可以新建任务分组；
  * */
-public class MissionDetailActivity extends AppCompatActivity implements CreateGroupDiaFragment.OnFragmentInteractionListener  {
+public class MissionDetailActivity extends AppCompatActivity implements CreateGroupDiaFragment.OnFragmentInteractionListener {
     private static final String TAG = "MissionDetailActivity";
 
-    List<UIGroup> groups = new ArrayList<>();//页面中Rv的数据源
-//    List<DBRwaGroup> dbRwaGroups = new ArrayList<>();
-    private int missionIdFromIntent = 0;//从Intent获取的missionId；
-    private Mission mission = new Mission();
+    private Mission missionFromIntent;//从前一页面获取。后续页面需要mission的id，suffix字段。
+    List<DBRwaGroup> dbRwaGroups = new ArrayList<>();//DB原始数据源
+    List<RvGroup> rvGroups = new ArrayList<>();//分开设计的目的是避免适配器内部的转换，让转换在外部完成，适配器直接只用直接数据才能降低卡顿。
     private RecyclerView mRv;
-    private Handler handler;
+
+    //    private Handler handler;//如果Rv效率高，就用不到多线程。
     private Activity self;//为了后方Timer配合runOnUiThread.
-    GroupsOfMissionRvAdapter adapter = null;
+    private Timer groupsStateTimer;
+
+
+    GroupsOfMissionRvAdapter adapter = null;//Rv适配器引用
+
+    //上方Mission详情区控件
     private TextView missionDetailName;
     private TextView missionDetailDescription;
 
@@ -47,7 +51,6 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
     private TextView tvHideGroups;
 
     private YouMemoryDbHelper memoryDbHelper;
-    private Timer groupsStateTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,85 +58,39 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
         this.self = this;
         setContentView(R.layout.activity_mission_main);
         missionDetailName = (TextView) findViewById(R.id.tv_mission_detail_name);
-        missionDetailDescription =(TextView) findViewById(R.id.tv_mission_detail_description);
+        missionDetailDescription = (TextView) findViewById(R.id.tv_mission_detail_description);
+
+        missionFromIntent = getIntent().getParcelableExtra("Mission");
 
 
-        missionIdFromIntent = getIntent().getIntExtra("MissionId",0);
+        if (missionFromIntent == null) {
+            Log.i(TAG, "onCreate: Intent has no Mission.");
+        } else {
+            //根据Mission数据填充Mission信息两项
+            missionDetailName.setText(missionFromIntent.getName());
+            missionDetailDescription.setText(missionFromIntent.getDescription());
+        }
+
         memoryDbHelper = YouMemoryDbHelper.getInstance(getApplicationContext());
 
-        //从DB获取本Mission对应的具体信息，填充本页面Activity部分内容
-        mission = memoryDbHelper.getMissionById(missionIdFromIntent);
+//        Log.i(TAG, "onCreate: missionId = "+missionFromIntent.getId());
+        dbRwaGroups = memoryDbHelper.getAllGroupsByMissionId(missionFromIntent.getId());
 
-        if(mission == null){
-            Toast.makeText(this, "DB returning null mission, ID from Intent is:"+missionIdFromIntent, Toast.LENGTH_SHORT).show();
-        }else{
-            //根据db返回数据填充Mission信息两项
-            missionDetailName.setText(mission.getName());
-            missionDetailDescription.setText(mission.getDescription());
+        for (DBRwaGroup d : dbRwaGroups) {
+            GroupState groupState = new GroupState(d.getGroupLogs());
+            RvGroup rvGroup = new RvGroup(d, groupState, missionFromIntent.getTableItem_suffix());//其中的时间字串信息是生成时获取的。
+            rvGroups.add(rvGroup);
         }
+//        Log.i(TAG, "onCreate: group size:"+dbRwaGroups.size());
+
+        adapter = new GroupsOfMissionRvAdapter(rvGroups, getApplicationContext(), missionFromIntent.getTableItem_suffix());
+        mRv = findViewById(R.id.groups_in_single_mission_rv);
+        mRv.setLayoutManager(new LinearLayoutManager(this));
+        mRv.setAdapter(adapter);
 
         //创建属于主线程的handler
-        handler=new Handler();
+//        handler=new Handler();
 
-    }
-
-    public void createGroup(View view){
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
-        Fragment prev = getFragmentManager().findFragmentByTag("CREATE_GROUP");
-
-        if(prev != null){
-            Log.i(TAG, "inside showDialog(), inside if prev!=null branch");
-            transaction.remove(prev);
-        }
-        DialogFragment dfg = CreateGroupDiaFragment.newInstance(mission.getTableItem_suffix(),mission.getId());
-//        Log.i(TAG, "createGroup: before show.");
-        dfg.show(transaction,"CREATE_GROUP");
-    }
-
-
-    @Override
-    public void onFragmentInteraction(long lines) {
-        Log.i(TAG, "onFragmentInteraction: before");
-        if(lines!=-1){
-            //新增操作只影响一行
-           DBRwaGroup dGroup = memoryDbHelper.getGroupById((int)lines);
-           UIGroup newGroup = new UIGroup(dGroup);
-           int oldSize = groups.size();
-            Log.i(TAG, "onFragmentInteraction: old size= "+oldSize);
-           groups.add(newGroup);
-            Log.i(TAG, "onFragmentInteraction: ready to notify.new groups size=" +groups.size());
-           adapter.notifyItemInserted(oldSize);
-
-        }
-
-    }
-
-
-
-    /*
-    * 因为启动时加载内容过多，设计为mission详情和所属groups情况分开加载，后者通过点击按钮显示
-    * 只需要显示的逻辑，不需要隐藏的逻辑。
-    * */
-    public void showGroups(View view) {
-
-        TextView rvTitleToShow = (TextView) findViewById(R.id.rv_title_show_groups);
-        TextView rvTitleToHide = (TextView) findViewById(R.id.rv_title_hide_groups);
-        rvTitleToShow.setVisibility(View.GONE);
-        rvTitleToHide.setVisibility(View.VISIBLE);
-
-        new Thread(){
-            public void run(){
-                //任务
-
-                //获取本Mission下的groups，准备填给RV.Adapter
-                groups = memoryDbHelper.getAllGroupsByMissionId(missionIdFromIntent);
-                //目前，DB操作改到了新线程，但是适配器中的绑定操作仍然是UI线程的；仍然很吃力，说明迟滞点不在外面
-                adapter = new GroupsOfMissionRvAdapter(groups,getApplicationContext(),mission.getTableItem_suffix());
-
-
-                handler.post(runnableUi);
-            }
-        }.start();
 
         //Timer负责每隔一分钟令Rv的adapter更新CurrentState显示
         groupsStateTimer = new Timer();
@@ -152,7 +109,7 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
                         // 并将activity持有的数据源中的这一条group标为已废弃，以防下次继续计算。
                         d.setObsoleted(true);
                         memoryDbHelper.setGroupObsoleted(d.getId());
-                        memoryDbHelper.setItemsUnChose(mission.getTableItem_suffix(),d.getSubItems_ids());
+                        memoryDbHelper.setItemsUnChose(mission.getTableItem_suffix(),d.getSubItemIdsStr());
 
                     }//其他的虽然不用处理数据库，但是需要改变时间字串
                     //但是改变字串不需要专门处理，只需令rv重新加载数据源，自动计算新值
@@ -167,6 +124,44 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
 
             }
         },60*1000,60*1000);
+
+
+    }
+
+    public void createGroup(View view) {
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag("CREATE_GROUP");
+
+        if (prev != null) {
+            Log.i(TAG, "inside showDialog(), inside if prev!=null branch");
+            transaction.remove(prev);
+        }
+        DialogFragment dfg = CreateGroupDiaFragment.newInstance(missionFromIntent.getTableItem_suffix(), missionFromIntent.getId());
+//        Log.i(TAG, "createGroup: before show.");
+        dfg.show(transaction, "CREATE_GROUP");
+    }
+
+    @Override
+    public void onFragmentInteraction(long lines) {
+        Log.i(TAG, "onFragmentInteraction: before");
+
+        //如果新增操作成功，通知adp变更。
+        if (lines != -1) {
+            //新增操作只影响一行
+            DBRwaGroup dGroup = memoryDbHelper.getGroupById((int) lines);
+            GroupState groupState = new GroupState(dGroup.getGroupLogs());
+            RvGroup newGroup = new RvGroup(dGroup, groupState, missionFromIntent.getTableItem_suffix());
+
+            int oldSize = dbRwaGroups.size();
+//            Log.i(TAG, "onFragmentInteraction: old size= "+oldSize);
+            rvGroups.add(newGroup);
+//            Log.i(TAG, "onFragmentInteraction: ready to notify.new dbRwaGroups size=" +dbRwaGroups.size());
+            adapter.notifyItemInserted(oldSize);
+        }
+
+    }
+
+
 //
 // Log.i(TAG, "onCreate: ready for rv adapter");
 
@@ -174,17 +169,16 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
         /*if(dbRwaGroups.size()>0) {
             //需要转换成Rv可用的Group格式
             for (DBRwaGroup d : dbRwaGroups) {
-                UIGroup uiGroup = new UIGroup(d);
-                groups.add(uiGroup);
+                RvGroup uiGroup = new RvGroup(d);
+                dbRwaGroups.add(uiGroup);
             }
         }*/
 
 
 
 
-    }
 
-    // 构建Runnable对象。在runnable中更新界面
+   /* // 构建Runnable对象。在runnable中更新界面
     Runnable runnableUi = new Runnable() {
         @Override
         public void run() {
@@ -194,6 +188,6 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
             mRv.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
             mRv.setAdapter(adapter);
         }
-    };
+    };*/
 
 }

@@ -13,7 +13,7 @@ import android.widget.TextView;
 import com.vkyoungcn.learningtools.GroupDetailActivity;
 import com.vkyoungcn.learningtools.R;
 import com.vkyoungcn.learningtools.models.GroupState;
-import com.vkyoungcn.learningtools.models.UIGroup;
+import com.vkyoungcn.learningtools.models.RvGroup;
 import com.vkyoungcn.learningtools.spiralCore.GroupManager;
 import com.vkyoungcn.learningtools.spiralCore.LogList;
 
@@ -21,7 +21,8 @@ import java.util.List;
 
 public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissionRvAdapter.ViewHolder> {
     private static final String TAG = "AllMissionRvAdapter";
-    private List<UIGroup> groups;
+
+    private List<RvGroup> groups;
     private Context context;//用于启动新activity。
     private String itemTableSuffix;//用于点击条目查看分组所属items时
 
@@ -96,7 +97,9 @@ public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissi
     /*
     * 构造器，初始化此适配器的数据源
     * */
-    public GroupsOfMissionRvAdapter(List<UIGroup> groups, Context context, String itemTableSuffix ) {
+    public GroupsOfMissionRvAdapter(List<com.vkyoungcn.learningtools.models.RvGroup> groups, Context context, String itemTableSuffix ) {
+//        Log.i(TAG, "GroupsOfMissionRvAdapter: constructor");
+
         this.groups = groups;
         this.context = context;
         this.itemTableSuffix = itemTableSuffix;
@@ -116,16 +119,14 @@ public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissi
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 //        Log.i(TAG, "onBindViewHolder: before any. group size = "+groups.size());
-        UIGroup group = groups.get(position);
+        RvGroup group = groups.get(position);
 //        Log.i(TAG, "onBindViewHolder: got group,id:"+group.getId());
-        holder.getGroup_id().setText(String.valueOf("#"+group.getId()));
+        holder.getGroup_id().setText(String.valueOf(group.getId()));
         holder.getGroup_description().setText(group.getDescription());
-        holder.getItem_amount().setText(String.valueOf("("+group.getSubItemsTotalNumber()+")"));
+        holder.getItem_amount().setText(String.valueOf(group.getTotalSubItemsNumber()));
 
-        GroupState groupState = LogList.getGroupStateBaseOnGroupLogs(group.getStrGroupLogs());
-
-        holder.getCurrent_state_time().setText(GroupManager.getCurrentStateTimeAmountStringFromUIGroup(groupState));
-        holder.getCurrent_state_time().setBackgroundResource(groupState.getColorResId());
+        holder.getCurrent_state_time().setText(group.getStateText());
+        holder.getCurrent_state_time().setBackgroundResource(group.getStateColorResId());
     }
 
     @Override

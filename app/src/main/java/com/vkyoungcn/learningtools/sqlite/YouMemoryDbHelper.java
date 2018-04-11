@@ -150,8 +150,8 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         createMission(db,defaultMission);//传入db是避免调用getDataBase，后者（会调用onCreate）导致递归调用错误
 
 //      Item_default13531表数据导入
-        db.execSQL(getSqlCreateItemWithSuffix(DEFAULT_ITEM_SUFFIX));
-        Log.i(TAG, "onUpgrade: case 1");
+//        db.execSQL(getSqlCreateItemWithSuffix(DEFAULT_ITEM_SUFFIX));
+//        Log.i(TAG, "onUpgrade: case 1");
         importToItemDefaultFromCSV("EbbingWords13531.csv",db);
 
     }
@@ -253,7 +253,7 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
                 values.put(YouMemoryContract.ItemBasic.COLUMN_NAME, str[1]);
                 values.put(YouMemoryContract.ItemBasic.COLUMN_EXTENDING_LIST_1, str[2]);//音标
                 values.put(YouMemoryContract.ItemBasic.COLUMN_EXTENDING_LIST_2, str[3]);//释义字串
-                values.put(YouMemoryContract.ItemBasic.COLUMN_HAS_BEEN_CHOSE, false);//v9,补
+                values.put(YouMemoryContract.ItemBasic.COLUMN_HAS_BEEN_CHOSE, false);//v9,补【经提取测试，log.i中输出为0,并且是数字0，如果再提取，需要匹配为 = 0】
 
                 db.insert(YouMemoryContract.ItemBasic.TABLE_NAME + DEFAULT_ITEM_SUFFIX, null, values);
             }
@@ -454,12 +454,12 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         values.put(YouMemoryContract.Group.COLUMN_IS_FALL_BEHIND, dbRwaGroup.isFallBehind());
         values.put(YouMemoryContract.Group.COLUMN_IS_OBSOLETED, dbRwaGroup.isObsoleted());
         values.put(YouMemoryContract.Group.COLUMN_MISSION_ID, dbRwaGroup.getMission_id());
-        values.put(YouMemoryContract.Group.COLUMN_SUB_ITEM_IDS, dbRwaGroup.getSubItems_ids());
+        values.put(YouMemoryContract.Group.COLUMN_SUB_ITEM_IDS, dbRwaGroup.getSubItemIdsStr());
 
         l = mSQLiteDatabase.insert(YouMemoryContract.Group.TABLE_NAME, null, values);
 
 //        Log.i(TAG, "createGroup: lines:"+l);
-        setItemsChose(tableSuffix,dbRwaGroup.getSubItems_ids());
+        setItemsChose(tableSuffix,dbRwaGroup.getSubItemIdsStr());
         mSQLiteDatabase.setTransactionSuccessful();
         mSQLiteDatabase.endTransaction();
 
@@ -468,22 +468,23 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         return l;
     }
 
-    public List<UIGroup> getAllGroupsByMissionId(int missionsId){
-        List<UIGroup> groups = new ArrayList<>();
+    public List<DBRwaGroup> getAllGroupsByMissionId(int missionsId){
+        List<DBRwaGroup> groups = new ArrayList<>();
         String selectQuery = "SELECT * FROM "+ YouMemoryContract.Group.TABLE_NAME+
                 " WHERE "+YouMemoryContract.Group.COLUMN_MISSION_ID+" = "+missionsId;
 
-//        Log.i(TAG, "getAllGroupsByMissionId: before");
+//        Log.i(TAG, "getAllGroupsByMissionId: before. sql= "+selectQuery);
         getReadableDatabaseIfClosedOrNull();
         Cursor cursor = mSQLiteDatabase.rawQuery(selectQuery, null);
+//        Log.i(TAG, "getAllGroupsByMissionId: cursor.size "+cursor.getCount());
 
         if(cursor.moveToFirst()){
             do{
-                UIGroup group = new UIGroup();
+                DBRwaGroup group = new DBRwaGroup();
                 group.setId(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group._ID)));
                 group.setDescription(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_DESCRIPTION)));
-                group.setStrSubItemsIds(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_SUB_ITEM_IDS)));
-                group.setStrGroupLogs(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_GROUP_LOGS)));
+                group.setSubItemIdsStr(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_SUB_ITEM_IDS)));
+                group.setGroupLogs(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_GROUP_LOGS)));
                 group.setMission_id(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_MISSION_ID)));
                 group.setFallBehind(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_IS_FALL_BEHIND))==1);
                 group.setObsoleted(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_IS_OBSOLETED))==1);
@@ -499,6 +500,7 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
             e.printStackTrace();
         }
         closeDB();
+//        Log.i(TAG, "getAllGroupsByMissionId: db get groups size: "+groups.size());
         return groups;
     }
 
@@ -514,7 +516,7 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         if(cursor.moveToFirst()){
                 group.setId(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group._ID)));
                 group.setDescription(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_DESCRIPTION)));
-                group.setSubItems_ids(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_SUB_ITEM_IDS)));
+                group.setSubItemIdsStr(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_SUB_ITEM_IDS)));
                 group.setGroupLogs(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_GROUP_LOGS)));
                 group.setMission_id(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_MISSION_ID)));
                 group.setFallBehind(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_IS_FALL_BEHIND))==1);
@@ -607,19 +609,21 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         List<Integer> ids = new ArrayList<>();
         String selectQueryInner = "SELECT "+YouMemoryContract.ItemBasic._ID
                 +" FROM "+YouMemoryContract.ItemBasic.TABLE_NAME+tableNameSuffix
-                +" WHERE "+YouMemoryContract.ItemBasic.COLUMN_HAS_BEEN_CHOSE+" = 'false' OR "
+                +" WHERE "+YouMemoryContract.ItemBasic.COLUMN_HAS_BEEN_CHOSE+" = 0 OR "
                 +YouMemoryContract.ItemBasic.COLUMN_HAS_BEEN_CHOSE+" IS NULL";
         String selectQueryOuter = "SELECT "+YouMemoryContract.ItemBasic._ID
                 +" FROM "+YouMemoryContract.ItemBasic.TABLE_NAME+tableNameSuffix
                 +" WHERE "+YouMemoryContract.ItemBasic._ID+" IN ( "+selectQueryInner+" ) LIMIT "+amount;
 
 //        Log.i(TAG, "getCertainAmountItemIdsOrderly: ready to select certain amount Items");
+//        Log.i(TAG, "getCertainAmountItemIdsOrderly: sql: "+selectQueryOuter);
 
         getReadableDatabaseIfClosedOrNull();
 //        mSQLiteDatabase.beginTransaction();
+
         Cursor cursor = mSQLiteDatabase.rawQuery(selectQueryOuter, null);
 
-//        Log.i(TAG, "getCertainAmountItemIdsOrderly: cursor's size:"+cursor.getCount());
+        Log.i(TAG, "getCertainAmountItemIdsOrderly: cursor's size:"+cursor.getCount());
         if(cursor.moveToFirst()){
             do{
                 int i = cursor.getInt(cursor.getColumnIndex(YouMemoryContract.ItemBasic._ID));
@@ -649,7 +653,7 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         List<Integer> ids = new ArrayList<>();
         String selectQuery = "SELECT "+YouMemoryContract.ItemBasic._ID
                 + " FROM "+YouMemoryContract.ItemBasic.TABLE_NAME+tableNameSuffix
-                +" WHERE "+YouMemoryContract.ItemBasic.COLUMN_HAS_BEEN_CHOSE+" = 'false' OR "
+                +" WHERE "+YouMemoryContract.ItemBasic.COLUMN_HAS_BEEN_CHOSE+" = 0 OR "
                 +YouMemoryContract.ItemBasic.COLUMN_HAS_BEEN_CHOSE+" IS NULL "
                 + " ORDER BY RANDOM() LIMIT "+amount;
 //        Log.i(TAG, "getCertainAmountItemIdsRandomly: ready to go");

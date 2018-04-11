@@ -2,6 +2,7 @@ package com.vkyoungcn.learningtools.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,8 +23,7 @@ import java.util.List;
 * */
 public class AllMissionRvAdapter extends RecyclerView.Adapter<AllMissionRvAdapter.ViewHolder>{
     private static final String TAG = "AllMissionRvAdapter";
-    private List<Mission> missions;//虽然显示只要titles，但点击事件需要相应id，所以必须是List<Mission>。
-    private RecyclerView mRv;
+    private List<Mission> missions;//本页暂时只显示titles，但后续页面需要suffix，点击事件需要相应id
     private Context context;//用于点击事件的启动新Activity
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
@@ -34,8 +34,6 @@ public class AllMissionRvAdapter extends RecyclerView.Adapter<AllMissionRvAdapte
 //            Log.i(TAG, "ViewHolder: constructor");
             title = itemView.findViewById(R.id.title);
             itemView.setOnClickListener(this);//
-
-
         }
 
         public TextView getTitle() {
@@ -47,12 +45,15 @@ public class AllMissionRvAdapter extends RecyclerView.Adapter<AllMissionRvAdapte
         public void onClick(View view) {
             int position  =getAdapterPosition();
             if (position != RecyclerView.NO_POSITION){ // Check if an item was deleted, but the user clicked it before the UI removed it
-                int missionId = missions.get(position).getId();
+//                int missionId = missions.get(position).getId();
+//                String tableSuffix = missions.get(position).getTableItem_suffix();
 
                 //启动MissionMainActivity，根据missionId进行获取填充。
                 Intent intent = new Intent(context, MissionDetailActivity.class);
-                intent.putExtra("MissionId",missionId);
-                Log.i(TAG, "onClick: ready to new activity.");
+//                intent.putExtra("MissionId",missionId);
+//                intent.putExtra("Suffix",missionId);
+                intent.putExtra("Mission",missions.get(position));
+//                Log.i(TAG, "onClick: ready to new activity.");
                 context.startActivity(intent);
             }
         }

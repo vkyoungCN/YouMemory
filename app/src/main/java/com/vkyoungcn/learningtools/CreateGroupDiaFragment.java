@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.vkyoungcn.learningtools.models.DBRwaGroup;
+import com.vkyoungcn.learningtools.spiralCore.GroupManager;
 import com.vkyoungcn.learningtools.sqlite.YouMemoryDbHelper;
 
 import java.text.SimpleDateFormat;
@@ -155,7 +156,7 @@ public class CreateGroupDiaFragment extends DialogFragment implements View.OnCli
 
 
     @Override
-    public void onClick(View view) {
+    public void onClick(View view) {【现在顺序建组OK了，随机仍然601；另外顺序建组后RV更新不正确，新增项目显示和前一条一样的内容】
         switch (view.getId()){
             case R.id.btn_ok_createGroupDfg://创建新分组
                 //从控件获取数据；从Item-xx表按所选方式获取项目，项目置有“已抽取”；
@@ -194,6 +195,7 @@ public class CreateGroupDiaFragment extends DialogFragment implements View.OnCli
                 switch (radioGroup_manner.getCheckedRadioButtonId()){
                     case R.id.rb_order_groupCreateDfg:
                         //按顺序，获取指定数量的Items
+                        Log.i(TAG, "onClick: ready to select items");
                         itemIds = memoryDbHelper.getCertainAmountItemIdsOrderly(groupSize,suffix);
 
                         if(itemIds.size()==0){
@@ -223,7 +225,7 @@ public class CreateGroupDiaFragment extends DialogFragment implements View.OnCli
                         itemIds = memoryDbHelper.getCertainAmountItemIdsRandomly(groupSize,suffix);
 
                         if(itemIds.size()==0){
-                            Toast.makeText(getContext(), "抽取items数量0，错误号#601", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "抽取items数量0，错误号#6001", Toast.LENGTH_SHORT).show();
                             return;
                         }
                         if(itemIds.size()<36){
@@ -245,7 +247,7 @@ public class CreateGroupDiaFragment extends DialogFragment implements View.OnCli
                 //装填数据
                 dbRwaGroup.setDescription(descString);
                 dbRwaGroup.setMission_id(missionId);
-                dbRwaGroup.setSubItems_ids(DBRwaGroup.subItemIdsListIntToString(itemIds));
+                dbRwaGroup.setSubItemIdsStr(GroupManager.subItemIdsListIntToString(itemIds));
                 dbRwaGroup.setFallBehind(false);
 
                 //插入DB

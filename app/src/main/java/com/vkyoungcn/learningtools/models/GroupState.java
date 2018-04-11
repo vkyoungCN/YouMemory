@@ -5,6 +5,7 @@ import android.os.Parcelable;
 
 import com.vkyoungcn.learningtools.R;
 import com.vkyoungcn.learningtools.spiralCore.LogList;
+import com.vkyoungcn.learningtools.spiralCore.RemainingTimeAmount;
 
 
 /*
@@ -41,6 +42,17 @@ public class GroupState implements Parcelable {
     }
 
     public GroupState() {
+    }
+
+    public GroupState(String logsStr) {
+
+        this.state = LogList.getCurrentStateIntegerForGroup(logsStr);
+        this.colorResId = LogList.getCurrentColorResourceForGroup(logsStr);
+
+        RemainingTimeAmount remainingTimeAmount = LogList.getCurrentRemainingTimeForGroup(logsStr);
+        this.remainingMinutes = remainingTimeAmount.getRemainingMinutes();
+        this.remainingHours = remainingTimeAmount.getRemainingHours();
+        this.remainingDays = remainingTimeAmount.getRemainingDays();
     }
 
     public stateNumber getState() {

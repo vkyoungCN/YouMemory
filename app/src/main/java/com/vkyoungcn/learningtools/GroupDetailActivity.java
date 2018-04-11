@@ -17,7 +17,6 @@ import com.vkyoungcn.learningtools.adapter.ItemsOfSingleGroupAdapter;
 import com.vkyoungcn.learningtools.models.DBRwaGroup;
 import com.vkyoungcn.learningtools.models.GroupState;
 import com.vkyoungcn.learningtools.models.Item;
-import com.vkyoungcn.learningtools.models.UIGroup;
 import com.vkyoungcn.learningtools.spiralCore.GroupManager;
 import com.vkyoungcn.learningtools.spiralCore.LogList;
 import com.vkyoungcn.learningtools.sqlite.YouMemoryDbHelper;
@@ -29,7 +28,7 @@ public class GroupDetailActivity extends Activity {
     private static final String TAG = "GroupDetailActivity";
     private int groupIdFromIntent = 0;
     private String itemTableNameSuffix = "";
-    private UIGroup group;
+    private com.vkyoungcn.learningtools.models.RvGroup group;
     private List<Item> items = new ArrayList<>();
     private YouMemoryDbHelper memoryDbHelper;
 
@@ -62,10 +61,11 @@ public class GroupDetailActivity extends Activity {
 
         //从DB获取本group，如果在Intent传的话需要序列化，也是较大开销。
         DBRwaGroup dbRwaGroup = memoryDbHelper.getGroupById(groupIdFromIntent);
-        group = new UIGroup(dbRwaGroup);
+        GroupState groupState = new GroupState(dbRwaGroup.getGroupLogs());
+        group = new com.vkyoungcn.learningtools.models.RvGroup(dbRwaGroup,groupState,itemTableNameSuffix);
 
         //从DB获取本组所属的items
-        items = memoryDbHelper.getItemsByGroupSubItemIds(dbRwaGroup.getSubItems_ids(),itemTableNameSuffix);
+        items = memoryDbHelper.getItemsByGroupSubItemIds(dbRwaGroup.getSubItemIdsStr(),itemTableNameSuffix);
         Log.i(TAG, "onCreate: items.size: "+items.size());
 
         if (group!=null) {
@@ -73,7 +73,6 @@ public class GroupDetailActivity extends Activity {
             groupId.setText(String.valueOf(group.getId()));
             groupDes.setText(group.getDescription());
             int resourceColor = 0;
-            GroupState groupState = LogList.getGroupStateBaseOnGroupLogs(group.getStrGroupLogs());
             groupCsColor.setBackgroundResource(groupState.getColorResId());
             groupCsStr.setText(GroupManager.getCurrentStateTimeAmountStringFromUIGroup(groupState));
             groupRvTitle.setText(String.valueOf(items.size()));

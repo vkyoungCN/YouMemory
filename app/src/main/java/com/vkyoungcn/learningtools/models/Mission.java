@@ -1,12 +1,15 @@
 package com.vkyoungcn.learningtools.models;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.List;
 
 /**
  * Created by VkYoung16 on 2018/3/26 0026.
  */
 
-public class Mission {
+public class Mission implements Parcelable {
     private int id=0;
     private String name="";
     private String description="";
@@ -70,4 +73,40 @@ public class Mission {
     public void setTableItem_suffix(String tableItem_suffix) {
         this.tableItem_suffix = tableItem_suffix;
     }
+
+
+    /*
+     * 以下是Parcelable要求的内容
+     * */
+    public int describeContents(){
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeInt(id);
+        parcel.writeString(name);
+        parcel.writeString(description);
+        parcel.writeString(tableItem_suffix);
+    }
+
+    public static final Parcelable.Creator<Mission> CREATOR = new Parcelable.Creator<Mission>(){
+        @Override
+        public Mission createFromParcel(Parcel parcel) {
+            return new Mission(parcel);
+        }
+
+        @Override
+        public Mission[] newArray(int size) {
+            return new Mission[size];
+        }
+    };
+
+    private Mission(Parcel in){
+        id = in.readInt();
+        name = in.readString();
+        description = in.readString();
+        tableItem_suffix = in.readString();
+    }
+
 }

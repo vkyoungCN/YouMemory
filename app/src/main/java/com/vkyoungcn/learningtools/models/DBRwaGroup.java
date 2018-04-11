@@ -13,7 +13,7 @@ public class DBRwaGroup {
     private boolean isFallBehind =false;//DB列。是不是掉队重组词汇
     private boolean isObsoleted = false;//v7新增列。是否因超时废止，相应ITEMs应改回未抽取；color应为红色。
     private String groupLogs="";//DB列本组记忆与复习日志；
-    private String subItems_ids="";//DB列。本组所属Items的id集合（替代了额外1：N的那个交叉表）。实际应是List<Integer>类型。
+    private String subItemIdsStr ="";//DB列。本组所属Items的id集合（替代了额外1：N的那个交叉表）。实际应是List<Integer>类型。
     //格式上，要求不同id记录间以英文分号分隔。
     private int mission_id=0;//v5新增。
 
@@ -26,7 +26,7 @@ public class DBRwaGroup {
     }
 
     /*以下的转换式构造器无法使用，UiGroup缺少最后一列，只有苏bItems的数量，没有id详细列表。
-    public DBRwaGroup(UIGroup group) {
+    public DBRwaGroup(RvGroup group) {
         this.id = group.getId();
         this.description = group.getDescription();
         this.isFallBehind = group.getFallBehind();
@@ -47,26 +47,26 @@ public class DBRwaGroup {
             sbForStringLogs.append(";");
         }
         this.groupLogs = sbForStringLogs.toString();
-        this.subItems_ids = null;
+        this.subItemIdsStr = null;
     }*/
 
 
-    public DBRwaGroup(int id, String description, boolean isFallBehind, String groupLogs, String subItems_ids, int mission_id) {
+    public DBRwaGroup(int id, String description, boolean isFallBehind, String groupLogs, String subItemIdsStr, int mission_id) {
         this.id = id;
         this.description = description;
         this.isFallBehind = isFallBehind;
         this.groupLogs = groupLogs;
-        this.subItems_ids = subItems_ids;
+        this.subItemIdsStr = subItemIdsStr;
         this.mission_id = mission_id;
     }
 
-    public DBRwaGroup(int id, String description, boolean isFallBehind, boolean isObsoleted, String groupLogs, String subItems_ids, int mission_id) {
+    public DBRwaGroup(int id, String description, boolean isFallBehind, boolean isObsoleted, String groupLogs, String subItemIdsStr, int mission_id) {
         this.id = id;
         this.description = description;
         this.isFallBehind = isFallBehind;
         this.isObsoleted = isObsoleted;
         this.groupLogs = groupLogs;
-        this.subItems_ids = subItems_ids;
+        this.subItemIdsStr = subItemIdsStr;
         this.mission_id = mission_id;
     }
 
@@ -110,12 +110,12 @@ public class DBRwaGroup {
         this.groupLogs = groupLogs;
     }
 
-    public String getSubItems_ids() {
-        return subItems_ids;
+    public String getSubItemIdsStr() {
+        return subItemIdsStr;
     }
 
-    public void setSubItems_ids(String subItems_ids) {
-        this.subItems_ids = subItems_ids;
+    public void setSubItemIdsStr(String subItemIdsStr) {
+        this.subItemIdsStr = subItemIdsStr;
     }
 
     public int getMission_id() {
@@ -126,10 +126,7 @@ public class DBRwaGroup {
         this.mission_id = mission_id;
     }
 
-    public int getItemAmount(){
-        String[] subItemsStr = subItems_ids.split(";");
-        return subItemsStr.length;
-    }
+
 
     public static String subItemIdsListIntToString(List<Integer> idsList){
 
@@ -142,10 +139,10 @@ public class DBRwaGroup {
     }
 
     public String toStingIdsWithParenthesisForWhereSql(){
-        if(subItems_ids==null||subItems_ids.isEmpty()){
+        if(subItemIdsStr ==null|| subItemIdsStr.isEmpty()){
             return "()";
         }
-        String[] str =  this.subItems_ids.split(";");
+        String[] str =  this.subItemIdsStr.split(";");
         StringBuilder sbr = new StringBuilder();
         sbr.append("( ");
         for (String s: str) {

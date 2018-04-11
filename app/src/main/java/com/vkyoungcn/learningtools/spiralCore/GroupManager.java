@@ -3,10 +3,7 @@ package com.vkyoungcn.learningtools.spiralCore;
 import android.content.Context;
 import android.util.Log;
 
-import com.vkyoungcn.learningtools.models.DBRwaGroup;
 import com.vkyoungcn.learningtools.models.GroupState;
-import com.vkyoungcn.learningtools.models.UIGroup;
-import com.vkyoungcn.learningtools.models.LogModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -102,6 +99,21 @@ public class GroupManager {
 
         }
         return sbf.toString();
+    }
+
+    public static String subItemIdsListIntToString(List<Integer> idsList){
+
+        StringBuilder sbIds = new StringBuilder();
+        for (int i :idsList) {
+            sbIds.append(i);
+            sbIds.append(";");
+        }
+        return sbIds.toString();
+    }
+
+    public static int getItemAmountFromSubItemStr(String subItemIdsStr){
+        String[] subItemsStrArray = subItemIdsStr.split(";");
+        return subItemsStrArray.length;
     }
 
 }
