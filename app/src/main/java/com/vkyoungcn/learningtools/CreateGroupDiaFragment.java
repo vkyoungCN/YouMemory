@@ -156,7 +156,7 @@ public class CreateGroupDiaFragment extends DialogFragment implements View.OnCli
 
 
     @Override
-    public void onClick(View view) {【现在顺序建组OK了，随机仍然601；另外顺序建组后RV更新不正确，新增项目显示和前一条一样的内容】
+    public void onClick(View view) {
         switch (view.getId()){
             case R.id.btn_ok_createGroupDfg://创建新分组
                 //从控件获取数据；从Item-xx表按所选方式获取项目，项目置有“已抽取”；
@@ -199,7 +199,7 @@ public class CreateGroupDiaFragment extends DialogFragment implements View.OnCli
                         itemIds = memoryDbHelper.getCertainAmountItemIdsOrderly(groupSize,suffix);
 
                         if(itemIds.size()==0){
-                            Toast.makeText(getContext(), "抽取items数量0，错误号#601", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "抽取items数量0，错误号#601（顺序抽取失败）", Toast.LENGTH_SHORT).show();
                             return;
                         }
                         if(itemIds.size()<36){
@@ -225,7 +225,7 @@ public class CreateGroupDiaFragment extends DialogFragment implements View.OnCli
                         itemIds = memoryDbHelper.getCertainAmountItemIdsRandomly(groupSize,suffix);
 
                         if(itemIds.size()==0){
-                            Toast.makeText(getContext(), "抽取items数量0，错误号#6001", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "抽取items数量0，错误号#602（随机抽取失败）", Toast.LENGTH_SHORT).show();
                             return;
                         }
                         if(itemIds.size()<36){

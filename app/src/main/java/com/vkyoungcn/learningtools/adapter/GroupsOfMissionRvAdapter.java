@@ -1,5 +1,8 @@
 package com.vkyoungcn.learningtools.adapter;
 
+import android.app.DialogFragment;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
@@ -65,27 +68,65 @@ public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissi
 
         @Override
         public void onClick(View view) {
+            int position  =getAdapterPosition();
+            if (position == RecyclerView.NO_POSITION){return;}// Check if an item was deleted, but the user clicked it before the UI removed it
+
+
             switch (view.getId()){
                 case R.id.rv_group_detail:
-                    int position  =getAdapterPosition();
-                    if (position != RecyclerView.NO_POSITION) { // Check if an item was deleted, but the user clicked it before the UI removed it
-                        int groupId = groups.get(position).getId();
+                    int groupId = groups.get(position).getId();
 
-                        //启动GroupDetailActivity，根据missionId进行获取填充。
+                    //启动GroupDetailActivity，根据missionId进行获取填充。
                         Intent intent = new Intent(context, GroupDetailActivity.class);
                         intent.putExtra("GroupId",groupId);
                         intent.putExtra("TableSuffix",itemTableSuffix);
                         Log.i(TAG, "onClick: ready to GroupDetailActivity.");
                         context.startActivity(intent);
-                    }
 
                     break;
-                case R.id.current_state:
+                case R.id.current_state://点击了状态TextView大色块，进行学习/复习
                     //根据currentState的情况有不同处理逻辑
-                    //①红、绿：弹出确认框：要开始学习吗？否返回，是进入学习页（新学习逻辑）
+                    //①绿：弹出确认框：要开始学习吗？否返回，是进入学习页（新学习逻辑）
                     // ②蓝、橙：直接进入复习（不确认，反正可退出），是复习逻辑；
-                    //   在橙色进入时检查log情况，如果上次未记录（且标miss）则记录之（在副线程进行）。
-                    // ③灰、无色：不执行动作。
+                    //   在完成时检查log情况，生成一条或两条。
+                    //③红色：提示框，由用户选择是重置为新组，还是删除。
+                    //④灰、无色：不执行动作。
+
+                    int groupStateColorRes = groups.get(position).getStateColorResId();
+                    switch (groupStateColorRes){
+                        case R.color.colorGP_Newly:
+                            //绿色，开始学习。弹出确认框。
+                            FragmentTransaction transaction = System.getFragmentManager().beginTransaction();
+                            Fragment prev = getFragmentManager().findFragmentByTag("CREATE_GROUP");
+
+                            if (prev != null) {
+                                Log.i(TAG, "inside showDialog(), inside if prev!=null branch");
+                                transaction.remove(prev);
+                            }
+                            DialogFragment dfg = CreateGroupDiaFragment.newInstance(missionFromIntent.getTableItem_suffix(), missionFromIntent.getId());
+//        Log.i(TAG, "createGroup: before show.");
+                            dfg.show(transaction, "CREATE_GROUP");
+
+                            break;
+                        case R.color.colorGP_STILL_NOT:
+
+                            break;
+                        case 0:
+
+                            break;
+                        case R.color.colorGP_AVAILABLE:
+
+                            break;
+                        case R.color.colorGP_Miss_ONCE:
+
+                            break;
+                        case R.color.colorGP_Miss_TWICE:
+
+                            break;
+
+
+
+                    }
 
 
                     break;

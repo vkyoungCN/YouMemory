@@ -65,19 +65,23 @@
         android:layout_height="1dp"
         android:background="#efefef"/>
 
+    <!-- 颜色在LinearLayout设置，两个ImageView仅在红色状态下出现-->
 <LinearLayout
+    android:id="@+id/llt_color_set_groups_rv"
     android:layout_width="match_parent"
     android:layout_height="48dp"
     android:orientation="horizontal">
-    <TextView
-        android:id="@+id/current_state"
-        android:layout_width="0dp"
-        android:layout_weight="1"
-        android:layout_height="48dp"
-        android:padding="4dp"
-        android:gravity="center"
-        android:text="@string/sharp_x15_default"
-        />
+
+        <TextView
+            android:id="@+id/current_state"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:padding="4dp"
+            android:gravity="center"
+            android:text="@string/sharp_x15_default"
+            />
+
     <Button
         android:id="@+id/rv_group_detail"
         android:layout_width="wrap_content"

@@ -623,7 +623,7 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
 
         Cursor cursor = mSQLiteDatabase.rawQuery(selectQueryOuter, null);
 
-        Log.i(TAG, "getCertainAmountItemIdsOrderly: cursor's size:"+cursor.getCount());
+//        Log.i(TAG, "getCertainAmountItemIdsOrderly: cursor's size:"+cursor.getCount());
         if(cursor.moveToFirst()){
             do{
                 int i = cursor.getInt(cursor.getColumnIndex(YouMemoryContract.ItemBasic._ID));
@@ -656,7 +656,7 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
                 +" WHERE "+YouMemoryContract.ItemBasic.COLUMN_HAS_BEEN_CHOSE+" = 0 OR "
                 +YouMemoryContract.ItemBasic.COLUMN_HAS_BEEN_CHOSE+" IS NULL "
                 + " ORDER BY RANDOM() LIMIT "+amount;
-//        Log.i(TAG, "getCertainAmountItemIdsRandomly: ready to go");
+//        Log.i(TAG, "getCertainAmountItemIdsRandomly: sql: "+selectQuery);
 
         getReadableDatabaseIfClosedOrNull();
 

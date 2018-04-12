@@ -83,7 +83,7 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
         }
 //        Log.i(TAG, "onCreate: group size:"+dbRwaGroups.size());
 
-        adapter = new GroupsOfMissionRvAdapter(rvGroups, getApplicationContext(), missionFromIntent.getTableItem_suffix());
+        adapter = new GroupsOfMissionRvAdapter(rvGroups, this, missionFromIntent.getTableItem_suffix());
         mRv = findViewById(R.id.groups_in_single_mission_rv);
         mRv.setLayoutManager(new LinearLayoutManager(this));
         mRv.setAdapter(adapter);
@@ -153,10 +153,10 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
             RvGroup newGroup = new RvGroup(dGroup, groupState, missionFromIntent.getTableItem_suffix());
 
             int oldSize = dbRwaGroups.size();
-//            Log.i(TAG, "onFragmentInteraction: old size= "+oldSize);
+            Log.i(TAG, "onFragmentInteraction: old size= "+oldSize);
             rvGroups.add(newGroup);
-//            Log.i(TAG, "onFragmentInteraction: ready to notify.new dbRwaGroups size=" +dbRwaGroups.size());
-            adapter.notifyItemInserted(oldSize);
+            Log.i(TAG, "onFragmentInteraction: ready to notify.new group size=" +rvGroups.size());
+            adapter.notifyItemInserted(rvGroups.size());//【这个方法的意思是在添加后的数据集的第X项上（从1起算，不是0）是新插入的数据】
         }
 
     }
