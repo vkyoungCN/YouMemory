@@ -111,11 +111,30 @@
         android:background="#ff666666"
         />
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/groups_in_single_mission_rv"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        />
+        android:layout_height="match_parent">
+        <FrameLayout
+            android:id="@+id/maskOverRv_MissionDetail"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            >
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textSize="16sp"
+                android:gravity="center"
+                android:text="@string/hold_on_a_moment"/>
+    </FrameLayout>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/groups_in_single_mission_rv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+
+    </FrameLayout>
+
 
 
 

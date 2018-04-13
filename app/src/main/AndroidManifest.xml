@@ -17,7 +17,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".MissionDetailActivity" />
-        <activity android:name=".GroupDetailActivity"></activity>
+        <activity android:name=".GroupDetailActivity" />
+        <activity android:name=".ItemLearningActivity"></activity>
     </application>
 
 </manifest>

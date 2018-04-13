@@ -1,51 +1,38 @@
 package com.vkyoungcn.learningtools;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+
+import com.vkyoungcn.learningtools.models.SingleItem;
+
 
 /**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link ConfirmReadyLearning.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link ConfirmReadyLearning#newInstance} factory method to
- * create an instance of this fragment.
+ * 用于单项Item的初次学习
  */
-public class ConfirmReadyLearning extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+public class SingleItemInitLearningFragment extends Fragment {
+    private static final String TAG = "SingleItemInitLearningF";
+    private static final String SINGLE_ITEM = "single_item";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private SingleItem singleItem;
 
-    private OnFragmentInteractionListener mListener;
+//    private OnFragmentInteractionListener mListener;
 
-    public ConfirmReadyLearning() {
+    public SingleItemInitLearningFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ConfirmReadyLearning.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ConfirmReadyLearning newInstance(String param1, String param2) {
-        ConfirmReadyLearning fragment = new ConfirmReadyLearning();
+    public static SingleItemInitLearningFragment newInstance(SingleItem singleItem) {
+        SingleItemInitLearningFragment fragment = new SingleItemInitLearningFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putParcelable(SINGLE_ITEM, singleItem);
         fragment.setArguments(args);
         return fragment;
     }
@@ -54,8 +41,7 @@ public class ConfirmReadyLearning extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            singleItem = getArguments().getParcelable(SINGLE_ITEM);
         }
     }
 
@@ -63,10 +49,22 @@ public class ConfirmReadyLearning extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.confirm_ready_learning_dialog_fragment, container, false);
+        View rootView =  inflater.inflate(R.layout.fragment_single_item_init_learning, container, false);
+        TextView tvName = (TextView)rootView.findViewById(R.id.tv_name_singleItemLearning1);
+        TextView tv_ext1 = rootView.findViewById(R.id.tv_ext1_singleItemLearning1);
+        TextView tv_ext2 = rootView.findViewById(R.id.tv_ext2_singleItemLearning1);
+
+        tvName.setText(singleItem.getName());
+//        Typeface typeface = Typeface.createFromAsset(getActivity().getAssets(),"fonts/GentiumPlus_I.ttf");
+//        Log.i(TAG, "onCreateView: typeface: "+typeface.toString());
+//        tv_ext1.setTypeface(typeface);
+        tv_ext1.setText(singleItem.getExtending_list_1());
+        tv_ext2.setText(singleItem.getExtending_list_2());
+
+        return rootView;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
+/*
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
             mListener.onFragmentInteraction(uri);
@@ -90,7 +88,8 @@ public class ConfirmReadyLearning extends Fragment {
         mListener = null;
     }
 
-    /**
+    */
+/**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
      * to the activity and potentially other fragments contained in that
@@ -99,9 +98,10 @@ public class ConfirmReadyLearning extends Fragment {
      * See the Android Training lesson <a href=
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
-     */
+     *//*
+
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
+*/
 }

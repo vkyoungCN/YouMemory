@@ -1,10 +1,12 @@
 package com.vkyoungcn.learningtools.adapter;
 
+import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.vkyoungcn.learningtools.ConfirmReadyLearningDiaFragment;
 import com.vkyoungcn.learningtools.GroupDetailActivity;
 import com.vkyoungcn.learningtools.R;
 import com.vkyoungcn.learningtools.models.GroupState;
@@ -70,11 +73,11 @@ public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissi
         public void onClick(View view) {
             int position  =getAdapterPosition();
             if (position == RecyclerView.NO_POSITION){return;}// Check if an item was deleted, but the user clicked it before the UI removed it
+            int groupId = groups.get(position).getId();
 
 
             switch (view.getId()){
                 case R.id.rv_group_detail:
-                    int groupId = groups.get(position).getId();
 
                     //启动GroupDetailActivity，根据missionId进行获取填充。
                         Intent intent = new Intent(context, GroupDetailActivity.class);
@@ -93,19 +96,20 @@ public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissi
                     //④灰、无色：不执行动作。
 
                     int groupStateColorRes = groups.get(position).getStateColorResId();
+                    String groupSubItemIdsStr = groups.get(position).getStrSubItemsIds();
                     switch (groupStateColorRes){
                         case R.color.colorGP_Newly:
                             //绿色，开始学习。弹出确认框。
-                            FragmentTransaction transaction = System.getFragmentManager().beginTransaction();
-                            Fragment prev = getFragmentManager().findFragmentByTag("CREATE_GROUP");
+                            FragmentTransaction transaction = ((Activity)context).getFragmentManager().beginTransaction();
+                            Fragment prev = ((Activity)context).getFragmentManager().findFragmentByTag("READY_TO_LEARN");
 
                             if (prev != null) {
                                 Log.i(TAG, "inside showDialog(), inside if prev!=null branch");
                                 transaction.remove(prev);
                             }
-                            DialogFragment dfg = CreateGroupDiaFragment.newInstance(missionFromIntent.getTableItem_suffix(), missionFromIntent.getId());
+                            DialogFragment dfg = ConfirmReadyLearningDiaFragment.newInstance(groupId,itemTableSuffix,groupSubItemIdsStr);
 //        Log.i(TAG, "createGroup: before show.");
-                            dfg.show(transaction, "CREATE_GROUP");
+                            dfg.show(transaction, "READY_TO_LEARN");
 
                             break;
                         case R.color.colorGP_STILL_NOT:

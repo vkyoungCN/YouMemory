@@ -404,8 +404,9 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
     }
 
 
-    public List<Item> getItemsByGroupSubItemIds(String subItemIds,String tableNameSuffix){
-        List<Item> items = new ArrayList<>();
+    public List<SingleItem> getItemsByGroupSubItemIds(String subItemIds, String tableNameSuffix){
+        Log.i(TAG, "getItemsByGroupSubItemIds: b");
+        List<SingleItem> items = new ArrayList<>();
 
         String sqlWhere = getStingSubIdsWithParenthesisForWhereSql(subItemIds);
         String selectQuery = "SELECT * FROM "+ YouMemoryContract.ItemBasic.TABLE_NAME+tableNameSuffix
@@ -416,7 +417,7 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
 
         if(cursor.moveToFirst()){
             do {
-                Item item = new Item();
+                SingleItem item = new SingleItem();
                 item.setId(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.ItemBasic._ID)));
                 item.setName(cursor.getString(cursor.getColumnIndex(YouMemoryContract.ItemBasic.COLUMN_NAME)));
                 item.setExtending_list_1(cursor.getString(cursor.getColumnIndex(YouMemoryContract.ItemBasic.COLUMN_EXTENDING_LIST_1)));

@@ -2,14 +2,13 @@ package com.vkyoungcn.learningtools.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.vkyoungcn.learningtools.R;
-import com.vkyoungcn.learningtools.models.Item;
+import com.vkyoungcn.learningtools.models.SingleItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +16,7 @@ import java.util.List;
 public class ItemsOfSingleGroupAdapter extends RecyclerView.Adapter<ItemsOfSingleGroupAdapter.ViewHolder> {
     private static final String TAG = "ItemsOfSingleGroupAdapt";
 
-    private List<Item> items = new ArrayList<>();
+    private List<SingleItem> items = new ArrayList<>();
     private String ItemTableNameSuffix = "";
     private Context context;
 
@@ -53,7 +52,7 @@ public class ItemsOfSingleGroupAdapter extends RecyclerView.Adapter<ItemsOfSingl
         }
     }
 
-    public ItemsOfSingleGroupAdapter(List<Item> items, String itemTableNameSuffix, Context context) {
+    public ItemsOfSingleGroupAdapter(List<SingleItem> items, String itemTableNameSuffix, Context context) {
         this.items = items;
         ItemTableNameSuffix = itemTableNameSuffix;
         this.context = context;
@@ -70,7 +69,7 @@ public class ItemsOfSingleGroupAdapter extends RecyclerView.Adapter<ItemsOfSingl
     @Override
     public void onBindViewHolder(ItemsOfSingleGroupAdapter.ViewHolder holder, int position) {
 //        Log.i(TAG, "onBindViewHolder: be");
-        Item item = items.get(position);
+        SingleItem item = items.get(position);
 //        Log.i(TAG, "onBindViewHolder: items.size:"+items.size()+",id:"+item.getId());
 
         holder.getSingleItemId().setText(String.valueOf(item.getId()));

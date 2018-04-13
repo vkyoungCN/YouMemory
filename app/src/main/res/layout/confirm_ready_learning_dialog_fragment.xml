@@ -1,14 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ConfirmReadyLearning">
+    android:layout_width="200dp"
+    android:layout_height="150dp"
+    tools:context=".ConfirmReadyLearningDiaFragment"
+    android:orientation="vertical"
+    >
 
     <!-- TODO: Update blank fragment layout -->
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="100dp"
+        android:gravity="center"
+        android:textSize="18sp"
+        android:text="@string/ready_to_learn" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp">
 
-</FrameLayout>
+        <TextView
+            android:id="@+id/ready_learningDfg_cancel"
+            android:layout_width="100dp"
+            android:layout_height="50dp"
+            android:gravity="center"
+            android:textSize="18sp"
+            android:text="@string/cancel"
+            />
+        <TextView
+            android:id="@+id/ready_learningDfg_confirm"
+            android:layout_width="100dp"
+            android:layout_height="50dp"
+            android:gravity="center"
+            android:textSize="18sp"
+            android:text="@string/confirm"
+            />
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -47,7 +47,7 @@ public class GroupManager {
     * 基于UIGroup的CS提供相应的显示字串
     * */
     public static String getCurrentStateTimeAmountStringFromUIGroup(GroupState groupState){
-        Log.i(TAG, "getCurrentStateTimeAmountString: be");
+//        Log.i(TAG, "getCurrentStateTimeAmountString: be");
         GroupState.stateNumber stateNumber = groupState.getState();
 
         StringBuilder sbf = new StringBuilder();

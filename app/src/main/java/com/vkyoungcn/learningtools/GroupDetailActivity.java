@@ -16,9 +16,8 @@ import android.widget.Toast;
 import com.vkyoungcn.learningtools.adapter.ItemsOfSingleGroupAdapter;
 import com.vkyoungcn.learningtools.models.DBRwaGroup;
 import com.vkyoungcn.learningtools.models.GroupState;
-import com.vkyoungcn.learningtools.models.Item;
+import com.vkyoungcn.learningtools.models.SingleItem;
 import com.vkyoungcn.learningtools.spiralCore.GroupManager;
-import com.vkyoungcn.learningtools.spiralCore.LogList;
 import com.vkyoungcn.learningtools.sqlite.YouMemoryDbHelper;
 
 import java.util.ArrayList;
@@ -29,7 +28,7 @@ public class GroupDetailActivity extends Activity {
     private int groupIdFromIntent = 0;
     private String itemTableNameSuffix = "";
     private com.vkyoungcn.learningtools.models.RvGroup group;
-    private List<Item> items = new ArrayList<>();
+    private List<SingleItem> items = new ArrayList<>();
     private YouMemoryDbHelper memoryDbHelper;
 
     private TextView groupId;

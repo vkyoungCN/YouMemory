@@ -52,4 +52,14 @@
     <string name="show_groups">显示分组</string>
     <string name="left_parenthesis">(</string>
     <string name="right_parenthesis">)</string>
+    <string name="time_past">时间消耗：</string>
+    <string name="time_past_words2">请在60分钟内完成</string>
+    <string name="unit_min">分</string>
+    <string name="onItsWay">做好准备！马上开始！</string>
+    <string name="confirm">确定</string>
+    <string name="ready_to_learn">确认开始学习...</string>
+    <string name="hold_on_a_moment">正在加载分组信息，请稍等……</string>
+    <string name="bar_x2_default">--</string>
+    <string name="colon_1">:</string>
+    <string name="zero_2">00</string>
 </resources>
