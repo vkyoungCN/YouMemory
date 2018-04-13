@@ -1,5 +1,9 @@
 package com.vkyoungcn.learningtools;
 
+import android.app.Activity;
+import android.support.v4.app.DialogFragment;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.view.ViewPager;
@@ -12,6 +16,7 @@ import android.widget.TextView;
 
 import com.vkyoungcn.learningtools.adapter.LearningViewPrAdapter;
 import com.vkyoungcn.learningtools.models.SingleItem;
+import com.vkyoungcn.learningtools.sqlite.LearningEndingUpConfirmDiaFragment;
 import com.vkyoungcn.learningtools.sqlite.YouMemoryDbHelper;
 
 import java.lang.ref.WeakReference;
@@ -35,7 +40,8 @@ public class ItemLearningActivity extends AppCompatActivity {
     private TextView timePastMin;
     private TextView timePastScd;
 
-
+    private TextView tv_currentPageNum;
+    private TextView tv_totalPageNum;
 
     public static final int MESSAGE_DB_DATE_FETCHED =1;
     public static final int MESSAGE_ONE_MINUTE_CHANGE =2;
@@ -57,7 +63,25 @@ public class ItemLearningActivity extends AppCompatActivity {
         fltMask = (FrameLayout) findViewById(R.id.flt_mask_learningPage);
         timePastMin = (TextView)findViewById(R.id.tv_time_past_numMinute_Learning);
         timePastScd = (TextView)findViewById(R.id.tv_time_past_numSecond_Learning);
+        tv_currentPageNum = (TextView)findViewById(R.id.currentPageNum_learningActivity);
+        tv_totalPageNum = (TextView)findViewById(R.id.totalPageNum_learningActivity);//总数字需要在数据加载完成后设置，在handleMessage中处理
+
+
         viewPager = (ViewPager) findViewById(R.id.viewPager_ItemLearning);
+        viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener(){
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+                //当页面滑动时为下方的textView设置当前页数，但是只在开始滑动后才有效果，初始进入时需要手动XML设为1
+                tv_currentPageNum.setText(String.valueOf(position+1));//索引从0起需要加1
+                if(position==items.size()-1){
+                    //最后一张，弹出dfg。问是否完成学习：
+                    // 如确认完成：向DB写数据；
+                    // 如cancel，解散dfg。
+                    popupEndingDiaFragment();
+                }
+            }
+        });
 
         //从db查询List<SingleItem>放在另一线程
         new Thread(new PreparingRunnable()).start();         // start thread
@@ -65,6 +89,7 @@ public class ItemLearningActivity extends AppCompatActivity {
 
         //后期增加：①items可选顺序随机；
         // ②增加倒计时欢迎页面；
+
 
     }
 
@@ -158,6 +183,7 @@ public class ItemLearningActivity extends AppCompatActivity {
 //                Log.i(TAG, "handleMessage: ready to set adp");
                 viewPager.setAdapter(lvAdp);
 
+                tv_totalPageNum.setText(String.valueOf(items.size()));
                 prepared = true;
                 //然后由启动计时器（每分钟更改一次数字）
                 new Thread(new TimingRunnable()).start();
@@ -182,5 +208,21 @@ public class ItemLearningActivity extends AppCompatActivity {
         }
     }
 
+    private void popupEndingDiaFragment(){
+        //弹出dfg询问是否完成本次学习
+        // 其上显示“本组信息、本组学习用时等”
+        // 如点击confirm键则生成LOG(注意根据之前log和时间跨度处理是一条还是两条)存入DB.
+
+        FragmentTransaction transaction = (getFragmentManager().beginTransaction());
+        Fragment prev = (getFragmentManager().findFragmentByTag("ENDING_UP"));
+
+        if (prev != null) {
+            Log.i(TAG, "inside Dialog(), inside if prev!=null branch");
+            transaction.remove(prev);
+        }
+        【下边dfg还没有写，是最后的大功能了】
+        DialogFragment dfg = LearningEndingUpConfirmDiaFragment.newInstance("0","0");
+
+    }
 
 }

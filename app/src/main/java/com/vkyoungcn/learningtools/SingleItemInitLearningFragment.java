@@ -54,12 +54,15 @@ public class SingleItemInitLearningFragment extends Fragment {
         TextView tv_ext1 = rootView.findViewById(R.id.tv_ext1_singleItemLearning1);
         TextView tv_ext2 = rootView.findViewById(R.id.tv_ext2_singleItemLearning1);
 
+
         tvName.setText(singleItem.getName());
 //        Typeface typeface = Typeface.createFromAsset(getActivity().getAssets(),"fonts/GentiumPlus_I.ttf");
 //        Log.i(TAG, "onCreateView: typeface: "+typeface.toString());
 //        tv_ext1.setTypeface(typeface);
         tv_ext1.setText(singleItem.getExtending_list_1());
         tv_ext2.setText(singleItem.getExtending_list_2());
+
+
 
         return rootView;
     }
