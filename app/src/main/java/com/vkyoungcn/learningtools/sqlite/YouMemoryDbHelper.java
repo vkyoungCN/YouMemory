@@ -13,9 +13,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import com.vkyoungcn.learningtools.R;
 import com.vkyoungcn.learningtools.models.*;
+import com.vkyoungcn.learningtools.spiralCore.LogList;
 
 /**
  * Created by VkYoung16 on 2018/3/26 0026.
@@ -533,6 +536,48 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         closeDB();
         return group;
     }
+
+
+    /*
+    * 根据传入的完成时间、分组id、学习的类型（初学？无miss学习？已miss一次？），更新目标分组的log记录
+    * 返回生成的log记录
+    *
+    * */
+    public String updateLogOfGroup(int groupId,long finishTime,int learningTypeColor){
+//        Log.i(TAG, "updateLogOfGroup: b, groupId = "+groupId);
+        long lines;
+        switch (learningTypeColor){
+            case R.color.colorGP_Newly:
+                //初学，直接将记录存入DB即可。
+                //生成单条Log记录
+                String singleLogStr = LogModel.getStrSingleLogModelFromLong(0,finishTime,false);
+//                Log.i(TAG, "updateLogOfGroup: sql-log : "+singleLogStr);
+                getWritableDatabaseIfClosedOrNull();
+                ContentValues values = new ContentValues();
+                values.put(YouMemoryContract.Group.COLUMN_GROUP_LOGS,singleLogStr);
+                lines = mSQLiteDatabase.update(YouMemoryContract.Group.TABLE_NAME,values,
+                        YouMemoryContract.Group._ID+"=?",new String[]{String.valueOf(groupId)});
+//                Log.i(TAG, "updateLogOfGroup: lines = "+lines);
+                return singleLogStr;
+            case R.color.colorGP_AVAILABLE:
+            case R.color.colorGP_Miss_ONCE:
+                String oldLogsStr = getGroupById(groupId).getGroupLogs();
+                String fullyNewLogListStr = LogList.updateStrLogList(oldLogsStr,finishTime,learningTypeColor);
+//                Log.i(TAG, "updateLogOfGroup: missed once : "+fullyNewLogListStr);
+                ContentValues values2 = new ContentValues();
+                values2.put(YouMemoryContract.Group.COLUMN_GROUP_LOGS,fullyNewLogListStr);
+                lines = mSQLiteDatabase.update(YouMemoryContract.Group.TABLE_NAME,values2,
+                        YouMemoryContract.Group._ID+"=?",new String[]{String.valueOf(groupId)});
+                return fullyNewLogListStr;
+
+            default:
+                //说明出现错误
+                return null;
+        }
+
+
+    }
+
 
     /*
     * Timer中每隔1分钟检查一次当前mission的各group，符合条件的会调用此函数设为废弃。

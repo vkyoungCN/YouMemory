@@ -64,4 +64,12 @@
     <string name="zero_2">00</string>
     <string name="slash1">/</string>
     <string name="num_one">1</string>
+    <string name="time_up1">真遗憾，时间用光了！</string>
+    <string name="should_prolong_question_mark">可以续15分钟（只有一次机会），意下如何？</string>
+    <string name="go_prolong">那就续吧！</string>
+    <string name="give_up">不了，谢谢</string>
+    <string name="time_past_words2_1">请在</string>
+    <string name="num_60">60</string>
+    <string name="time_past_words2_2">分钟内完成。</string>
+    <string name="start">开始</string>
 </resources>

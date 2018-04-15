@@ -1,14 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".sqlite.LearningEndingUpConfirmDiaFragment">
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="8dp"
+    tools:context=".LearningTimeUpDiaFragment">
 
-    <!-- TODO: Update blank fragment layout -->
+
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="110dp"
+        android:textSize="24sp"
+        android:gravity="center"
+        android:text="@string/time_up1" />
 
-</FrameLayout>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginBottom="48dp"
+        android:textSize="14sp"
+        android:gravity="center"
+        android:lines="2"
+        android:text="@string/should_prolong_question_mark" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:orientation="horizontal"
+        >
+
+        <TextView
+            android:id="@+id/confirm_timeEndingDfg"
+            android:layout_width="0dp"
+            android:layout_weight="3"
+            android:layout_height="match_parent"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="1dp"
+            android:textSize="20sp"
+            android:gravity="center"
+            android:background="#aa64dd17"
+            android:text="@string/go_prolong"
+            />
+        <TextView
+            android:id="@+id/cancel_timeEndingDfg"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:textSize="16sp"
+            android:layout_marginStart="1dp"
+            android:layout_marginEnd="6dp"
+            android:background="#aae71717"
+            android:gravity="center"
+            android:text="@string/give_up" />
+
+    </LinearLayout>
+</LinearLayout>

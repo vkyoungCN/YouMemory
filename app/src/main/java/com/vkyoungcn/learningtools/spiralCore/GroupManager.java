@@ -55,7 +55,7 @@ public class GroupManager {
         switch (stateNumber){
             case NOT_YES:
 //                Log.i(TAG, "getCurrentStateTimeAmountString: color not");
-                sbf.append("未到复习时间 -");
+                sbf.append("未到复习时间,还有");
                 if(groupState.getRemainingDays()!=0){
                     sbf.append(groupState.getRemainingDays());
                     sbf.append("天 ");
@@ -72,7 +72,7 @@ public class GroupManager {
 
             case AVAILABLE:
             case MISSED_ONCE:
-                sbf.append("请在 -");
+                sbf.append("请在 ");
                 if(groupState.getRemainingDays()!=0){
                     sbf.append(groupState.getRemainingDays());
                     sbf.append("天 ");

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
@@ -20,6 +21,8 @@ import com.vkyoungcn.learningtools.models.DBRwaGroup;
 import com.vkyoungcn.learningtools.models.GroupState;
 import com.vkyoungcn.learningtools.models.Mission;
 import com.vkyoungcn.learningtools.models.RvGroup;
+import com.vkyoungcn.learningtools.spiralCore.GroupManager;
+import com.vkyoungcn.learningtools.spiralCore.LogList;
 import com.vkyoungcn.learningtools.sqlite.YouMemoryDbHelper;
 
 import java.lang.ref.WeakReference;
@@ -32,7 +35,7 @@ import java.util.TimerTask;
  * 单个Mission的详情页；Mission详情及所属任务分组的集合展示（Rv）；
  * 可以新建任务分组；
  * */
-public class MissionDetailActivity extends AppCompatActivity implements CreateGroupDiaFragment.OnFragmentInteractionListener {
+public class MissionDetailActivity extends AppCompatActivity implements CreateGroupDiaFragment.OnFragmentInteractionListener,ConfirmReadyLearningDiaFragment.OnConfirmClick {
     private static final String TAG = "MissionDetailActivity";
 
     private Mission missionFromIntent;//从前一页面获取。后续页面需要mission的id，suffix字段。
@@ -40,6 +43,13 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
     List<RvGroup> rvGroups = new ArrayList<>();//分开设计的目的是避免适配器内部的转换，让转换在外部完成，适配器直接只用直接数据才能降低卡顿。
     private RecyclerView mRv;
     private FrameLayout maskFrameLayout;
+
+    private static final String GROUP_ID = "group_id";
+    private static final String ITEM_TABLE_SUFFIX = "item_table_suffix";
+    private static final String GROUP_SUB_ITEM_ID_STR = "group_sub_item_ids_str";
+    public static final int REQUEST_CODE_LEARNING = 1;//学习完成后，要会送然后更新adp状态。
+    private int clickPosition;//点击（前往学习页面）发生的位置，需要该数据来更新rv位置
+
 
     //    private Handler handler;//如果Rv效率高，就用不到多线程。
     private Activity self;//为了后方Timer配合runOnUiThread.
@@ -213,11 +223,12 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
             GroupState groupState = new GroupState(dGroup.getGroupLogs());
             RvGroup newGroup = new RvGroup(dGroup, groupState, missionFromIntent.getTableItem_suffix());
 
-            int oldSize = dbRwaGroups.size();
+//            int oldSize = dbRwaGroups.size();
 //            Log.i(TAG, "onFragmentInteraction: old size= "+oldSize);
             rvGroups.add(newGroup);
 //            Log.i(TAG, "onFragmentInteraction: ready to notify.new group size=" +rvGroups.size());
             adapter.notifyItemInserted(rvGroups.size());//【这个方法的意思是在添加后的数据集的第X项上（从1起算，不是0）是新插入的数据】
+            mRv.scrollToPosition(rvGroups.size()-1);//设置增加后滚动到新增位置。【这个则是从0起算】
         }
 
     }
@@ -251,4 +262,36 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
         }
     };*/
 
+    @Override
+    public void onConfirmClick(int position) {
+
+        this.clickPosition = position;
+        Intent intent = new Intent(this,ItemLearningActivity.class);
+        intent.putExtra("group_id",rvGroups.get(position).getId());
+//        Log.i(TAG, "onConfirmClick: rvgroup.get-position-getId = "+rvGroups.get(position).getId());
+        intent.putExtra(ITEM_TABLE_SUFFIX,missionFromIntent.getTableItem_suffix());
+        intent.putExtra(GROUP_SUB_ITEM_ID_STR,rvGroups.get(position).getStrSubItemsIds());
+        intent.putExtra("learning_type",rvGroups.get(position).getStateColorResId());
+        this.startActivityForResult(intent,REQUEST_CODE_LEARNING);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode){
+            case REQUEST_CODE_LEARNING:
+                if(data == null) return;
+                String newLogsStr = data.getStringExtra("newLogsStr");
+                Log.i(TAG, "onActivityResult: new Lg str = "+newLogsStr);
+
+                //通知adp变更显示
+                RvGroup groupWithNewLog = rvGroups.get(clickPosition);
+                GroupState newGS = new GroupState(newLogsStr);
+                groupWithNewLog.setStateText(GroupManager.getCurrentStateTimeAmountStringFromUIGroup(newGS));
+                groupWithNewLog.setStateColorResId(newGS.getColorResId());
+
+                rvGroups.set(clickPosition,groupWithNewLog);
+                adapter.notifyItemChanged(clickPosition);
+        }
+    }
 }

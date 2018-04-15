@@ -172,7 +172,7 @@ public class CreateGroupDiaFragment extends DialogFragment implements View.OnCli
                 //控件选择了那种“item数量”选项
                 switch(radioGroup_size.getCheckedRadioButtonId()){
                     case R.id.rb_36_group_create_dfg:
-                        groupSize = 36;
+                        groupSize = 6; //临时调整为6
                         break;
                     case R.id.rb_54_group_create_dfg:
                         groupSize = 54;
@@ -202,10 +202,11 @@ public class CreateGroupDiaFragment extends DialogFragment implements View.OnCli
                             Toast.makeText(getContext(), "抽取items数量0，错误号#601（顺序抽取失败）", Toast.LENGTH_SHORT).show();
                             return;
                         }
+                        /* 临时关闭
                         if(itemIds.size()<36){
                             Toast.makeText(getContext(), "抽取items数量不足36", Toast.LENGTH_SHORT).show();
                             return;
-                        }
+                        }*/
                         //为描述字段获取首词name
                         String firstItemName = memoryDbHelper.getSingleItemNameById((long)itemIds.get(0),suffix);
 

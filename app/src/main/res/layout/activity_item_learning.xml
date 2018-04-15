@@ -6,13 +6,16 @@
     android:layout_height="match_parent"
     tools:context=".ItemLearningActivity"
     android:orientation="vertical">
+    <!--在开始时，等待数据加载期间进行遮罩；而后移除；
+    在学习完成时，遮罩等待向DB写操作完成，而后移除-->
     <FrameLayout
         android:id="@+id/flt_mask_learningPage"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:elevation="5dp"
-        android:visibility="gone"
+        android:background="#99111111"
         >
+        <!--在完成学习时，需要修改其文本为“请等待程序写入学习记录”-->
         <TextView
             android:id="@+id/tv_onItsWay_learningPage"
             android:layout_width="match_parent"
@@ -29,6 +32,7 @@
         android:id="@+id/header_learningActivity"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
         android:orientation="vertical"
         android:elevation="4dp"
         android:layout_margin="6dp"
@@ -63,9 +67,22 @@
                 android:textSize="14sp"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
-                android:text="@string/time_past_words2"/>
-
-
+                android:text="@string/time_past_words2_1"/>
+            <TextView
+                android:id="@+id/tv_num_itemLearningActivity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:text="@string/num_60"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:text="@string/time_past_words2_2"/>
             <TextView
                 android:id="@+id/tv_time_past_numMinute_Learning"
                 android:layout_width="wrap_content"
@@ -108,12 +125,13 @@
     <LinearLayout
         android:id="@+id/footer_learningActivity"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         android:orientation="horizontal"
         android:gravity="center_horizontal"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="8dp"
         >
+        <!--最后不需要确认完成的按钮，初学：敢划拉完就敢算你完成；复习：每页都有检验，能到ending页自然是完成的-->
         <TextView
             android:id="@+id/currentPageNum_learningActivity"
             android:layout_width="wrap_content"

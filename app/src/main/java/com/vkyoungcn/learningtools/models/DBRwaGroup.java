@@ -31,7 +31,7 @@ public class DBRwaGroup {
         this.description = group.getDescription();
         this.isFallBehind = group.getFallBehind();
 
-        //"N#YYYY-MM-DD hh:mm:ss#false;"
+        //"N#yyyy-MM-dd hh:mm:ss#false;"
         List<LogModel> logs = group.getGroupLogs();
         StringBuilder sbForStringLogs = new StringBuilder();
 
@@ -39,7 +39,7 @@ public class DBRwaGroup {
             sbForStringLogs.append(l.getN());
             sbForStringLogs.append("#");
 
-            SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-DD hh:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
             sbForStringLogs.append(sdf.format(new Date(l.getTimeInMilli())));
 
             sbForStringLogs.append("#");

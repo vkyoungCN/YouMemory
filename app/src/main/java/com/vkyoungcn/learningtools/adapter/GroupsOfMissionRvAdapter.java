@@ -107,7 +107,7 @@ public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissi
                                 Log.i(TAG, "inside showDialog(), inside if prev!=null branch");
                                 transaction.remove(prev);
                             }
-                            DialogFragment dfg = ConfirmReadyLearningDiaFragment.newInstance(groupId,itemTableSuffix,groupSubItemIdsStr);
+                            DialogFragment dfg = ConfirmReadyLearningDiaFragment.newInstance(groupId,itemTableSuffix,groupSubItemIdsStr,groupStateColorRes,position);
 //        Log.i(TAG, "createGroup: before show.");
                             dfg.show(transaction, "READY_TO_LEARN");
 

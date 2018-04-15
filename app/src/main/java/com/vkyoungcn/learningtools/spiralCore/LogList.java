@@ -2,6 +2,7 @@ package com.vkyoungcn.learningtools.spiralCore;
 
 import android.util.Log;
 
+import com.vkyoungcn.learningtools.R;
 import com.vkyoungcn.learningtools.models.GroupState;
 import com.vkyoungcn.learningtools.models.GroupState.stateNumber;
 import com.vkyoungcn.learningtools.models.LogModel;
@@ -14,6 +15,7 @@ import java.util.List;
 
 /*
 * 是对应一组任务的所有已完成记忆的Log的集合
+* 【暂定日志记录的数字从0开始，0 是初学】
 * */
 public class LogList {
     private static final String TAG = "LogList";
@@ -51,7 +53,7 @@ public class LogList {
             groupState.setColorResId(GroupState.ColorResId.COLOR_NEWLY);
             return groupState;
         }
-        String[] strLogsArray = strLogs.split(";");//每个元素是一条形如N#YYYY-MM-DD hh:mm:ss#false;的记录
+        String[] strLogsArray = strLogs.split(";");//每个元素是一条形如N#yyyy-MM-dd hh:mm:ss#false;的记录
         LogModel firstLog = new LogModel(strLogsArray[0]);//所有情形都要和初次学习时间做比较计算
         timeAmountMinutes = (System.currentTimeMillis() - firstLog.getTimeInMilli()) / (1000 * 60);//当前时间和初次学习时间相比，已过去多久
         n = strLogsArray.length;
@@ -178,9 +180,16 @@ public class LogList {
 //            Log.i(TAG, "setCurrentStateForGroup: list null or ==0, newly group?");
             return GroupState.ColorResId.COLOR_NEWLY;
         }
-        String[] strLogsArray = strLogs.split(";");//每个元素是一条形如N#YYYY-MM-DD hh:mm:ss#false;的记录
+        String[] strLogsArray = strLogs.split(";");//每个元素是一条形如N#yyyy-MM-dd hh:mm:ss#false;的记录
+        Log.i(TAG, "getCurrentColorResourceForGroup: log[0] = "+strLogsArray[0]);
         LogModel firstLog = new LogModel(strLogsArray[0]);//所有情形都要和初次学习时间做比较计算
+//        Log.i(TAG, "getCurrentColorResourceForGroup: TimeInMillis = "+firstLog.getTimeInMilli());
         timeAmountMinutes = (System.currentTimeMillis() - firstLog.getTimeInMilli()) / (1000 * 60);//当前时间和初次学习时间相比，已过去多久
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        String currentStr = simpleDateFormat.format(System.currentTimeMillis());
+        String logTimeStr = simpleDateFormat.format(firstLog.getTimeInMilli());
+        Log.i(TAG, "getCurrentColorResourceForGroup: current = "+currentStr+" log = "+logTimeStr);
+        Log.i(TAG, "getCurrentColorResourceForGroup: timeAmountMinutes = "+timeAmountMinutes+" in millis "+(System.currentTimeMillis() - firstLog.getTimeInMilli()));
         n = strLogsArray.length;
 
         //n=1的计算与其他不同，直接手写；其他条件下函数式判断。
@@ -245,7 +254,7 @@ public class LogList {
 //            Log.i(TAG, "setCurrentStateForGroup: list null or ==0, newly group?");
             return stateNumber.NEWLY_CREATED;
         }
-        String[] strLogsArray = strLogs.split(";");//每个元素是一条形如N#YYYY-MM-DD hh:mm:ss#false;的记录
+        String[] strLogsArray = strLogs.split(";");//每个元素是一条形如N#yyyy-MM-dd hh:mm:ss#false;的记录
         LogModel firstLog = new LogModel(strLogsArray[0]);//所有情形都要和初次学习时间做比较计算
         timeAmountMinutes = (System.currentTimeMillis() - firstLog.getTimeInMilli()) / (1000 * 60);//当前时间和初次学习时间相比，已过去多久
         n = strLogsArray.length;
@@ -314,7 +323,7 @@ public class LogList {
 //            Log.i(TAG, "setCurrentStateForGroup: list null or ==0, newly group?");
             return remainingTimeAmount;
         }
-        String[] strLogsArray = strLogs.split(";");//每个元素是一条形如N#YYYY-MM-DD hh:mm:ss#false;的记录
+        String[] strLogsArray = strLogs.split(";");//每个元素是一条形如N#yyyy-MM-dd hh:mm:ss#false;的记录
         LogModel firstLog = new LogModel(strLogsArray[0]);//所有情形都要和初次学习时间做比较计算
         timeAmountMinutes = (System.currentTimeMillis() - firstLog.getTimeInMilli()) / (1000 * 60);//当前时间和初次学习时间相比，已过去多久
         n = strLogsArray.length;
@@ -754,5 +763,77 @@ public class LogList {
 //        Log.i(TAG, "setGroupStateForGroup: done.");
 
 
+    /*
+     * 根据已有log和新记录的时间，组建新log-list记录。
+     * 如果type是miss一次，则连续生成两条，其中稍早一条时间全记0（记-会分不清）
+     * 【记0逻辑上似乎没有冲突，只有首条记录会转为date】
+     * */
+    public static String updateStrLogList(String oldLogs,long timeInMilli,int stateColor){
+
+        if(oldLogs==null||oldLogs.isEmpty()){
+            //没有记录，调用初学记录生成方法
+            return LogModel.getStrSingleLogModelFromLong(0,timeInMilli,false);
+        }
+
+        //从传入的oldLog中获取次数
+        String[] oldLogStrs = oldLogs.split(";");
+        String[] sectionOfSingleLog = oldLogStrs[oldLogStrs.length-1].split("#");
+        String oldNum = sectionOfSingleLog[0];
+        if(oldNum == null||oldNum.isEmpty()){
+            Log.e(TAG, "updateStrLogList: something goes wrong, oldLog's n = 0" );
+            return null;
+        }
+        int num = Integer.parseInt(oldNum)+1;
+        Log.i(TAG, "updateStrLogList: new num : "+num);
+
+        switch (stateColor){
+            case R.color.colorGP_AVAILABLE:
+                //正常状态。生成一条。
+                StringBuilder sbd = new StringBuilder();
+
+                sbd.append(oldLogs);
+                sbd.append(num);
+                sbd.append("#");
+
+                SimpleDateFormat sdformat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                String time = sdformat.format(timeInMilli);
+                sbd.append(time);
+                sbd.append("#");
+
+                sbd.append("false");
+                sbd.append(";");
+
+                return sbd.toString();
+
+            case R.color.colorGP_Miss_ONCE:
+                //需要连续生成两条，前一条按--填充时间数字，boolean置true
+                StringBuilder sbdMissedOnce = new StringBuilder();
+
+                sbdMissedOnce.append(oldLogs);
+                sbdMissedOnce.append(num-1);
+                sbdMissedOnce.append("#");
+
+                sbdMissedOnce.append("0000-00-00 00:00:00#");
+
+                sbdMissedOnce.append("true;");
+
+                //继续补充第二条
+                sbdMissedOnce.append(num);
+                sbdMissedOnce.append("#");
+
+                SimpleDateFormat sdformat2 = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                String time2 = sdformat2.format(timeInMilli);
+                sbdMissedOnce.append(time2);
+                sbdMissedOnce.append("#");
+
+                sbdMissedOnce.append("false");
+                sbdMissedOnce.append(";");
+
+                return sbdMissedOnce.toString();
+            default:
+                return null;
+        }
+
+    }
 
 }

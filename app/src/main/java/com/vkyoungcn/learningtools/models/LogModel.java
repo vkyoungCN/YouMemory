@@ -3,19 +3,22 @@ package com.vkyoungcn.learningtools.models;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-/*
+/* 单条日志记录
+* 【暂定日志记录的数字从0开始，0 是初学】
 * 对应各组任务的一次学习和复习的记录
-* 可以整理成简单的字串形式"N#YYYY-MM-DD hh:mm:ss#false;"
+* 可以整理成简单的字串形式"N#yyyy-MM-dd hh:mm:ss#false;"【注意若使用DD会产生105这样的日期（实际应为15）】
 * 记录内使用#分隔，每条记录以英文分号结尾。
 *
 * 注意，即时某次复习缺失，其记录次数也不应删除，否则影响计算。
 * */
 public class LogModel implements Parcelable {
+    private static final String TAG = "LogModel";
     private short n=0;//本次记忆对应的次数；其中初次记忆=0，第n次复习= n。
     private long timeInMilli =0;//本次记忆对应的完成时间
     private boolean isMiss = false;//本次记忆是否未在规定时限内完成（未完成=miss=true）。
@@ -29,8 +32,8 @@ public class LogModel implements Parcelable {
         }
         String[] logSection = strLog.split("#");
         this.n = Short.valueOf(logSection[0]);
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-DD hh:mm:ss");
-
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        Log.i(TAG, "LogModel: logSection[1] = "+logSection[1]);
         try {
             Date date  = simpleDateFormat.parse(logSection[1]);
             this.timeInMilli = date.getTime();
@@ -70,6 +73,29 @@ public class LogModel implements Parcelable {
     public void setMiss(boolean miss) {
         this.isMiss = miss;
     }
+
+    /*
+    * 组建一条String格式的log记录。
+    * 注意，生成的单条记录最后也要有分号！！
+    * */
+    public static String getStrSingleLogModelFromLong(int num,long timeInMilli,Boolean isMiss){
+
+        StringBuilder sbd = new StringBuilder();
+        sbd.append(num);
+        sbd.append("#");
+
+        SimpleDateFormat sdformat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        String time = sdformat.format(timeInMilli);
+        Log.i(TAG, "getStrSingleLogModelFromLong: time ="+time);
+        sbd.append(time);
+        sbd.append("#");
+
+        sbd.append(isMiss?"true":"false");
+        sbd.append(";");
+
+        return sbd.toString();
+    }
+
 
 
     /*

@@ -21,7 +21,9 @@ public class GroupState implements Parcelable {
     private short remainingDays = 0;
 
     /*虽然Android官方不建议使用Enum，声称其内存开销二倍于替代方案；但是其便利性无可替代
-     * 相应的额外开销值得付出。stack overflow上仍可见许多关于Enum使用方式的讨论可见并未实际弃用*/
+     * 相应的额外开销值得付出。stack overflow上仍可见许多关于Enum使用方式的讨论可见并未实际弃用
+     * 【后来发现多数地方都直接使用了stateColor替代（作为判断条件），而无需专用枚举类】
+     * */
     public enum stateNumber {
          NEWLY_CREATED,//新建分组，未学习。
          NOT_YES,//还未到复习时间
