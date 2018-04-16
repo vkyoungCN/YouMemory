@@ -9,9 +9,7 @@ import com.vkyoungcn.learningtools.models.LogModel;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 /*
 * 是对应一组任务的所有已完成记忆的Log的集合
@@ -181,15 +179,18 @@ public class LogList {
             return GroupState.ColorResId.COLOR_NEWLY;
         }
         String[] strLogsArray = strLogs.split(";");//每个元素是一条形如N#yyyy-MM-dd hh:mm:ss#false;的记录
-        Log.i(TAG, "getCurrentColorResourceForGroup: log[0] = "+strLogsArray[0]);
+//        Log.i(TAG, "getCurrentColorResourceForGroup: log[0] = "+strLogsArray[0]);
         LogModel firstLog = new LogModel(strLogsArray[0]);//所有情形都要和初次学习时间做比较计算
 //        Log.i(TAG, "getCurrentColorResourceForGroup: TimeInMillis = "+firstLog.getTimeInMilli());
-        timeAmountMinutes = (System.currentTimeMillis() - firstLog.getTimeInMilli()) / (1000 * 60);//当前时间和初次学习时间相比，已过去多久
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        String currentStr = simpleDateFormat.format(System.currentTimeMillis());
-        String logTimeStr = simpleDateFormat.format(firstLog.getTimeInMilli());
-        Log.i(TAG, "getCurrentColorResourceForGroup: current = "+currentStr+" log = "+logTimeStr);
-        Log.i(TAG, "getCurrentColorResourceForGroup: timeAmountMinutes = "+timeAmountMinutes+" in millis "+(System.currentTimeMillis() - firstLog.getTimeInMilli()));
+
+        long currLong = System.currentTimeMillis();
+        timeAmountMinutes = (currLong - firstLog.getTimeInMilli()) / (1000 * 60);//当前时间和初次学习时间相比，已过去多久
+//        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+
+//        String currentStr = simpleDateFormat.format(currLong);
+//        String logTimeStr = simpleDateFormat.format(firstLog.getTimeInMilli());
+//        Log.i(TAG, "getCurrentColorResourceForGroup: In Min by long，timeAmountMinutes = "+timeAmountMinutes+" recalculate by millis: "+(currLong- firstLog.getTimeInMilli())/60000);
+//        Log.i(TAG, "getCurrentColorResourceForGroup: In Str, current = "+currentStr+" log = "+logTimeStr);
         n = strLogsArray.length;
 
         //n=1的计算与其他不同，直接手写；其他条件下函数式判断。
@@ -270,11 +271,11 @@ public class LogList {
             long n1_timeRemainingStageV = (16 * baseTimeFactor ) - timeAmountMinutes;//1440-tAM，距“错过R3次复习”还有多久
 
             if (n1_timeRemainingStageI > 0) {
-                return stateNumber.NOT_YES;
+                return stateNumber.NOT_YET;
             } else if (n1_timeRemainingStageII > 0) {//位于[30,60)半开半闭区间内，可以执行首次复习
                 return stateNumber.AVAILABLE;
             } else if (n1_timeRemainingStageIII > 0) {//初记后，不到6小时
-                return stateNumber.NOT_YES;//仍然算未到时间
+                return stateNumber.NOT_YET;//仍然算未到时间
             } else if (n1_timeRemainingStageIV > 0) {//初记后，6小时~12小时之间，应执行第二次复习R2。
                 return stateNumber.AVAILABLE;
             } else if (n1_timeRemainingStageV > 0) {//初记后，12~24小时之间，应执行第三次复习R3，且记丢失一次。
@@ -297,9 +298,9 @@ public class LogList {
 
         //以下是有两条及以上日志，除n=2 略有不同外，其余规则一致
         if (timeAmountMinutes < 60) {//此时间段内的复习已完成。
-            return stateNumber.NOT_YES;
+            return stateNumber.NOT_YET;
         } else if (timeRemainingStageI > 0) {
-            return stateNumber.NOT_YES;
+            return stateNumber.NOT_YET;
         } else if (timeRemainingStageII > 0) {
             return stateNumber.AVAILABLE;
         } else if (timeRemainingStageIII > 0) {
@@ -380,15 +381,15 @@ public class LogList {
 
         int baseTimeFactor = 90;//时间因素设置为90分钟（原始效果见下方switch）；
 
-        long timeRemainingStageI =(baseTimeFactor * 2 ^ n) - timeAmountMinutes;//距“可以进行下次复习”还有多久
-        long timeRemainingStageII = (2 * (baseTimeFactor * 2 ^ n) - timeAmountMinutes);//距“错过第一次复习”还有多久
-        long timeRemainingStageIII = (4 * (baseTimeFactor * 2 ^ n) - timeAmountMinutes);//距“错过两次复习”还有多久
+        //以下是有两条及以上日志，除n=2 略有不同外，其余规则一致【由于后来取消对30~60min的复习进行记录，从而n的对应关系需要加1】
+        long timeRemainingStageI =(baseTimeFactor * 2 ^ (n+1)) - timeAmountMinutes;//距“可以进行下次复习”还有多久
+        long timeRemainingStageII = (2 * (baseTimeFactor * 2 ^ (n+1)) - timeAmountMinutes);//距“错过第一次复习”还有多久
+        long timeRemainingStageIII = (4 * (baseTimeFactor * 2 ^ (n+1)) - timeAmountMinutes);//距“错过两次复习”还有多久
 
         byte minuteReminder = 0;
         byte hourReminder = 0;
         byte dayReminder = 0;
 
-        //以下是有两条及以上日志，除n=2 略有不同外，其余规则一致
         if (timeAmountMinutes < 60) {//此时间段内的复习已完成。
             remainingTimeAmount.setRemainingMinutes((byte) 0);
             remainingTimeAmount.setRemainingHours((byte) 0);
@@ -775,15 +776,27 @@ public class LogList {
             return LogModel.getStrSingleLogModelFromLong(0,timeInMilli,false);
         }
 
-        //从传入的oldLog中获取次数
+        //将传入的oldLogs按条拆分
         String[] oldLogStrs = oldLogs.split(";");
+        //取最后一条，按分节拆分
         String[] sectionOfSingleLog = oldLogStrs[oldLogStrs.length-1].split("#");
+        //首节为数字N（初学记录：0 ；60'内复习无记录；其后复习从1起编。由复习发起页面控制进入逻辑。）
         String oldNum = sectionOfSingleLog[0];
         if(oldNum == null||oldNum.isEmpty()){
             Log.e(TAG, "updateStrLogList: something goes wrong, oldLog's n = 0" );
             return null;
         }
-        int num = Integer.parseInt(oldNum)+1;
+
+        //对第二节的时间记录进行转换，判断是否大于60分钟。
+        SimpleDateFormat sdFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        try {
+            Date lastLogDate = sdFormat.parse(sectionOfSingleLog[1]);
+            if((timeInMilli-lastLogDate.getTime())<=60*60*1000) return "";
+            //如果本次复习时间与上次日志时间间隔在60分钟内，则为30~60间的复习，不计入Logs。且返回空串由调用方处理。
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        int num = Integer.parseInt(oldNum)+1;//注意，第30~60分钟的复习，不算在LOGS之内，而作为独立标记记录。
         Log.i(TAG, "updateStrLogList: new num : "+num);
 
         switch (stateColor){
@@ -795,8 +808,7 @@ public class LogList {
                 sbd.append(num);
                 sbd.append("#");
 
-                SimpleDateFormat sdformat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-                String time = sdformat.format(timeInMilli);
+                String time = sdFormat.format(timeInMilli);
                 sbd.append(time);
                 sbd.append("#");
 
@@ -821,8 +833,7 @@ public class LogList {
                 sbdMissedOnce.append(num);
                 sbdMissedOnce.append("#");
 
-                SimpleDateFormat sdformat2 = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-                String time2 = sdformat2.format(timeInMilli);
+                String time2 = sdFormat.format(timeInMilli);
                 sbdMissedOnce.append(time2);
                 sbdMissedOnce.append("#");
 

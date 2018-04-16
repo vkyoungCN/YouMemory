@@ -11,7 +11,7 @@ import java.util.List;
  * 运算部分提前完成不能带到适配器内部，否则运行卡顿严重。
  */
 
-public class RvGroup {
+public class RvGroup implements Cloneable{
     private static final String TAG = "RvGroup";
 
     private int id = 0;//DB数据，RvUI使用。
@@ -144,6 +144,18 @@ public class RvGroup {
         this.totalSubItemsNumber = subItemsStr.length;
     }
 
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        //如果不包含GroupState则全是初级类型，浅复制即可
+        RvGroup rvGroup = null;
+        try {
+            rvGroup = (RvGroup)super.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return rvGroup;
+
+    }
 
     /*
      * Parcelable接口所要求覆写的一些内容

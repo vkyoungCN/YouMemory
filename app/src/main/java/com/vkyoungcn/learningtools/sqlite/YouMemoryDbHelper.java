@@ -563,6 +563,10 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
             case R.color.colorGP_Miss_ONCE:
                 String oldLogsStr = getGroupById(groupId).getGroupLogs();
                 String fullyNewLogListStr = LogList.updateStrLogList(oldLogsStr,finishTime,learningTypeColor);
+                if(fullyNewLogListStr.isEmpty()) return "";//如果是60分钟内的复习，按设计不计入log，所调用的方法会
+                // 直接返回isEmpty的字串，不再向DB写，直接向调用方返回空串。【目前的逻辑是暂定的，后期应在调用DB前
+                // 进行其他判断，如果在60分钟内，则根本不应调用到方法内。】
+
 //                Log.i(TAG, "updateLogOfGroup: missed once : "+fullyNewLogListStr);
                 ContentValues values2 = new ContentValues();
                 values2.put(YouMemoryContract.Group.COLUMN_GROUP_LOGS,fullyNewLogListStr);

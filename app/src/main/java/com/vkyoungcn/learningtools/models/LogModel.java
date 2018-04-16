@@ -32,8 +32,9 @@ public class LogModel implements Parcelable {
         }
         String[] logSection = strLog.split("#");
         this.n = Short.valueOf(logSection[0]);
+
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        Log.i(TAG, "LogModel: logSection[1] = "+logSection[1]);
+//        Log.i(TAG, "LogModel: logSection[1] = "+logSection[1]);
         try {
             Date date  = simpleDateFormat.parse(logSection[1]);
             this.timeInMilli = date.getTime();
@@ -86,7 +87,7 @@ public class LogModel implements Parcelable {
 
         SimpleDateFormat sdformat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         String time = sdformat.format(timeInMilli);
-        Log.i(TAG, "getStrSingleLogModelFromLong: time ="+time);
+//        Log.i(TAG, "getStrSingleLogModelFromLong: time ="+time);
         sbd.append(time);
         sbd.append("#");
 

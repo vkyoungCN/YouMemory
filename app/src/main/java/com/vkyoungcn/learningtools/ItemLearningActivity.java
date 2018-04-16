@@ -277,7 +277,7 @@ public class ItemLearningActivity extends AppCompatActivity implements LearningT
 
             case MESSAGE_LOGS_SAVED:
                 timingThread = null;//停止计时
-                // 但滑动监听的设置代码早于timingThread实例化代码的位置，所以原先的终止方式无效。
+                // 滑动监听的设置代码早于timingThread实例化代码的位置，所以原先的终止方式无效。
                 fltMask.setVisibility(View.GONE);//取消遮盖
                 //在原始activity上给出结束按钮。显示学习信息。
 

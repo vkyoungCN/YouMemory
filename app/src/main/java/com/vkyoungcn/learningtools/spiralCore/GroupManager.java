@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.vkyoungcn.learningtools.models.GroupState;
+import com.vkyoungcn.learningtools.models.RvGroup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +54,7 @@ public class GroupManager {
         StringBuilder sbf = new StringBuilder();
 
         switch (stateNumber){
-            case NOT_YES:
+            case NOT_YET:
 //                Log.i(TAG, "getCurrentStateTimeAmountString: color not");
                 sbf.append("未到复习时间,还有");
                 if(groupState.getRemainingDays()!=0){
@@ -63,6 +64,7 @@ public class GroupManager {
                 if(groupState.getRemainingHours()!=0){
                     sbf.append(groupState.getRemainingHours());
                     sbf.append("小时 ");
+                    if(groupState.getRemainingDays()!=0) break;//剩余1天以上，记完小时后跳出(不记分钟)
                 }
                 if(groupState.getRemainingMinutes()!=0) {
                     sbf.append(groupState.getRemainingMinutes());
@@ -80,12 +82,16 @@ public class GroupManager {
                 if(groupState.getRemainingHours()!=0){
                     sbf.append(groupState.getRemainingHours());
                     sbf.append("小时 ");
+                    if(groupState.getRemainingDays()!=0) {
+                        sbf.append(" 内完成复习");
+                        break;//剩余1天以上，记完小时后跳出(不记分钟)
+                    }
                 }
                 if(groupState.getRemainingMinutes()!=0){
                     sbf.append(groupState.getRemainingMinutes());
                 }
 
-                sbf.append("分 内完成复习");
+                sbf.append("分钟 内完成复习");
                 break;
             case MISSED_TWICE:
                 sbf.append("复习间隔过久，请重新开始");
@@ -115,5 +121,40 @@ public class GroupManager {
         String[] subItemsStrArray = subItemIdsStr.split(";");
         return subItemsStrArray.length;
     }
+
+    public static List<RvGroup> ascOrderByRemainingTime(List<RvGroup> rvGroups){
+        List<RvGroup> resultRvGroups = new ArrayList<>();
+
+        //我不知道我采用的这种排序方式叫什么名字，总之就想出了这种方案【看来的确不只有冒泡这个东西】
+        for (int i = 0; i < rvGroups.size(); ) {//不能i++，但size每次减少1。
+            RvGroup minRvGroup = rvGroups.get(i);//即使用new也是指针形式，最后都是重复数据（且提示new无意义）
+//            Log.i(TAG, "ascOrderByRemainingTime: i: "+i);
+
+            for (int j = 1; j < rvGroups.size(); j++) {
+                //计算指针项的值
+                RemainingTimeAmount remainingTimeAmountMinPointer = LogList.getCurrentRemainingTimeForGroup(minRvGroup.getStrGroupLogs());
+                long remainingMinutesMinPoint = RemainingTimeAmount.getRemainingTimeInMinutes(remainingTimeAmountMinPointer);
+
+                RemainingTimeAmount remainingTimeAmountJ = LogList.getCurrentRemainingTimeForGroup(rvGroups.get(j).getStrGroupLogs());
+                long remainingMinutesJ = RemainingTimeAmount.getRemainingTimeInMinutes(remainingTimeAmountJ);
+
+                if(remainingMinutesJ<remainingMinutesMinPoint){
+                    minRvGroup = rvGroups.get(j);//指针指向较小者
+                }
+            }
+            rvGroups.remove(rvGroups.indexOf(minRvGroup));//将最小的删除
+            try {
+                RvGroup gp = (RvGroup) minRvGroup.clone();//克隆方式复制。
+//                Log.i(TAG, "ascOrderByRemainingTime: gp="+gp.getId()+",minRv="+minRvGroup.getId());
+                resultRvGroups.add(gp);//一遍检索的最小值加入结果list。
+            } catch (CloneNotSupportedException e) {
+                e.printStackTrace();
+            }
+        }
+        return resultRvGroups;
+    }
+
+
+
 
 }

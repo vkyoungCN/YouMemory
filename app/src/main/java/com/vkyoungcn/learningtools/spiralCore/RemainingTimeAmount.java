@@ -36,4 +36,9 @@ public class RemainingTimeAmount {
     public void setRemainingDays(byte remainingDays) {
         this.remainingDays = remainingDays;
     }
+
+    public static long getRemainingTimeInMinutes(RemainingTimeAmount remainingTimeAmount){
+        return (remainingTimeAmount.getRemainingDays()*24*60+remainingTimeAmount.getRemainingHours()*60+remainingTimeAmount.getRemainingMinutes());
+    }
+
 }

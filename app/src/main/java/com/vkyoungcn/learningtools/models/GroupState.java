@@ -26,7 +26,7 @@ public class GroupState implements Parcelable {
      * */
     public enum stateNumber {
          NEWLY_CREATED,//新建分组，未学习。
-         NOT_YES,//还未到复习时间
+        NOT_YET,//还未到复习时间
          AVAILABLE,//可以复习了
          MISSED_ONCE,//错过一次，应尽快复习。
          MISSED_TWICE,//连续错过两次，本分组超时，复习失败。
@@ -40,7 +40,7 @@ public class GroupState implements Parcelable {
         public static final int COLOR_AVAILABLE = R.color.colorGP_AVAILABLE;//可以进行复习，应在xHxM内完成本次复习，建议蓝色；
         public static final int COLOR_MISSED_ONCE = R.color.colorGP_Miss_ONCE;//错过了上一次，应在xHxM内完成本次复习，建议橙色；
         public static final int COLOR_MISSED_TWICE = R.color.colorGP_Miss_TWICE;//连续错过两次，标红。
-        public static final int COLOR_FULL =0;//完成12次记录，超4个月的记录,建议同样使用无色。
+        public static final int COLOR_FULL =0;//完成12次记录，超4个月的记录,建议使用无色。
     }
 
     public GroupState() {
