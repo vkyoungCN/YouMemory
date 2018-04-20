@@ -1,28 +1,38 @@
 package com.vkyoungcn.learningtools;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.CardView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.vkyoungcn.learningtools.models.SingleItem;
+import com.vkyoungcn.learningtools.validatingEditor.ValidatingEditor;
 
 
 /**
  * 用于单项Item的复习学习
  * 此时，默认显示英文+音标，点击翻面后显示汉译；
- * 需要点击翻面后并输入正确的拼写才能翻页。
+ * 需要点击翻面后并输入正确的拼写才能滑动到下一页。
  */
-public class SingleItemRePickingFragment extends Fragment {
+public class SingleItemRePickingFragment extends Fragment implements View.OnClickListener {
     private static final String TAG = "SingleItemRePickingFrag";
     private static final String SINGLE_ITEM = "single_item";
 
     private SingleItem singleItem;
+    private LinearLayout lltPositive;
+    private RelativeLayout rltNegative;
+
+    private boolean cardPositive = true;
     private Boolean pageSlidingAvailable = false;//只有在翻面后输入了正确的拼写后才可翻页。（此时可以再翻回正面）
 
-//    private OnFragmentInteractionListener mListener;
+
+    private ValidatingEditor.codeCorrectAndReadyListener mListener;
 
     public SingleItemRePickingFragment() {
         // Required empty public constructor
@@ -49,9 +59,16 @@ public class SingleItemRePickingFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView =  inflater.inflate(R.layout.fragment_single_item_re_picking, container, false);
+        CardView cardView =(CardView) rootView.findViewById(R.id.card_view);
+        cardView.setOnClickListener(this);
+
+        lltPositive = (LinearLayout) rootView.findViewById(R.id.llt_positivePage_singleItemLearning_re);
+        rltNegative = (RelativeLayout) rootView.findViewById(R.id.rlt_negativePage_singleItemLearning_re);
         TextView tvName = (TextView)rootView.findViewById(R.id.tv_name_singleItemLearning_re);
-        TextView tv_ext1 = rootView.findViewById(R.id.tv_ext1_singleItemLearning_re);
-        TextView tv_ext2 = rootView.findViewById(R.id.tv_ext2_singleItemLearning_re);
+        TextView tv_ext1 = (TextView) rootView.findViewById(R.id.tv_ext1_singleItemLearning_re);
+        TextView tv_ext2 = (TextView) rootView.findViewById(R.id.tv_ext2_singleItemLearning_re);
+        ValidatingEditor tv_validating = (ValidatingEditor) rootView.findViewById(R.id.validatingEditor_singleItemLearning);
+
 
 
         tvName.setText(singleItem.getName());
@@ -61,6 +78,8 @@ public class SingleItemRePickingFragment extends Fragment {
         tv_ext1.setText(singleItem.getExtending_list_1());
         tv_ext2.setText(singleItem.getExtending_list_2());
 
+        tv_validating.setTargetText(singleItem.getName());
+        tv_validating.setCodeReadyListener(mListener);//该监听由Activity实现，这样就将二者关联起来了。
 
 
         return rootView;
@@ -71,16 +90,16 @@ public class SingleItemRePickingFragment extends Fragment {
         if (mListener != null) {
             mListener.onFragmentInteraction(uri);
         }
-    }
+    }*/
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
+        if (context instanceof ValidatingEditor.codeCorrectAndReadyListener) {
+            mListener = (ValidatingEditor.codeCorrectAndReadyListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement ValidatingEditor.codeCorrectAndReadyListener");
         }
     }
 
@@ -90,7 +109,7 @@ public class SingleItemRePickingFragment extends Fragment {
         mListener = null;
     }
 
-    */
+
 /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -106,4 +125,24 @@ public class SingleItemRePickingFragment extends Fragment {
         void onFragmentInteraction(Uri uri);
     }
 */
+
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()){
+                case R.id.card_view:
+                    if(cardPositive) {
+                        cardPositive = false;
+                        //当前是正面，要反转
+                        lltPositive.setVisibility(View.GONE);
+                        rltNegative.setVisibility(View.VISIBLE);
+                    }else {
+                        cardPositive = true;
+                        //当前是反面，要反转
+                        lltPositive.setVisibility(View.VISIBLE);
+                        rltNegative.setVisibility(View.GONE);
+                    }
+            }
+
+        }
+
 }

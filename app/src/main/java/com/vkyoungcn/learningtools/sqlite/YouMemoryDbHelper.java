@@ -559,6 +559,9 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
                         YouMemoryContract.Group._ID+"=?",new String[]{String.valueOf(groupId)});
 //                Log.i(TAG, "updateLogOfGroup: lines = "+lines);
                 return singleLogStr;
+            case R.color.colorGP_STILL_NOT:
+                return "";//未到时间的额外复习，直接返回空串（空串本身就是一个供接收方判断用的标志）
+
             case R.color.colorGP_AVAILABLE:
             case R.color.colorGP_Miss_ONCE:
                 String oldLogsStr = getGroupById(groupId).getGroupLogs();

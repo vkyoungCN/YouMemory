@@ -17,6 +17,7 @@ import android.widget.TextView;
 import com.vkyoungcn.learningtools.adapter.LearningViewPrAdapter;
 import com.vkyoungcn.learningtools.models.SingleItem;
 import com.vkyoungcn.learningtools.sqlite.YouMemoryDbHelper;
+import com.vkyoungcn.learningtools.validatingEditor.ValidatingEditor;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -28,10 +29,12 @@ import java.util.List;
 * ③增加完成学习的确认按钮，以及DB数据生成、存入逻辑；④允许向前滑动查看，但数据不再改变（以TextView说明这个情况）；
 * （同时，取消初始设计中以Dfg收尾的计划）
 * */
-public class ItemLearningActivity extends AppCompatActivity implements LearningTimeUpDiaFragment.OnUserChoiceMadeListener {
+public class ItemLearningActivity extends AppCompatActivity implements LearningTimeUpDiaFragment.OnUserChoiceMadeListener,ValidatingEditor.codeCorrectAndReadyListener {
     private static final String TAG = "ItemLearningActivity";
     private int groupId;//最后的结果页面需要获取分组信息
     private int learningType;//不同类型的复习，不仅加载的fg不同，最后生成学习log的格式也不同；直接使用颜色的id号判断。
+    //并且，在最后的DB操作中，蓝色、橙色的日志生成方式不同，无法统一做“复习”传递。
+
     private int timePastInMinute = 0;//流逝分钟数
     private int timeInSecond = 0;
     private String tableNameSuffix;//用来从DB获取本组所属的ITEMS
@@ -46,11 +49,13 @@ public class ItemLearningActivity extends AppCompatActivity implements LearningT
     private String newLogs="";//用于回传到调用act的字串，新log
     public static final int RESULT_FROM_ITEM_LEARNING = 2;
 
+    private int scrollablePage = 1;
+
     private YouMemoryDbHelper memoryDbHelper;
 
     private FrameLayout fltMask;
     private TextView tv_mask;
-    private ViewPager viewPager;
+    private HalfScrollableViewPager viewPager;
     private TextView timePastMin;
     private TextView timePastScd;
     private TextView totalMinutes;//应在xx分钟内完成，的数字部分。
@@ -87,26 +92,45 @@ public class ItemLearningActivity extends AppCompatActivity implements LearningT
         tv_totalPageNum = (TextView)findViewById(R.id.totalPageNum_learningActivity);//总数字需要在数据加载完成后设置，在handleMessage中处理
         totalMinutes = (TextView) findViewById(R.id.tv_num_itemLearningActivity);
 
-        viewPager = (ViewPager) findViewById(R.id.viewPager_ItemLearning);
+        viewPager = (HalfScrollableViewPager) findViewById(R.id.viewPager_ItemLearning);
+        if(learningType == R.color.colorGP_Newly) {
+            viewPager.setScrollable(true);//初学状态，vp可以直接滑动
+        }
+
         viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener(){
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
+
+                //如果是复习，需要在滑动一页后重新设置为不可滑动，直至validatingEditor校验正确
+                //但是可以向前一页滑动（由Adapter负责实现）
+                //且在向前滑动后可以重新自由滑动到已阅读页
+
+                //跳转到下一页后的首要逻辑是将已阅读（可滑动）范围设为当前最大页（向后滑动才设新值）
+                if(scrollablePage < position) {
+                    scrollablePage = position;
+                }//end if, 向前滑动不设新值。
+
+                if((learningType == R.color.colorGP_AVAILABLE ||
+                        learningType == R.color.colorGP_Miss_ONCE ||
+                        learningType == R.color.colorGP_STILL_NOT )&& position>=scrollablePage) {
+                    viewPager.setScrollable(false);
+                }else {//页码未到（正处在向已学部分回览状态，或新学习模式，都可以自由翻页）
+                    viewPager.setScrollable(true);
+                }
+                //设置底端页码显示逻辑
                 //当页面滑动时为下方的textView设置当前页数，但是只在开始滑动后才有效果，初始进入时需要手动XML设为1
                 tv_currentPageNum.setText(String.valueOf(position+1));//索引从0起需要加1
-
                 //滑动到最后一页时
                 if(position==items.size()-1){
                     //最后一张【Ending伪数据页】
                     learningFinished = true;
-
 //                    timingThread.interrupt();//先结束计时线程。
                     // （不需要用户确认完成）向DB写数据；
                     //能到这一页的，属于正常完成
                     //显示信息：学习记录保存中，请稍等……同时执行向DB写log
                     tv_mask.setText("学习记录保存中，请稍等");
                     fltMask.setVisibility(View.VISIBLE);
-
                     tv_currentPageNum.setText("--");//总不能显示比总数还+1.
                     //在新线程处理log的DB保存操作。
                     new Thread(new learningFinishedRunnable()).start();
@@ -233,11 +257,16 @@ public class ItemLearningActivity extends AppCompatActivity implements LearningT
         switch (msg.what){
             case MESSAGE_DB_DATE_FETCHED:
 //      Log.i(TAG, "handleMessage: case 1 b");
-                if(learningFinished) return;//【发现似乎存在完成后重新计时BUG,尝试此修改。但是无效】
+//                if(learningFinished) return;//【发现似乎存在完成后重新计时BUG,尝试此修改。但是无效】
 
                 fltMask.setVisibility(View.GONE);
+
+                int vpLearningType = LearningViewPrAdapter.TYPE_RE_PICKING;//默认复习
+                if(learningType == R.color.colorGP_Newly){
+                    vpLearningType = LearningViewPrAdapter.TYPE_INIT_LEARNING;
+                }//【纯复习采用何种标记目前暂未设计】
                 //下方构造参数待修改
-                LearningViewPrAdapter lvAdp = new LearningViewPrAdapter(getSupportFragmentManager(),items,LearningViewPrAdapter.TYPE_INIT_LEARNING);
+                LearningViewPrAdapter lvAdp = new LearningViewPrAdapter(getSupportFragmentManager(),items,vpLearningType);
 //                Log.i(TAG, "handleMessage: ready to set adp");
                 viewPager.setAdapter(lvAdp);
 
@@ -334,5 +363,9 @@ public class ItemLearningActivity extends AppCompatActivity implements LearningT
     }
 
 
-
+    @Override
+    public void onCodeCorrectAndReady() {
+        //此时已填入正确单词，自动向下一页滑动。
+        viewPager.setCurrentItem(viewPager.getCurrentItem()+1,true);
+    }
 }

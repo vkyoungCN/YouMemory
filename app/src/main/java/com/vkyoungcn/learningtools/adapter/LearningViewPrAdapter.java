@@ -6,6 +6,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.util.Log;
 
 import com.vkyoungcn.learningtools.SingleItemInitLearningFragment;
+import com.vkyoungcn.learningtools.SingleItemRePickingFragment;
 import com.vkyoungcn.learningtools.models.SingleItem;
 
 import java.util.List;
@@ -15,9 +16,9 @@ public class LearningViewPrAdapter extends FragmentStatePagerAdapter {
     private List<SingleItem> singleItems;
 
     private int learningType = TYPE_INIT_LEARNING;//学习类型，影响将加载的fg类型
-    public static final int TYPE_INIT_LEARNING = 1;//初学
-    public static final int TYPE_RE_PICKING = 2;//复习
-    public static final int TYPE_EXAMINING = 3;//纯测验
+    public static final int TYPE_INIT_LEARNING = 101;//初学
+    public static final int TYPE_RE_PICKING = 102;//复习
+    public static final int TYPE_EXAMINING = 103;//纯测验
 
 
 
@@ -29,14 +30,14 @@ public class LearningViewPrAdapter extends FragmentStatePagerAdapter {
     }
 
     @Override
-    public SingleItemInitLearningFragment getItem(int position) {
+    public Fragment getItem(int position) {
         switch (learningType){
             case TYPE_INIT_LEARNING:
-                //在此，需要根据传入的position动态生成新fg实例
                 return SingleItemInitLearningFragment.newInstance(singleItems.get(position));
 
             case TYPE_RE_PICKING:
-                return null;
+                //复习
+                return SingleItemRePickingFragment.newInstance(singleItems.get(position));
             case TYPE_EXAMINING:
                 return null;
            default:

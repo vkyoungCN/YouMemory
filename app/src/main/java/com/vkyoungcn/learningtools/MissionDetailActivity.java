@@ -407,7 +407,7 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
 //        Log.i(TAG, "onConfirmClick: rvgroup.get-position-getId = "+rvGroups.get(position).getId());
         intent.putExtra(ITEM_TABLE_SUFFIX,missionFromIntent.getTableItem_suffix());
         intent.putExtra(GROUP_SUB_ITEM_ID_STR,rvGroups.get(position).getStrSubItemsIds());
-        intent.putExtra("learning_type",rvGroups.get(position).getStateColorResId());
+        intent.putExtra("learning_type",rvGroups.get(position).getStateColorResId());//在最后的DB操作中，蓝色、橙色的日志生成方式不同，无法统一做“复习”传递。
         this.startActivityForResult(intent,REQUEST_CODE_LEARNING);
     }
 
@@ -418,8 +418,8 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
             case REQUEST_CODE_LEARNING:
                 if(data == null) return;
                 String newLogsStr = data.getStringExtra("newLogsStr");
-                Log.i(TAG, "onActivityResult: new Lg str = "+newLogsStr);
-                if(newLogsStr.isEmpty()) return;//根据当前设计，60分钟内的复习不计入Log且返回空串，
+//                Log.i(TAG, "onActivityResult: new Lg str = "+newLogsStr);
+                if(newLogsStr.isEmpty()) return;//根据当前设计，60分钟内的复习不计入Log且返回空串，【灰色状态下的额外复习亦然】
                 // 所以最终接受到空串后，应直接返回，UI仍按原方式记录即可。
 
                 //通知adp变更显示

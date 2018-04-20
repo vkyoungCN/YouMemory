@@ -97,32 +97,36 @@ public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissi
 
                     int groupStateColorRes = groups.get(position).getStateColorResId();
                     String groupSubItemIdsStr = groups.get(position).getStrSubItemsIds();
+
+                    FragmentTransaction transaction = ((Activity)context).getFragmentManager().beginTransaction();
+                    Fragment prev = ((Activity)context).getFragmentManager().findFragmentByTag("READY_TO_LEARN");
+
+                    if (prev != null) {
+                        Log.i(TAG, "inside showDialog(), inside if prev!=null branch");
+                        transaction.remove(prev);
+                    }
+
                     switch (groupStateColorRes){
+                        //在最后的DB操作中，蓝色、橙色的日志生成方式不同，无法统一做“复习”传递。
                         case R.color.colorGP_Newly:
                             //绿色，开始学习。弹出确认框。
-                            FragmentTransaction transaction = ((Activity)context).getFragmentManager().beginTransaction();
-                            Fragment prev = ((Activity)context).getFragmentManager().findFragmentByTag("READY_TO_LEARN");
 
-                            if (prev != null) {
-                                Log.i(TAG, "inside showDialog(), inside if prev!=null branch");
-                                transaction.remove(prev);
-                            }
-                            DialogFragment dfg = ConfirmReadyLearningDiaFragment.newInstance(groupId,itemTableSuffix,groupSubItemIdsStr,groupStateColorRes,position);
+                            DialogFragment dfgInitLearning = ConfirmReadyLearningDiaFragment.newInstance(groupId,itemTableSuffix,groupSubItemIdsStr,groupStateColorRes,position);
 //        Log.i(TAG, "createGroup: before show.");
-                            dfg.show(transaction, "READY_TO_LEARN");
+                            dfgInitLearning.show(transaction, "READY_TO_LEARN");
 
                             break;
-                        case R.color.colorGP_STILL_NOT:
 
-                            break;
                         case 0:
 
                             break;
+                        case R.color.colorGP_STILL_NOT://【灰色也可以复习，只是不生成LOG记录】
                         case R.color.colorGP_AVAILABLE:
-
-                            break;
                         case R.color.colorGP_Miss_ONCE:
-
+                            //复习逻辑i。弹出确认框。
+                            Log.i(TAG, "onClick: Repicking branch.");
+                            DialogFragment dfgRePicking = ConfirmReadyLearningDiaFragment.newInstance(groupId,itemTableSuffix,groupSubItemIdsStr,groupStateColorRes,position);
+                            dfgRePicking.show(transaction, "READY_TO_LEARN");
                             break;
                         case R.color.colorGP_Miss_TWICE:
 

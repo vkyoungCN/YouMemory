@@ -15,8 +15,10 @@
         android:background="#33ffab00"
         card_view:cardCornerRadius="4dp">
         <LinearLayout
+            android:id="@+id/llt_positivePage_singleItemLearning_re"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_gravity="center"
             android:orientation="vertical"
             android:padding="12dp"
             >
@@ -34,8 +36,19 @@
                 android:textSize="16sp"
                 android:gravity="center"
                 android:text="@string/sharp_x3_default" />
+
+        </LinearLayout>
+
+        <RelativeLayout
+            android:id="@+id/rlt_negativePage_singleItemLearning_re"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:padding="12dp"
+            android:visibility="gone"
+            >
             <TextView
-                android:id="@+id/tv_ext2_singleItemLearning-re"
+                android:id="@+id/tv_ext2_singleItemLearning_re"
                 android:layout_width="match_parent"
                 android:layout_height="72dp"
                 android:padding="8dp"
@@ -45,7 +58,15 @@
                 android:lines="2"
                 android:ellipsize="marquee"
                 />
-        </LinearLayout>
+            <com.vkyoungcn.learningtools.validatingEditor.ValidatingEditor
+                android:id="@+id/validatingEditor_singleItemLearning"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@id/tv_ext2_singleItemLearning_re"
+                />
+        </RelativeLayout>
 
 
 

@@ -112,14 +112,14 @@
     </LinearLayout>
 
     <!-- Fragment在此 -->
-    <android.support.v4.view.ViewPager
+    <com.vkyoungcn.learningtools.HalfScrollableViewPager
         android:layout_below="@id/header_learningActivity"
         android:layout_above="@id/footer_learningActivity"
         android:id="@+id/viewPager_ItemLearning"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    </android.support.v4.view.ViewPager>
+    </com.vkyoungcn.learningtools.HalfScrollableViewPager>
 
 
     <LinearLayout

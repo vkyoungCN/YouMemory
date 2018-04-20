@@ -8,4 +8,9 @@
     <color name="colorGP_Miss_ONCE">#bbff6e40</color>
     <color name="colorGP_Miss_TWICE">#ccef5350</color>
     <color name="colorGP_STILL_NOT">#cce0e0e0</color>
+
+    <color name="bottomLine_default_color">#b2ff59</color>
+    <color name="bottomLine_nonCorrect_color">#eef44336</color>
+    <color name="textColor">#536dfe</color>
+    <color name="text_nonCorrect_Color">#eeff5252</color>
 </resources>
