@@ -11,7 +11,7 @@
         android:layout_gravity="center"
         android:layout_margin="8dp"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="wrap_content"
         android:background="#33ffab00"
         card_view:cardCornerRadius="4dp">
         <LinearLayout
@@ -20,22 +20,25 @@
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:orientation="vertical"
-            android:padding="12dp"
+            android:padding="8dp"
             >
             <TextView
                 android:id="@+id/tv_name_singleItemLearning_re"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
+                android:layout_height="52dp"
                 android:textSize="28sp"
                 android:gravity="center"
                 android:text="@string/sharp_x5_default" />
             <TextView
                 android:id="@+id/tv_ext1_singleItemLearning_re"
                 android:layout_width="match_parent"
-                android:layout_height="36dp"
+                android:layout_height="32dp"
                 android:textSize="16sp"
                 android:gravity="center"
                 android:text="@string/sharp_x3_default" />
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="56dp" />
 
         </LinearLayout>
 
@@ -44,14 +47,14 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center"
-            android:padding="12dp"
+            android:padding="4dp"
             android:visibility="gone"
             >
             <TextView
                 android:id="@+id/tv_ext2_singleItemLearning_re"
                 android:layout_width="match_parent"
                 android:layout_height="72dp"
-                android:padding="8dp"
+                android:padding="4dp"
                 android:textSize="18sp"
                 android:gravity="center"
                 android:text="@string/sharp_x24_default"
@@ -62,7 +65,7 @@
                 android:id="@+id/validatingEditor_singleItemLearning"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="8dp"
                 android:layout_centerHorizontal="true"
                 android:layout_below="@id/tv_ext2_singleItemLearning_re"
                 />

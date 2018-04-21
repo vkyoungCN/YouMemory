@@ -16,7 +16,6 @@ import android.view.View;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
-import android.view.inputmethod.InputConnectionWrapper;
 import android.view.inputmethod.InputMethodManager;
 
 import com.vkyoungcn.learningtools.R;
@@ -45,22 +44,29 @@ public class ValidatingEditor extends View {
     private Paint bottomLineNonCorrectPaint;
     private Paint textPaint;
     private Paint textNonCorrectPaint;
+    private Paint backgroundPaint;
 
     private float bottomLineHorizontalMargin;
     private float bottomLineStrokeWidth;
     private float bottomLineHorizontalLength;
+    private float padding;
     private float textSize;
     private float textMarginBottom;
     private float viewHeight;
     int lines = 1;//控件需要按几行显示，根据当前屏幕下控件最大允许宽度和控件字符数（需要的宽度）计算得到。
+    private int sizeChangedHeight;//是控件onSizeChanged后获得的尺寸之高度，也是传给onDraw进行线段绘制的canvas-Y坐标(单行时)
+    private int sizeChangedWidth;
 
-    private int height;//是控件onSizeChanged后获得的尺寸之高度，也是传给onDraw进行线段绘制的canvas-Y坐标(单行时)
     private int bottomLineSectionAmount = DEFAULT_LENGTH;
     private int bottomLineColor;
     private int bottomLineNonCorrectColor;
     private int textColor;
     private int textNonCorrectColor;
+    private int backgroundColor;
+    private int backgroundNotCorrectColor;
     private int mInputType;
+    private int leastWrongPosition = 0;//从1起算，0是预置位。
+    private int currentPosition = 0;//从1起算。
 
     private codeCorrectAndReadyListener listener;
 
@@ -105,6 +111,8 @@ public class ValidatingEditor extends View {
     }
 
     private void initDefaultAttributes() {
+        padding = getContext().getResources().getDimension(R.dimen.view_padding);
+
         bottomLineStrokeWidth = getContext().getResources().getDimension(R.dimen.bottomLine_stroke_width);//查API知此方法自动处理单位转换。
         bottomLineHorizontalLength = getContext().getResources().getDimension(R.dimen.bottomLine_horizontal_length);
         bottomLineHorizontalMargin = getContext().getResources().getDimension(R.dimen.bottomLine_horizontal_margin);
@@ -115,6 +123,8 @@ public class ValidatingEditor extends View {
         textMarginBottom = getContext().getResources().getDimension(R.dimen.text_margin_bottom);
         textColor = ContextCompat.getColor(mContext,R.color.textColor);
         textNonCorrectColor = ContextCompat.getColor(mContext,R.color.text_nonCorrect_Color);
+        backgroundColor = ContextCompat.getColor(mContext,R.color.ve_background);
+        backgroundNotCorrectColor = ContextCompat.getColor(mContext,R.color.ve_background_not_correct);
 
         viewHeight = getContext().getResources().getDimension(R.dimen.view_height);
     }
@@ -156,6 +166,12 @@ public class ValidatingEditor extends View {
         textNonCorrectPaint.setColor(textNonCorrectColor);
         textNonCorrectPaint.setAntiAlias(true);
         textNonCorrectPaint.setTextAlign(Paint.Align.CENTER);
+
+        backgroundPaint = new Paint();
+        backgroundPaint.setStyle(Paint.Style.FILL);
+        backgroundPaint.setAntiAlias(true);
+        backgroundPaint.setColor(backgroundColor);
+
     }
 
 
@@ -168,8 +184,12 @@ public class ValidatingEditor extends View {
     @Override
     protected void onSizeChanged(int w, int h, int old_w, int old_h) {
         Log.i(TAG, "onSizeChanged: b");
-        height = h;
+
+        sizeChangedHeight = h;
+        sizeChangedWidth = w;
         initUnderline(w);
+
+
 
         super.onSizeChanged(w, h, old_w, old_h);
 
@@ -181,18 +201,19 @@ public class ValidatingEditor extends View {
 //        Log.i(TAG, "onMeasure: b");
         int maxWidth = MeasureSpec.getSize(widthMeasureSpec);//这样设置的前提是XML中明确给控件设置为match_..
 //        Log.i(TAG, "onMeasure: maxW = "+maxWidth);
-        float requireHeight = viewHeight;
+        float requireHeight = viewHeight+padding*2;
         if (targetText.isEmpty()) {
 //            Log.i(TAG, "onMeasure: text is empty");
             setMeasuredDimension(maxWidth, (int) requireHeight);
             return;
         }
 
-        if(bottomLineSectionAmount*bottomLineHorizontalLength>maxWidth){
-            lines = (int)(bottomLineSectionAmount*bottomLineHorizontalLength/maxWidth)+1;
+        float requiredTotalWidth = bottomLineSectionAmount*bottomLineHorizontalLength+padding*2;
+        if(requiredTotalWidth>maxWidth){
+            lines = (int)(requiredTotalWidth/maxWidth)+1;
 //            Log.i(TAG, "onMeasure: bottomLineSectionAmount*bottomLineHorizontalLength = "+(int)(bottomLineSectionAmount*bottomLineHorizontalLength));
 //            Log.i(TAG, "onMeasure: lines = "+lines);
-            requireHeight = viewHeight*lines;
+            requireHeight = viewHeight*lines+padding*2;
         }
 
         setMeasuredDimension(maxWidth,(int)requireHeight);
@@ -268,6 +289,10 @@ public class ValidatingEditor extends View {
     public boolean onKeyDown(int keyCode, KeyEvent keyevent) {
         if (keyCode == KeyEvent.KEYCODE_DEL && characters.size() != 0) {
             characters.pop();
+            currentPosition--;
+            if(currentPosition<leastWrongPosition){
+                leastWrongPosition = 0;
+            }
         }
         return super.onKeyDown(keyCode, keyevent);
     }
@@ -295,7 +320,7 @@ public class ValidatingEditor extends View {
     private boolean inputText(String text, boolean capsOn) {
         Matcher matcher = KEYCODE_PATTERN.matcher(text);
         if (matcher.matches()) {
-            Log.i(TAG, "inputText: b");
+//            Log.i(TAG, "inputText: b");
             String matched = matcher.group(1);
             char character;
             if(!capsOn){
@@ -304,12 +329,20 @@ public class ValidatingEditor extends View {
                 character = matched.charAt(0);
             }
             characters.push(character);
+
             if (characters.size() >= bottomLineSectionAmount ) {//满了
                 Log.i(TAG, "inputText: full");
                 if(getCurrentString().compareTo(targetText) == 0) {
                     if(listener != null) {
                         Log.i(TAG, "inputText: interface triggered");
                         listener.onCodeCorrectAndReady();
+                    }
+                }
+            }else {
+                currentPosition++;
+                if(Character.compare(character,targetText.charAt(currentPosition-1))!=0){//此位置上字符输入不正确
+                    if(leastWrongPosition==0){
+                        leastWrongPosition = currentPosition;
                     }
                 }
             }
@@ -349,6 +382,13 @@ public class ValidatingEditor extends View {
             return;
         }
 
+        if(leastWrongPosition!=0) {
+            backgroundPaint.setColor(backgroundNotCorrectColor);
+        }else {
+            backgroundPaint.setColor(backgroundColor);
+        }
+        canvas.drawRect(0,0,sizeChangedWidth,sizeChangedHeight,backgroundPaint);
+
         for (int i = 0; i < bottomLineSections.length; i++) {
 //            Log.i(TAG, "onDraw: i="+i);
             BottomLineSection sectionPath = bottomLineSections[i];
@@ -360,7 +400,7 @@ public class ValidatingEditor extends View {
             drawSection(fromX, fromY, toX, toY, canvas);
             if (characters.toArray().length > i && characters.size() != 0) {
                 Boolean characterCorrect = isCharacterCorrectAtPosition(i);
-                drawCharacter(characterCorrect, fromX, toX, characters.get(i), canvas);
+                drawCharacter(characterCorrect, fromX, toX, fromY, characters.get(i), canvas);
             }
         }
 //        Log.i(TAG, "onDraw: ready to invalidate");
@@ -381,15 +421,15 @@ public class ValidatingEditor extends View {
         canvas.drawLine(fromX, fromY, toX, toY, paint);
     }
 
-    private void drawCharacter(boolean correct, float fromX, float toX, Character character, Canvas canvas) {
+    private void drawCharacter(boolean correct, float fromX, float toX, float fromY, Character character, Canvas canvas) {
         Paint paint = textPaint;
         if(!correct){
             paint = textNonCorrectPaint;
         }
         float actualWidth = toX - fromX;
         float centerWidth = actualWidth / 2;
-        float centerX = fromX + centerWidth;
-        canvas.drawText(character.toString(), centerX, height - textMarginBottom, paint);
+        float centerX = fromX + centerWidth;//似乎跟API文档对应不起来啊？不是从左下角为原点绘制？
+        canvas.drawText(character.toString(), centerX, fromY - bottomLineStrokeWidth/2 - textMarginBottom, paint);
     }
 
 
@@ -426,27 +466,30 @@ public class ValidatingEditor extends View {
     }
 
     private void initUnderline(int viewMaxWidth) {
-        Log.i(TAG, "initUnderline: b");
+//        Log.i(TAG, "initUnderline: b");
         if(lines ==1) {
-            Log.i(TAG, "initUnderline: line 1");
+//            Log.i(TAG, "initUnderline: line 1");
             for (int i = 0; i < bottomLineSectionAmount; i++) {
                 bottomLineSections[i] = createPath(i, 1, bottomLineHorizontalLength);
             }
         }else {
-            Log.i(TAG, "initUnderline: lines > 1");
+//            Log.i(TAG, "initUnderline: lines > 1");
             int sectionsMaxAmountPerLine = (int)(viewMaxWidth/bottomLineHorizontalLength);
-            for (int i = 1; i <= bottomLineSectionAmount; i++) {
+            for (int i = 0; i < bottomLineSectionAmount; i++) {
                 int theLine = (i/sectionsMaxAmountPerLine)+1;
+//                Log.i(TAG, "initUnderline: i = "+i+" the Line = "+theLine);
                 int positionInLine = i%sectionsMaxAmountPerLine;
-                bottomLineSections[i-1] = createPath(positionInLine, theLine, bottomLineHorizontalLength);
+                bottomLineSections[i] = createPath(positionInLine, theLine, bottomLineHorizontalLength);
             }
 
         }
     }
 
     private BottomLineSection createPath(int position, int theLine, float sectionLength) {
-        float fromX = sectionLength * (float) position;
-        float fromY = height/lines*theLine;
+        float fromX = sectionLength * (float) position + padding;
+        float heightPerLine = (sizeChangedHeight-2*padding)/theLine;
+        float fromY = heightPerLine*theLine+padding;
+//        Log.i(TAG, "createPath: theLine = "+theLine+" Y = "+fromY+" X = "+fromX);
         return new BottomLineSection(fromX, fromY, fromX + sectionLength, fromY);
     }
 }
