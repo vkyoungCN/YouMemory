@@ -4,9 +4,13 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
+import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -27,10 +31,12 @@ public class SingleItemRePickingFragment extends Fragment implements View.OnClic
     private SingleItem singleItem;
     private LinearLayout lltPositive;
     private RelativeLayout rltNegative;
+    private ValidatingEditor tv_validatingEditor;
 
     private boolean cardPositive = true;
     private Boolean pageSlidingAvailable = false;//只有在翻面后输入了正确的拼写后才可翻页。（此时可以再翻回正面）
-
+    InputMethodManager manager;
+    private boolean softKBActive = false;
 
     private ValidatingEditor.codeCorrectAndReadyListener mListener;
 
@@ -52,6 +58,8 @@ public class SingleItemRePickingFragment extends Fragment implements View.OnClic
         if (getArguments() != null) {
             singleItem = getArguments().getParcelable(SINGLE_ITEM);
         }
+        manager = (InputMethodManager) getActivity().getSystemService(getActivity().INPUT_METHOD_SERVICE);
+
     }
 
     @Override
@@ -67,7 +75,7 @@ public class SingleItemRePickingFragment extends Fragment implements View.OnClic
         TextView tvName = (TextView)rootView.findViewById(R.id.tv_name_singleItemLearning_re);
         TextView tv_ext1 = (TextView) rootView.findViewById(R.id.tv_ext1_singleItemLearning_re);
         TextView tv_ext2 = (TextView) rootView.findViewById(R.id.tv_ext2_singleItemLearning_re);
-        ValidatingEditor tv_validating = (ValidatingEditor) rootView.findViewById(R.id.validatingEditor_singleItemLearning);
+        tv_validatingEditor = (ValidatingEditor) rootView.findViewById(R.id.validatingEditor_singleItemLearning);
 
 
 
@@ -78,9 +86,18 @@ public class SingleItemRePickingFragment extends Fragment implements View.OnClic
         tv_ext1.setText(singleItem.getExtending_list_1());
         tv_ext2.setText(singleItem.getExtending_list_2());
 
-        tv_validating.setTargetText(singleItem.getName());
-        tv_validating.setCodeReadyListener(mListener);//该监听由Activity实现，这样就将二者关联起来了。
+        tv_validatingEditor.setTargetText(singleItem.getName());
+        tv_validatingEditor.setCodeReadyListener(mListener);//该监听由Activity实现，这样就将二者关联起来了。
+        tv_validatingEditor.setOnClickListener(this);
+        EditorInfo veEditorInfo = new EditorInfo();
+        veEditorInfo.inputType = InputType.TYPE_NULL;
+//        veEditorInfo.initialSelStart = 0;
+//        veEditorInfo.initialSelEnd = singleItem.getName().length();
+        tv_validatingEditor.onCreateInputConnection(veEditorInfo);
+//        tv_validatingEditor.
 
+//        manager.dispatchKeyEventFromInputMethod(tv_validatingEditor,);
+        //        tv_validatingEditor
 
         return rootView;
     }
@@ -141,6 +158,11 @@ public class SingleItemRePickingFragment extends Fragment implements View.OnClic
                         lltPositive.setVisibility(View.VISIBLE);
                         rltNegative.setVisibility(View.GONE);
                     }
+                    break;
+                case R.id.validatingEditor_singleItemLearning:
+                    Log.i(TAG, "onClick: ve-Click");
+                    tv_validatingEditor.requestFocus();
+                    manager.showSoftInput(tv_validatingEditor,InputMethodManager.RESULT_UNCHANGED_SHOWN);
             }
 
         }

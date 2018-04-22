@@ -72,4 +72,10 @@
     <string name="time_past_words2_2">分钟内完成。</string>
     <string name="start">开始</string>
     <string name="groups_refresh">刷新</string>
+    <string name="filter_groups">过滤分组</string>
+    <string name="remove_reds">移除红色组</string>
+    <string name="confirm_removeReds">确认删除超时分组</string>
+    <string name="remove">删除</string>
+    <string name="minutes_75">75</string>
+    <string name="no_record_if_cancel">取消则不记录本次学习</string>
 </resources>

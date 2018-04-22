@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.vkyoungcn.learningtools.adapter.LearningViewPrAdapter;
 import com.vkyoungcn.learningtools.models.SingleItem;
@@ -61,6 +62,7 @@ public class ItemLearningActivity extends AppCompatActivity implements LearningT
     private TextView totalMinutes;//应在xx分钟内完成，的数字部分。
 
     private TextView tv_currentPageNum;
+    private int currentLearnedAmount;//用于最后判断是否完成，是只增不减的量。
     private TextView tv_totalPageNum;
 
     public static final int MESSAGE_DB_DATE_FETCHED =1;
@@ -73,7 +75,7 @@ public class ItemLearningActivity extends AppCompatActivity implements LearningT
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i(TAG, "onCreate: b");
+//        Log.i(TAG, "onCreate: b");
         setContentView(R.layout.activity_item_learning);
 
         //从Intent获取参数
@@ -120,6 +122,9 @@ public class ItemLearningActivity extends AppCompatActivity implements LearningT
                 }
                 //设置底端页码显示逻辑
                 //当页面滑动时为下方的textView设置当前页数，但是只在开始滑动后才有效果，初始进入时需要手动XML设为1
+                if(currentLearnedAmount<position+1){
+                    currentLearnedAmount = position+1;//只加不减
+                }
                 tv_currentPageNum.setText(String.valueOf(position+1));//索引从0起需要加1
                 //滑动到最后一页时
                 if(position==items.size()-1){
@@ -295,13 +300,14 @@ public class ItemLearningActivity extends AppCompatActivity implements LearningT
                     //尚未延长过时间，此时可以延长一次。
                     // 弹出dfg，其中要置prolonged为true。如果用户要延长时间，则将计时计数器回调到15分，继续执行线程。
                     popUpTimeEndingDiaFragment();
+                }else {
+                    //应该先弹出一个对话框，提示未能完成任务，会拆分或不记录【先不拆分了，直接不记录，比较简单】
+//                    finishWithUnAcomplishment();//无论是已无再次延时的机会，还是直接dismiss，都调用本方法。
+                    Toast.makeText(this, "未能完成，不记录本次学习。", Toast.LENGTH_SHORT).show();
+                    this.finish();
                 }
 
-                //如果已延长过1次，或者是刚才弹框后用户选择不延时直接dismiss弹框，则进行下列判断
-                //根据完成的项目数量，小于12只有提示未能完成-确认。大于12可以拆分生成新分组，提示用户
-                // （没必要询问是否拆分，如果不拆分就只能全部标记未完成，正常人不能这么干）
-                // 此时如果遇到丢失焦点应默认将学习状态（时间、数量）保存，onStop直接存入DB（没有询问环节）。
-//                if()
+
                 break;
 
             case MESSAGE_LOGS_SAVED:
@@ -355,13 +361,27 @@ public class ItemLearningActivity extends AppCompatActivity implements LearningT
 
 
     @Override
-    public void onUserMadeChoice() {
-        timeCount = 15;//【调试期间暂时设1】计时时间补充15分钟
-        totalMinutes.setText("75");
-        timingThread.start();//再次启动计时
+    public void onUserMadeChoice(boolean isConfirmed) {
+        if(isConfirmed) {
+            timeCount = 15;//【调试期间暂时设1】计时时间补充15分钟
+            totalMinutes.setText(getResources().getString(R.string.minutes_75));
+            timingThread.start();//再次启动计时
+        }else {
+            Toast.makeText(this, "未能完成，不记录本次学习。", Toast.LENGTH_SHORT).show();
+            this.finish();
+//            finishWithUnAcomplishment();//无论是已无再次延时的机会，还是直接dismiss，都调用本方法。
+        }
 
     }
 
+   /* private void finishWithUnAcomplishment(){
+        //根据完成的项目数量，小于12只有提示未能完成-确认。大于12可以拆分生成新分组，提示用户
+        // （没必要询问是否拆分，如果不拆分就只能全部标记未完成，正常人不能这么干）
+        // 此时如果遇到丢失焦点应默认将学习状态（时间、数量）保存，onStop直接存入DB（没有询问环节）。
+        if(currentLearnedAmount<12){
+
+        }
+    }*/
 
     @Override
     public void onCodeCorrectAndReady() {

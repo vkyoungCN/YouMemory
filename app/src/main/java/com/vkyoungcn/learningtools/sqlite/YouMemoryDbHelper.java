@@ -408,7 +408,7 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
 
 
     public List<SingleItem> getItemsByGroupSubItemIds(String subItemIds, String tableNameSuffix){
-        Log.i(TAG, "getItemsByGroupSubItemIds: b");
+//        Log.i(TAG, "getItemsByGroupSubItemIds: b");
         List<SingleItem> items = new ArrayList<>();
 
         String sqlWhere = getStingSubIdsWithParenthesisForWhereSql(subItemIds);
@@ -585,6 +585,24 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
 
     }
 
+    public void removeGroupById(int groupId,String subItemIdsStr,String itemTableNameSuffix){
+        Log.i(TAG, "removeGroupById: ");
+        getWritableDatabaseIfClosedOrNull();
+        String deleteSingleGroupSql = "DELETE FROM "+YouMemoryContract.Group.TABLE_NAME+" WHERE "+
+                YouMemoryContract.Group._ID+" = "+groupId;
+
+        mSQLiteDatabase.beginTransaction();
+
+        mSQLiteDatabase.execSQL(deleteSingleGroupSql);
+//        Log.i(TAG, "removeGroupById: done");
+
+        setItemsUnChose(itemTableNameSuffix,subItemIdsStr);
+
+        mSQLiteDatabase.setTransactionSuccessful();
+        mSQLiteDatabase.endTransaction();
+        closeDB();
+    }
+
 
     /*
     * Timer中每隔1分钟检查一次当前mission的各group，符合条件的会调用此函数设为废弃。
@@ -603,7 +621,8 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         getWritableDatabaseIfClosedOrNull();
 
         if(itemIds==null||itemIds.isEmpty()){
-//            Log.i(TAG, "setItemsUnChose: enmpty ids.");;
+//            Log.i(TAG, "setItemsUnChose: enmpty ids.");
+            return;
         }
         String[] str =  itemIds.split(";");
         StringBuilder sbr = new StringBuilder();
@@ -631,6 +650,7 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
 
         if(itemIds==null||itemIds.isEmpty()){
 //            Log.i(TAG, "setItemsUnChose: empty ids.");;
+            return;
         }
         String[] str =  itemIds.split(";");
         StringBuilder sbr = new StringBuilder();

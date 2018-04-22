@@ -23,7 +23,6 @@ import com.vkyoungcn.learningtools.R;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static android.text.InputType.TYPE_CLASS_TEXT;
 
 /**
  * Thanks to the original author.
@@ -67,6 +66,8 @@ public class ValidatingEditor extends View {
     private int mInputType;
     private int leastWrongPosition = 0;//从1起算，0是预置位。
     private int currentPosition = 0;//从1起算。
+
+//    private boolean stopDrawing = false;
 
     private codeCorrectAndReadyListener listener;
 
@@ -183,7 +184,7 @@ public class ValidatingEditor extends View {
     //【学：据说是系统计算好控件的实际尺寸后以本方法通知用户】
     @Override
     protected void onSizeChanged(int w, int h, int old_w, int old_h) {
-        Log.i(TAG, "onSizeChanged: b");
+//        Log.i(TAG, "onSizeChanged: b");
 
         sizeChangedHeight = h;
         sizeChangedWidth = w;
@@ -220,61 +221,33 @@ public class ValidatingEditor extends View {
 
     }
 
-
-
-
-
-    private void showKeyboard() {
-        InputMethodManager inputmethodmanager =
-                (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputmethodmanager.showSoftInput(this, InputMethodManager.RESULT_UNCHANGED_SHOWN);
-        inputmethodmanager.viewClicked(this);
-    }
-
-    private void hideKeyBoard(){
-        InputMethodManager inputmethodmanager = (InputMethodManager) getContext().getSystemService(Activity.INPUT_METHOD_SERVICE);
-        inputmethodmanager.hideSoftInputFromWindow(getWindowToken(), InputMethodManager.RESULT_UNCHANGED_SHOWN);
-    }
-
-
-    /**
-     * Set Input type like InputType.TYPE_CLASS_PHONE, InputType.TYPE_CLASS_NUMBER
-     * Doesn't work for password
-     * @param inputType
-     */
-    public void setInputType(int inputType) {
-        mInputType = inputType;
-    }
-
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        outAttrs.actionLabel = null;
-        outAttrs.inputType = TYPE_CLASS_TEXT;
-        outAttrs.imeOptions = EditorInfo.IME_ACTION_DONE;
-        return new BaseInputConnection(this, true);
-//        return new InnerInputConnection(super.onCreateInputConnection(outAttrs), false);
+        Log.i(TAG, "onCreateInputConnection: ");
+
+        return new VeInputConnection(this,false);
     }
 
-    /*class InnerInputConnection extends InputConnectionWrapper implements InputConnection{
-        public InnerInputConnection(InputConnection target, boolean mutable) {
-            super(target, mutable);
-        }
-
-        @Override
-        public boolean commitText(CharSequence text, int newCursorPosition) {
-            return super.commitText(text, newCursorPosition);
+    private class VeInputConnection extends BaseInputConnection{
+        public VeInputConnection(View targetView, boolean fullEditor) {
+            super(targetView, fullEditor);
         }
 
         @Override
         public boolean sendKeyEvent(KeyEvent event) {
+            Log.i(TAG, "sendKeyEvent: keyEvent="+event.toString());
             return super.sendKeyEvent(event);
         }
 
         @Override
-        public boolean setSelection(int start, int end) {
-            return super.setSelection(start, end);
+        public boolean commitText(CharSequence text, int newCursorPosition) {
+            Log.i(TAG, "commitText，text length = "+text);
+            CharSequence firstCharText = String.valueOf(text.charAt(0));
+            //只传出其第一个字符
+            return super.commitText(firstCharText, newCursorPosition);
         }
-    }*/
+    }
+
 
     @Override
     public boolean onCheckIsTextEditor() {
@@ -355,25 +328,37 @@ public class ValidatingEditor extends View {
     /**
      * When a touch is detected the view need to focus and animate if is necessary
      */
-    @Override
+    /*@Override
     public boolean onTouchEvent(MotionEvent motionevent) {
         if (motionevent.getAction() == MotionEvent.ACTION_DOWN) {
-            requestFocus();
-            showKeyboard();
+
         }
         return super.onTouchEvent(motionevent);
-    }
+    }*/
 
-    @Override
+    /*@Override
     protected void onFocusChanged(boolean gainFocus, int direction, @Nullable Rect previouslyFocusedRect) {
         if(gainFocus){
-//           showKeyboard();
+           showKeyboard();
         }else {
             hideKeyBoard();
         }
         super.onFocusChanged(gainFocus, direction, previouslyFocusedRect);
     }
 
+    private void showKeyboard() {
+        Log.i(TAG, "showKeyboard: ");
+        InputMethodManager inputmethodmanager =
+                (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputmethodmanager.showSoftInput(this, InputMethodManager.RESULT_UNCHANGED_SHOWN);
+        inputmethodmanager.viewClicked(this);
+    }
+
+    private void hideKeyBoard(){
+        InputMethodManager inputmethodmanager = (InputMethodManager) getContext().getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputmethodmanager.hideSoftInputFromWindow(getWindowToken(), InputMethodManager.RESULT_UNCHANGED_SHOWN);
+    }
+*/
     @Override
     protected void onDraw(Canvas canvas) {
 
@@ -382,30 +367,47 @@ public class ValidatingEditor extends View {
             return;
         }
 
-        if(leastWrongPosition!=0) {
-            backgroundPaint.setColor(backgroundNotCorrectColor);
-        }else {
-            backgroundPaint.setColor(backgroundColor);
-        }
-        canvas.drawRect(0,0,sizeChangedWidth,sizeChangedHeight,backgroundPaint);
-
-        for (int i = 0; i < bottomLineSections.length; i++) {
-//            Log.i(TAG, "onDraw: i="+i);
-            BottomLineSection sectionPath = bottomLineSections[i];
-            float fromX = sectionPath.getFromX() + bottomLineHorizontalMargin;
-            float fromY = sectionPath.getFromY();
-            float toX = sectionPath.getToX() - bottomLineHorizontalMargin;
-            float toY = sectionPath.getToY();
-
-            drawSection(fromX, fromY, toX, toY, canvas);
-            if (characters.toArray().length > i && characters.size() != 0) {
-                Boolean characterCorrect = isCharacterCorrectAtPosition(i);
-                drawCharacter(characterCorrect, fromX, toX, fromY, characters.get(i), canvas);
+//        while (!stopDrawing){
+//            Log.i(TAG, "onDraw: Bool-stopDrawing = "+stopDrawing);
+            if(leastWrongPosition!=0) {
+                backgroundPaint.setColor(backgroundNotCorrectColor);
+            }else {
+                backgroundPaint.setColor(backgroundColor);
             }
-        }
+            canvas.drawRect(0,0,sizeChangedWidth,sizeChangedHeight,backgroundPaint);
+
+            for (int i = 0; i < bottomLineSections.length; i++) {
+//            Log.i(TAG, "onDraw: i="+i);
+                BottomLineSection sectionPath = bottomLineSections[i];
+                float fromX = sectionPath.getFromX() + bottomLineHorizontalMargin;
+                float fromY = sectionPath.getFromY();
+                float toX = sectionPath.getToX() - bottomLineHorizontalMargin;
+                float toY = sectionPath.getToY();
+
+                drawSection(fromX, fromY, toX, toY, canvas);
+                if (characters.toArray().length > i && characters.size() != 0) {
+                    Boolean characterCorrect = isCharacterCorrectAtPosition(i);
+                    drawCharacter(characterCorrect, fromX, toX, fromY, characters.get(i), canvas);
+                }
+            }
 //        Log.i(TAG, "onDraw: ready to invalidate");
+            invalidate();
+//        }
+
+    }
+
+    /*public void stopDrawing(){
+//        Log.i(TAG, "stopDrawing: ");
+        this.stopDrawing = true;
+    }
+
+    public void reStartDrawing(){
+        this.stopDrawing = false;
         invalidate();
     }
+    public boolean isStopDrawing(){
+        return this.stopDrawing;
+    }*/
 
     private boolean isCharacterCorrectAtPosition(int position){
         return characters.get(position).compareTo(targetText.charAt(position))==0;//相等，字符正确。
@@ -455,8 +457,9 @@ public class ValidatingEditor extends View {
 //        Log.i(TAG, "setTargetText: bottomLineSectionAmount = "+bottomLineSectionAmount);
         //由于要根据目标字串的字符数量来绘制控件，所以所有需要用到该数量的初始化动作都只能在此后进行
         initDataStructures();
+//        requestFocus();
+//        showKeyboard();
 
-//        invalidate();
     }
 
     private void initDataStructures() {

@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.vkyoungcn.learningtools.adapter.GroupsOfMissionRvAdapter;
 import com.vkyoungcn.learningtools.models.DBRwaGroup;
@@ -36,7 +37,7 @@ import java.util.TimerTask;
  * 单个Mission的详情页；Mission详情及所属任务分组的集合展示（Rv）；
  * 可以新建任务分组；
  * */
-public class MissionDetailActivity extends AppCompatActivity implements CreateGroupDiaFragment.OnFragmentInteractionListener,ConfirmReadyLearningDiaFragment.OnConfirmClick {
+public class MissionDetailActivity extends AppCompatActivity implements CreateGroupDiaFragment.OnFragmentInteractionListener,ConfirmReadyLearningDiaFragment.OnConfirmClick, ConfirmRemoveRedsDiaFragment.OnRemoveRedsConfirmClick {
     private static final String TAG = "MissionDetailActivity";
 
     private Mission missionFromIntent;//从前一页面获取。后续页面需要mission的id，suffix字段。
@@ -57,7 +58,7 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
     public static final int REQUEST_CODE_LEARNING = 1;//学习完成后，要会送然后更新adp状态。
     private int clickPosition;//点击（前往学习页面）发生的位置，需要该数据来更新rv位置
 
-
+    private String tableItemSuffix;
     //    private Handler handler;//如果Rv效率高，就用不到多线程。
     private Activity self;//为了后方Timer配合runOnUiThread.
     private Timer groupsStateTimer;
@@ -80,6 +81,7 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
         super.onCreate(savedInstanceState);
         this.self = this;
         setContentView(R.layout.activity_mission_main);
+
         missionDetailName = (TextView) findViewById(R.id.tv_mission_detail_name);
         missionDetailDescription = (TextView) findViewById(R.id.tv_mission_detail_description);
         maskFrameLayout = (FrameLayout)findViewById(R.id.maskOverRv_MissionDetail);
@@ -101,6 +103,23 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
             }
         });
 
+        findViewById(R.id.groups_removeRed_missionDetail).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(rvGroups == null || rvGroups.size()==0)return;
+                FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                Fragment prev = getFragmentManager().findFragmentByTag("REMOVE_REDS");
+
+                if (prev != null) {
+//                    Log.i(TAG, "inside showDialog(), inside if prev!=null branch");
+                    transaction.remove(prev);
+                }
+                DialogFragment dfg = ConfirmRemoveRedsDiaFragment.newInstance();
+//        Log.i(TAG, "createGroup: before show.");
+                dfg.show(transaction, "REMOVE_REDS");
+            }
+        });
+
         missionFromIntent = getIntent().getParcelableExtra("Mission");
 
 
@@ -110,6 +129,7 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
             //根据Mission数据填充Mission信息两项
             missionDetailName.setText(missionFromIntent.getName());
             missionDetailDescription.setText(missionFromIntent.getDescription());
+            tableItemSuffix = missionFromIntent.getTableItem_suffix();
         }
 
         memoryDbHelper = YouMemoryDbHelper.getInstance(getApplicationContext());
@@ -405,7 +425,7 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
         Intent intent = new Intent(this,ItemLearningActivity.class);
         intent.putExtra("group_id",rvGroups.get(position).getId());
 //        Log.i(TAG, "onConfirmClick: rvgroup.get-position-getId = "+rvGroups.get(position).getId());
-        intent.putExtra(ITEM_TABLE_SUFFIX,missionFromIntent.getTableItem_suffix());
+        intent.putExtra(ITEM_TABLE_SUFFIX, tableItemSuffix);
         intent.putExtra(GROUP_SUB_ITEM_ID_STR,rvGroups.get(position).getStrSubItemsIds());
         intent.putExtra("learning_type",rvGroups.get(position).getStateColorResId());//在最后的DB操作中，蓝色、橙色的日志生成方式不同，无法统一做“复习”传递。
         this.startActivityForResult(intent,REQUEST_CODE_LEARNING);
@@ -433,6 +453,30 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
                 adapter.notifyItemChanged(clickPosition);
         }
     }
+
+    @Override
+    public void onConfirmRemoveRedsClick() {
+        ArrayList<Integer> redsPositions = new ArrayList<>();
+        for (RvGroup r :rvGroups) {
+            if(r.getStateColorResId()==R.color.colorGP_Miss_TWICE){
+//                Log.i(TAG, "onConfirmRemoveRedsClick: r index = "+rvGroups.indexOf(r));
+                redsPositions.add(rvGroups.indexOf(r));
+            }
+        }
+        if (redsPositions.size()==0){
+            Toast.makeText(self, "没有需要移除的任务分组", Toast.LENGTH_SHORT).show();
+        }else {
+            for (Integer i :redsPositions) {
+//                Log.i(TAG, "onConfirmRemoveRedsClick: size"+redsPositions.size());
+//                Log.i(TAG, "onConfirmRemoveRedsClick: rv id"+rvGroups.get(i).getId());
+//                Log.i(TAG, "onConfirmRemoveRedsClick: index"+i);
+                RvGroup rvToRemove = rvGroups.get(i);
+                memoryDbHelper.removeGroupById(rvToRemove.getId(),rvToRemove.getStrSubItemsIds(),tableItemSuffix);
+            }
+        }
+
+    }
+
 }
 
 /*旧片段范例

@@ -108,18 +108,32 @@
             android:layout_centerInParent="true"
             android:text="@string/groups_info"
             />
-        <TextView
-            android:id="@+id/groups_refresh_missionDetail"
-            android:layout_width="56dp"
-            android:layout_height="38dp"
+        <ImageView
+            android:id="@+id/groups_removeRed_missionDetail"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:padding ="4dp"
             android:elevation="2dp"
-            android:layout_margin="2dp"
+            android:layout_toStartOf="@+id/groups_refresh_missionDetail"
+            android:layout_centerVertical="true"
+            android:gravity="center"
+            android:contentDescription="@string/remove_reds"
+            android:src="@drawable/ic_delete_sweep_black_24dp"
+
+            />
+        <ImageView
+            android:id="@+id/groups_refresh_missionDetail"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:padding="4dp"
+            android:elevation="2dp"
+            android:layout_marginEnd="6dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:text="@string/groups_refresh"
-            android:textSize="16sp"
             android:gravity="center"
-            android:background="#55fdd835"
+            android:contentDescription="@string/groups_refresh"
+            android:src="@drawable/ic_renew"
+
             />
 
     </RelativeLayout>

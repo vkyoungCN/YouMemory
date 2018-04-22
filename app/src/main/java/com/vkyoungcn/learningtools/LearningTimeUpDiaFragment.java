@@ -50,10 +50,11 @@ public class LearningTimeUpDiaFragment extends DialogFragment implements View.On
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.confirm_timeEndingDfg:
-                mListener.onUserMadeChoice();//点击了确认则将消息传递给调用方
+                mListener.onUserMadeChoice(true);//点击了确认则将消息传递给调用方
                 dismiss();
                 break;
             case R.id.cancel_timeEndingDfg:
+                mListener.onUserMadeChoice(false);//点击了取消（不延时，将直接进入未完成的完结程序）
                 dismiss();
                 break;
         }
@@ -88,6 +89,6 @@ public class LearningTimeUpDiaFragment extends DialogFragment implements View.On
     * 不必传递布尔值。
     * */
     public interface OnUserChoiceMadeListener {
-        void onUserMadeChoice();
+        void onUserMadeChoice(boolean isConfirmed);
     }
 }
