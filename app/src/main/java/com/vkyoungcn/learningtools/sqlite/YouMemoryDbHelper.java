@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import com.vkyoungcn.learningtools.R;
@@ -27,8 +26,8 @@ import com.vkyoungcn.learningtools.spiralCore.LogList;
 public class YouMemoryDbHelper extends SQLiteOpenHelper {
     //如果修改了数据库结构方案，则应当改动（增加）版本号
     private static final String TAG = "YouMemory-DbHelper";
-    private static final int DATEBASE_VERSION = 8;
-    private static final String DATEBASE_NAME = "YouMemory.db";
+    private static final int DATABASE_VERSION = 8;
+    private static final String DATABASE_NAME = "YouMemory.db";
     private volatile static YouMemoryDbHelper sYouMemoryDbHelper = null;
     private SQLiteDatabase mSQLiteDatabase = null;
 
@@ -101,17 +100,14 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
     }
 
     public YouMemoryDbHelper(Context context) {
-        super(context, DATEBASE_NAME, null, DATEBASE_VERSION);
-        //Log.i(TAG,"inside YouMemoryDbHelper Constructor, after the super ");
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
         this.context = context;
 
         getWritableDatabaseIfClosedOrNull();
-        //Log.i(TAG,"inside YouMemoryDbHelper Constructor, got the Wdb: "+mSQLiteDatabase.toString());
     }
 
     //DCL模式单例，因为静态内部类模式不支持传参
     public static YouMemoryDbHelper getInstance(Context context){
-        //Log.i(TAG,"inside YouMemoryDbHelper getInstance, before any calls");
         if(sYouMemoryDbHelper == null){
             synchronized (YouMemoryDbHelper.class){
                 if(sYouMemoryDbHelper == null){
@@ -124,11 +120,8 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        Log.i(TAG,"inside YouMemoryDbHelper onCreate");
         db.execSQL(SQL_CREATE_MISSION);
-        Log.i(TAG,"inside YouMemoryDbHelper.onCreate(),behind 1st CREATE");
         db.execSQL(SQL_CREATE_GROUP);
-        //Log.i(TAG,"inside YouMemoryDbHelper.onCreate(),behind 2nd CREATE");
 
         //db.execSQL(SQL_CREATE_MISSION_X_GROUP);已在v5删除，由group的一列替代。
         //其余两个（默认）表在以下方法中建立，随后在该方法中导入相应数据。
@@ -142,26 +135,19 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
     * 为Item_default13531表添加全部记录。（改由版本2处理）
     * */
     private void dataInitialization(SQLiteDatabase db){
-//        Log.i(TAG, "dataInitialization: gotW");
         db.execSQL(getSqlCreateItemWithSuffix(DEFAULT_ITEM_SUFFIX));
-//        Log.i(TAG,"inside YouMemoryDbHelper,CREATE ITEM_DEFAULT");
 
         //向Mission表增加默认记录
         Mission defaultMission  = new Mission("EnglishWords13531","螺旋式背单词",DEFAULT_ITEM_SUFFIX);
-
-        Log.i(TAG, "dataInitialization: ready to insert default_mission,mission= "+defaultMission);
         createMission(db,defaultMission);//传入db是避免调用getDataBase，后者（会调用onCreate）导致递归调用错误
 
 //      Item_default13531表数据导入
 //        db.execSQL(getSqlCreateItemWithSuffix(DEFAULT_ITEM_SUFFIX));
-//        Log.i(TAG, "onUpgrade: case 1");
         importToItemDefaultFromCSV("EbbingWords13531.csv",db);
-
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion){
-        Log.i(TAG, "onUpgrade: before any");
         // 使用for实现跨版本升级数据库
         for (int i = oldVersion; i < newVersion; i++) {
             switch (i) {
@@ -170,7 +156,6 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
                     // 原计划删除的交叉表继续删除
                     db.execSQL("DROP TABLE IF EXISTS temp_old_group");
                     db.execSQL("DROP TABLE IF EXISTS "+YouMemoryContract.GroupCrossItem.TABLE_NAME + DEFAULT_ITEM_SUFFIX);
-                    Log.i(TAG, "onUpgrade: case 4-5");
                     break;
 
                 case 5:
@@ -179,18 +164,15 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
                             +DEFAULT_ITEM_SUFFIX+" ADD COLUMN "
                             +YouMemoryContract.ItemBasic.COLUMN_HAS_BEEN_CHOSE+" BOOLEAN";
                     db.execSQL(alterItem_default);
-                    Log.i(TAG, "onUpgrade: case 5-6");
                     break;
                 case 6:
                     //group表有错误，missionId列没有。故升级一次。
-                    Log.i(TAG, "onUpgrade: v6-7");
                     db.execSQL(SQL_DROP_GROUP);
                     db.execSQL(SQL_CREATE_GROUP);
                     break;
 
                 case 7:
                     //group删一列，增两列。
-                    Log.i(TAG, "onUpgrade: v7-8");
                     String sqlAlt = "ALTER TABLE "+YouMemoryContract.Group.TABLE_NAME+" RENAME TO "+
                             YouMemoryContract.Group.TABLE_NAME+"_temp";
                     db.execSQL(sqlAlt);
@@ -217,9 +199,7 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
                         db.setTransactionSuccessful();
                         db.endTransaction();
                     }
-                    Log.i(TAG, "onUpgrade: v7-8, l= "+l);
                     db.execSQL("DROP TABLE IF EXISTS "+YouMemoryContract.Group.TABLE_NAME+"_temp");
-
 
                 default:
                     break;
@@ -233,22 +213,17 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
     * csv文件不需要首行是列名。
     * */
     private void importToItemDefaultFromCSV(String csvFileName,SQLiteDatabase db){
-        Log.i(TAG, "importItemsFromCSV: before any.");
         String line = "";
 
         InputStream is = null;
         try {
             is = context.getAssets().open(csvFileName);
-//            Log.i(TAG, "importItemsFromCSV: csv opened from Assets.");
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-//            Log.i(TAG, "importItemsFromCSV: br got.");
 
             db.beginTransaction();
 
-            Log.i(TAG, "importItemsFromCSV: transaction begun, ready to make while.");
             int number = 0;
             while ((line = bufferedReader.readLine()) != null) {
-                Log.i(TAG, "importToItemDefaultFromCSV: in While number start from 0, now is:"+ number++);
                 String[] str = line.split(",");
 
                 ContentValues values = new ContentValues();
@@ -263,7 +238,6 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Log.i(TAG, "importItemsFromCSV: after while");
 
             db.setTransactionSuccessful();
             db.endTransaction();
@@ -274,7 +248,7 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion){
         for (int i = oldVersion; i > newVersion; i--) {
             switch (i) {
-
+                //没写。。
                 default:
                     break;
             }
@@ -286,7 +260,6 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
 
     public long createMission(Mission mission){
         long l;
-//        Log.i(TAG, "creatMission: before any.");
 
         getWritableDatabaseIfClosedOrNull();
         ContentValues values = new ContentValues();
@@ -307,7 +280,6 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
     * */
     public  long createMission(SQLiteDatabase db,Mission mission){
         long l;
-        Log.i(TAG, "createMission +db, mission= "+mission);
 
         ContentValues values = new ContentValues();
 
@@ -325,7 +297,6 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         Mission mission = new Mission();
         String selectQuery = "SELECT * FROM "+ YouMemoryContract.Mission.TABLE_NAME+
                 " WHERE "+YouMemoryContract.Mission._ID+" = "+mission_id;
-//        Log.i(TAG, "getMissionById: before any.");
         getReadableDatabaseIfClosedOrNull();
         Cursor cursor = mSQLiteDatabase.rawQuery(selectQuery,null);
 
@@ -335,7 +306,6 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
             mission.setDescription(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Mission.COLUMN_DESCRIPTION)));
             mission.setTableItem_suffix(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Mission.COLUMN_TABLE_ITEM_SUFFIX)));
         }else{
-            Log.i(TAG, "getMissionById: wrong, selected nothing");
             return null;
         }
 
@@ -353,7 +323,6 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         List<Mission> missions = new ArrayList<>();
         String selectQuery = "SELECT * FROM "+ YouMemoryContract.Mission.TABLE_NAME;
 
-        Log.i(TAG, "getAllMissions: before any.");
         getReadableDatabaseIfClosedOrNull();
         Cursor cursor = mSQLiteDatabase.rawQuery(selectQuery, null);
 
@@ -368,7 +337,6 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
                 missions.add(mission);
             }while (cursor.moveToNext());
         }
-        Log.i(TAG, "getAllMissions: after cursor iterate");
 
         try {
             cursor.close();
@@ -385,7 +353,6 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         String selectQuery = "SELECT "+ YouMemoryContract.Mission.COLUMN_NAME
                 +" FROM "+ YouMemoryContract.Mission.TABLE_NAME;
 
-        Log.i(TAG, "getAllMissionTitles: before any.");
         getReadableDatabaseIfClosedOrNull();
         Cursor cursor = mSQLiteDatabase.rawQuery(selectQuery, null);
 
@@ -394,7 +361,6 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
                 missionTitles.add(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Mission.COLUMN_NAME)));
             }while (cursor.moveToNext());
         }
-        Log.i(TAG, "getAllMissionTitles: after cursor iterate");
 
         try {
             cursor.close();
@@ -408,13 +374,11 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
 
 
     public List<SingleItem> getItemsByGroupSubItemIds(String subItemIds, String tableNameSuffix){
-//        Log.i(TAG, "getItemsByGroupSubItemIds: b");
         List<SingleItem> items = new ArrayList<>();
 
         String sqlWhere = getStingSubIdsWithParenthesisForWhereSql(subItemIds);
         String selectQuery = "SELECT * FROM "+ YouMemoryContract.ItemBasic.TABLE_NAME+tableNameSuffix
                 +" WHERE "+YouMemoryContract.ItemBasic._ID+" IN "+sqlWhere;
-//        Log.i(TAG, "getItemsByGroupSubItemIds: where = "+sqlWhere);
         getReadableDatabaseIfClosedOrNull();
         Cursor cursor = mSQLiteDatabase.rawQuery(selectQuery,null);
 
@@ -429,10 +393,8 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
                 items.add(item);
             }while (cursor.moveToNext());
         }else{
-//            Log.i(TAG, "getItemsByGroupSubItemIds: got nothing");
             return null;
         }
-//        Log.i(TAG, "getItemsByGroupSubItemIds: items.size :"+items.size());
         try {
             cursor.close();
         } catch (Exception e) {
@@ -448,7 +410,6 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
     * */
     public long createGroup(DBRwaGroup dbRwaGroup,String tableSuffix){
         long l;
-//        Log.i(TAG, "createGroup: before");
         getWritableDatabaseIfClosedOrNull();
 
         mSQLiteDatabase.beginTransaction();
@@ -462,13 +423,11 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
 
         l = mSQLiteDatabase.insert(YouMemoryContract.Group.TABLE_NAME, null, values);
 
-//        Log.i(TAG, "createGroup: lines:"+l);
         setItemsChose(tableSuffix,dbRwaGroup.getSubItemIdsStr());
         mSQLiteDatabase.setTransactionSuccessful();
         mSQLiteDatabase.endTransaction();
 
         closeDB();
-
         return l;
     }
 
@@ -477,10 +436,8 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         String selectQuery = "SELECT * FROM "+ YouMemoryContract.Group.TABLE_NAME+
                 " WHERE "+YouMemoryContract.Group.COLUMN_MISSION_ID+" = "+missionsId;
 
-//        Log.i(TAG, "getAllGroupsByMissionId: before. sql= "+selectQuery);
         getReadableDatabaseIfClosedOrNull();
         Cursor cursor = mSQLiteDatabase.rawQuery(selectQuery, null);
-//        Log.i(TAG, "getAllGroupsByMissionId: cursor.size "+cursor.getCount());
 
         if(cursor.moveToFirst()){
             do{
@@ -496,7 +453,6 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
                 groups.add(group);
             }while (cursor.moveToNext());
         }
-//        Log.i(TAG, "getAllGroupsByMissionId: after. done");
 
         try {
             cursor.close();
@@ -504,7 +460,6 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
             e.printStackTrace();
         }
         closeDB();
-//        Log.i(TAG, "getAllGroupsByMissionId: db get groups size: "+groups.size());
         return groups;
     }
 
@@ -513,7 +468,6 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         String selectQuery = "SELECT * FROM "+ YouMemoryContract.Group.TABLE_NAME+
                 " WHERE "+YouMemoryContract.Group._ID+" = "+groupId;
 
-//        Log.i(TAG, "getGroupById: before");
         getReadableDatabaseIfClosedOrNull();
         Cursor cursor = mSQLiteDatabase.rawQuery(selectQuery, null);
 
@@ -526,7 +480,6 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
                 group.setFallBehind(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_IS_FALL_BEHIND))==1);
                 group.setObsoleted(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_IS_OBSOLETED))==1);
         }
-//        Log.i(TAG, "getGroupById: after. done");
 
         try {
             cursor.close();
@@ -544,20 +497,17 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
     *
     * */
     public String updateLogOfGroup(int groupId,long finishTime,int learningTypeColor){
-//        Log.i(TAG, "updateLogOfGroup: b, groupId = "+groupId);
         long lines;
         switch (learningTypeColor){
             case R.color.colorGP_Newly:
                 //初学，直接将记录存入DB即可。
                 //生成单条Log记录
                 String singleLogStr = LogModel.getStrSingleLogModelFromLong(0,finishTime,false);
-//                Log.i(TAG, "updateLogOfGroup: sql-log : "+singleLogStr);
                 getWritableDatabaseIfClosedOrNull();
                 ContentValues values = new ContentValues();
                 values.put(YouMemoryContract.Group.COLUMN_GROUP_LOGS,singleLogStr);
                 lines = mSQLiteDatabase.update(YouMemoryContract.Group.TABLE_NAME,values,
                         YouMemoryContract.Group._ID+"=?",new String[]{String.valueOf(groupId)});
-//                Log.i(TAG, "updateLogOfGroup: lines = "+lines);
                 return singleLogStr;
             case R.color.colorGP_STILL_NOT:
                 return "";//未到时间的额外复习，直接返回空串（空串本身就是一个供接收方判断用的标志）
@@ -566,11 +516,10 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
             case R.color.colorGP_Miss_ONCE:
                 String oldLogsStr = getGroupById(groupId).getGroupLogs();
                 String fullyNewLogListStr = LogList.updateStrLogList(oldLogsStr,finishTime,learningTypeColor);
-                if(fullyNewLogListStr.isEmpty()) return "";//如果是60分钟内的复习，按设计不计入log，所调用的方法会
+                if(fullyNewLogListStr==null||fullyNewLogListStr.isEmpty()) return "";//如果是60分钟内的复习，按设计不计入log，所调用的方法会
                 // 直接返回isEmpty的字串，不再向DB写，直接向调用方返回空串。【目前的逻辑是暂定的，后期应在调用DB前
                 // 进行其他判断，如果在60分钟内，则根本不应调用到方法内。】
 
-//                Log.i(TAG, "updateLogOfGroup: missed once : "+fullyNewLogListStr);
                 ContentValues values2 = new ContentValues();
                 values2.put(YouMemoryContract.Group.COLUMN_GROUP_LOGS,fullyNewLogListStr);
                 lines = mSQLiteDatabase.update(YouMemoryContract.Group.TABLE_NAME,values2,
@@ -586,7 +535,6 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
     }
 
     public void removeGroupById(int groupId,String subItemIdsStr,String itemTableNameSuffix){
-        Log.i(TAG, "removeGroupById: ");
         getWritableDatabaseIfClosedOrNull();
         String deleteSingleGroupSql = "DELETE FROM "+YouMemoryContract.Group.TABLE_NAME+" WHERE "+
                 YouMemoryContract.Group._ID+" = "+groupId;
@@ -594,7 +542,6 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         mSQLiteDatabase.beginTransaction();
 
         mSQLiteDatabase.execSQL(deleteSingleGroupSql);
-//        Log.i(TAG, "removeGroupById: done");
 
         setItemsUnChose(itemTableNameSuffix,subItemIdsStr);
 
@@ -617,11 +564,10 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
     }
 
     /*该方法将位于其他方法开启的事务内，因而不能有关DB操作*/
-    public void setItemsUnChose(String tableSuffix, String itemIds){
+    private void setItemsUnChose(String tableSuffix, String itemIds){
         getWritableDatabaseIfClosedOrNull();
 
         if(itemIds==null||itemIds.isEmpty()){
-//            Log.i(TAG, "setItemsUnChose: enmpty ids.");
             return;
         }
         String[] str =  itemIds.split(";");
@@ -645,16 +591,14 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
     /*
     * 设为已抽取，该方法将位于其他方法开启的事务内，因而不能有关DB操作。
     * */
-    public void setItemsChose(String tableSuffix, String itemIds){
+    private void setItemsChose(String tableSuffix, String itemIds){
         getWritableDatabaseIfClosedOrNull();
 
         if(itemIds==null||itemIds.isEmpty()){
-//            Log.i(TAG, "setItemsUnChose: empty ids.");;
             return;
         }
         String[] str =  itemIds.split(";");
         StringBuilder sbr = new StringBuilder();
-//        Log.i(TAG, "setItemsChose: ids raw"+itemIds);
         sbr.append("( ");
         for (String s: str) {
             sbr.append(s);
@@ -662,7 +606,6 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         }
         sbr.deleteCharAt(sbr.length()-2);//【错误记录，这里原来误写成str，错得很隐蔽】
         sbr.append(")");
-//        Log.i(TAG, "setItemsChose: sql"+sbr.toString());
 
         String itemsChoseSql = "UPDATE "+ YouMemoryContract.ItemBasic.TABLE_NAME+tableSuffix+
                 " SET "+YouMemoryContract.ItemBasic.COLUMN_HAS_BEEN_CHOSE+
@@ -688,15 +631,12 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
                 +" FROM "+YouMemoryContract.ItemBasic.TABLE_NAME+tableNameSuffix
                 +" WHERE "+YouMemoryContract.ItemBasic._ID+" IN ( "+selectQueryInner+" ) LIMIT "+amount;
 
-//        Log.i(TAG, "getCertainAmountItemIdsOrderly: ready to select certain amount Items");
-//        Log.i(TAG, "getCertainAmountItemIdsOrderly: sql: "+selectQueryOuter);
 
         getReadableDatabaseIfClosedOrNull();
 //        mSQLiteDatabase.beginTransaction();
 
         Cursor cursor = mSQLiteDatabase.rawQuery(selectQueryOuter, null);
 
-//        Log.i(TAG, "getCertainAmountItemIdsOrderly: cursor's size:"+cursor.getCount());
         if(cursor.moveToFirst()){
             do{
                 int i = cursor.getInt(cursor.getColumnIndex(YouMemoryContract.ItemBasic._ID));
@@ -704,7 +644,6 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
             }while (cursor.moveToNext());
 
         }//【即使无结果也不能返回null；返回长为0的list即可】
-//        Log.i(TAG, "getCertainAmountItemIdsOrderly: ids"+ids.toString());
 
         try {
             cursor.close();
@@ -729,7 +668,6 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
                 +" WHERE "+YouMemoryContract.ItemBasic.COLUMN_HAS_BEEN_CHOSE+" = 0 OR "
                 +YouMemoryContract.ItemBasic.COLUMN_HAS_BEEN_CHOSE+" IS NULL "
                 + " ORDER BY RANDOM() LIMIT "+amount;
-//        Log.i(TAG, "getCertainAmountItemIdsRandomly: sql: "+selectQuery);
 
         getReadableDatabaseIfClosedOrNull();
 
@@ -741,7 +679,6 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
             }while (cursor.moveToNext());
 
         }
-//        Log.i(TAG, "getCertainAmountItemIdsRandomly: got certain amount items");
 
         try {
             cursor.close();
@@ -759,7 +696,6 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         String selectQuery = "SELECT "+YouMemoryContract.ItemBasic.COLUMN_NAME+
                 " FROM "+ YouMemoryContract.ItemBasic.TABLE_NAME+suffix+
                 " WHERE "+YouMemoryContract.ItemBasic._ID+" = "+itemId;
-//        Log.i(TAG, "getSingleItemNameById: before any");
 
         getReadableDatabaseIfClosedOrNull();
         Cursor cursor = mSQLiteDatabase.rawQuery(selectQuery,null);
@@ -768,7 +704,6 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
             itemName = cursor.getString(cursor.getColumnIndex(YouMemoryContract.ItemBasic.COLUMN_NAME));
 
         }else{
-            Log.i(TAG, "getMissionById: wrong, selected nothing");
             return null;
         }
 
@@ -782,7 +717,7 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
 
     }
 
-    public String getStingSubIdsWithParenthesisForWhereSql(String subItemsIdsStr){
+    private String getStingSubIdsWithParenthesisForWhereSql(String subItemsIdsStr){
         if(subItemsIdsStr==null||subItemsIdsStr.isEmpty()){
             return "()";
         }
@@ -800,11 +735,8 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
     }
 
     private void getWritableDatabaseIfClosedOrNull(){
-//        Log.i(TAG, "getWritableDatabaseIfClosedOrNull: before any");
         if(mSQLiteDatabase==null || !mSQLiteDatabase.isOpen()) {
-//            Log.i(TAG, "getWritableDatabaseIfClosedOrNull: inside but not got W");
             mSQLiteDatabase = this.getWritableDatabase();
-//            Log.i(TAG,"inside GetWDbIfClosedOrNull(),so Got the W-DB");
         }/*else if (mSQLiteDatabase.isReadOnly()){
             //只读的不行，先关，再开成可写的。
             try{
@@ -819,14 +751,12 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
     private void getReadableDatabaseIfClosedOrNull(){
         if(mSQLiteDatabase==null || !mSQLiteDatabase.isOpen()) {
             mSQLiteDatabase = this.getReadableDatabase();
-//            Log.i(TAG,"inside GetRDbIfClosedOrNull(),so Got the R-DB");
             //如果是可写DB，也能用，不再开关切换。
         }
     }
 
     //关数据库
     private void closeDB(){
-//        Log.i(TAG,"inside closeDB, before any calls.");
         if(mSQLiteDatabase != null && mSQLiteDatabase.isOpen()){
             try{
                 mSQLiteDatabase.close();
@@ -835,6 +765,5 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
             }
         } // end if
     }
-
 
 }

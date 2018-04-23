@@ -7,7 +7,7 @@
     android:orientation="vertical"
     android:gravity="center"
     android:padding="8dp"
-    tools:context=".LearningTimeUpDiaFragment">
+    tools:context=".fragments.LearningTimeUpDiaFragment">
 
 
     <TextView

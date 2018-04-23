@@ -1,22 +1,16 @@
 package com.vkyoungcn.learningtools.validatingEditor;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Rect;
-import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
-import android.view.inputmethod.InputMethodManager;
 
 import com.vkyoungcn.learningtools.R;
 
@@ -25,9 +19,8 @@ import java.util.regex.Pattern;
 
 
 /**
- * Thanks to the original author.
+ * Thanks to the original author Adrián García Lomas.
  * This code is only being used under non_commercial situations.
- * @author Adrián García Lomas
  */
 public class ValidatingEditor extends View {
     private static final String TAG = "ValidatingEditor";
@@ -184,13 +177,9 @@ public class ValidatingEditor extends View {
     //【学：据说是系统计算好控件的实际尺寸后以本方法通知用户】
     @Override
     protected void onSizeChanged(int w, int h, int old_w, int old_h) {
-//        Log.i(TAG, "onSizeChanged: b");
-
         sizeChangedHeight = h;
         sizeChangedWidth = w;
         initUnderline(w);
-
-
 
         super.onSizeChanged(w, h, old_w, old_h);
 
@@ -199,12 +188,9 @@ public class ValidatingEditor extends View {
     //目前，宽度固定设置为最大值；高度视控件文本字符数量
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-//        Log.i(TAG, "onMeasure: b");
         int maxWidth = MeasureSpec.getSize(widthMeasureSpec);//这样设置的前提是XML中明确给控件设置为match_..
-//        Log.i(TAG, "onMeasure: maxW = "+maxWidth);
         float requireHeight = viewHeight+padding*2;
         if (targetText.isEmpty()) {
-//            Log.i(TAG, "onMeasure: text is empty");
             setMeasuredDimension(maxWidth, (int) requireHeight);
             return;
         }
@@ -212,18 +198,14 @@ public class ValidatingEditor extends View {
         float requiredTotalWidth = bottomLineSectionAmount*bottomLineHorizontalLength+padding*2;
         if(requiredTotalWidth>maxWidth){
             lines = (int)(requiredTotalWidth/maxWidth)+1;
-//            Log.i(TAG, "onMeasure: bottomLineSectionAmount*bottomLineHorizontalLength = "+(int)(bottomLineSectionAmount*bottomLineHorizontalLength));
-//            Log.i(TAG, "onMeasure: lines = "+lines);
             requireHeight = viewHeight*lines+padding*2;
         }
 
         setMeasuredDimension(maxWidth,(int)requireHeight);
-
     }
 
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        Log.i(TAG, "onCreateInputConnection: ");
 
         return new VeInputConnection(this,false);
     }
@@ -235,13 +217,11 @@ public class ValidatingEditor extends View {
 
         @Override
         public boolean sendKeyEvent(KeyEvent event) {
-            Log.i(TAG, "sendKeyEvent: keyEvent="+event.toString());
             return super.sendKeyEvent(event);
         }
 
         @Override
         public boolean commitText(CharSequence text, int newCursorPosition) {
-            Log.i(TAG, "commitText，text length = "+text);
             CharSequence firstCharText = String.valueOf(text.charAt(0));
             //只传出其第一个字符
             return super.commitText(firstCharText, newCursorPosition);
@@ -286,14 +266,10 @@ public class ValidatingEditor extends View {
     /**
      * String text
      * Pass empty string to remove text
-     *
-     * @param text text to input
-     * @return true if input
      */
     private boolean inputText(String text, boolean capsOn) {
         Matcher matcher = KEYCODE_PATTERN.matcher(text);
         if (matcher.matches()) {
-//            Log.i(TAG, "inputText: b");
             String matched = matcher.group(1);
             char character;
             if(!capsOn){
@@ -304,10 +280,8 @@ public class ValidatingEditor extends View {
             characters.push(character);
 
             if (characters.size() >= bottomLineSectionAmount ) {//满了
-                Log.i(TAG, "inputText: full");
                 if(getCurrentString().compareTo(targetText) == 0) {
                     if(listener != null) {
-                        Log.i(TAG, "inputText: interface triggered");
                         listener.onCodeCorrectAndReady();
                     }
                 }
@@ -325,50 +299,13 @@ public class ValidatingEditor extends View {
         }
     }
 
-    /**
-     * When a touch is detected the view need to focus and animate if is necessary
-     */
-    /*@Override
-    public boolean onTouchEvent(MotionEvent motionevent) {
-        if (motionevent.getAction() == MotionEvent.ACTION_DOWN) {
-
-        }
-        return super.onTouchEvent(motionevent);
-    }*/
-
-    /*@Override
-    protected void onFocusChanged(boolean gainFocus, int direction, @Nullable Rect previouslyFocusedRect) {
-        if(gainFocus){
-           showKeyboard();
-        }else {
-            hideKeyBoard();
-        }
-        super.onFocusChanged(gainFocus, direction, previouslyFocusedRect);
-    }
-
-    private void showKeyboard() {
-        Log.i(TAG, "showKeyboard: ");
-        InputMethodManager inputmethodmanager =
-                (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputmethodmanager.showSoftInput(this, InputMethodManager.RESULT_UNCHANGED_SHOWN);
-        inputmethodmanager.viewClicked(this);
-    }
-
-    private void hideKeyBoard(){
-        InputMethodManager inputmethodmanager = (InputMethodManager) getContext().getSystemService(Activity.INPUT_METHOD_SERVICE);
-        inputmethodmanager.hideSoftInputFromWindow(getWindowToken(), InputMethodManager.RESULT_UNCHANGED_SHOWN);
-    }
-*/
     @Override
     protected void onDraw(Canvas canvas) {
 
         if(targetText.isEmpty()) {
-            Log.i(TAG, "onDraw: empty, ready return");
             return;
         }
 
-//        while (!stopDrawing){
-//            Log.i(TAG, "onDraw: Bool-stopDrawing = "+stopDrawing);
             if(leastWrongPosition!=0) {
                 backgroundPaint.setColor(backgroundNotCorrectColor);
             }else {
@@ -377,7 +314,6 @@ public class ValidatingEditor extends View {
             canvas.drawRect(0,0,sizeChangedWidth,sizeChangedHeight,backgroundPaint);
 
             for (int i = 0; i < bottomLineSections.length; i++) {
-//            Log.i(TAG, "onDraw: i="+i);
                 BottomLineSection sectionPath = bottomLineSections[i];
                 float fromX = sectionPath.getFromX() + bottomLineHorizontalMargin;
                 float fromY = sectionPath.getFromY();
@@ -390,24 +326,9 @@ public class ValidatingEditor extends View {
                     drawCharacter(characterCorrect, fromX, toX, fromY, characters.get(i), canvas);
                 }
             }
-//        Log.i(TAG, "onDraw: ready to invalidate");
             invalidate();
-//        }
 
     }
-
-    /*public void stopDrawing(){
-//        Log.i(TAG, "stopDrawing: ");
-        this.stopDrawing = true;
-    }
-
-    public void reStartDrawing(){
-        this.stopDrawing = false;
-        invalidate();
-    }
-    public boolean isStopDrawing(){
-        return this.stopDrawing;
-    }*/
 
     private boolean isCharacterCorrectAtPosition(int position){
         return characters.get(position).compareTo(targetText.charAt(position))==0;//相等，字符正确。
@@ -450,15 +371,11 @@ public class ValidatingEditor extends View {
     * 方法由程序调用，动态设置目标字串
     * */
     public void setTargetText(String targetText){
-        Log.i(TAG, "setTargetText: b");
         this.targetText = targetText;
 
         bottomLineSectionAmount = targetText.length();
-//        Log.i(TAG, "setTargetText: bottomLineSectionAmount = "+bottomLineSectionAmount);
         //由于要根据目标字串的字符数量来绘制控件，所以所有需要用到该数量的初始化动作都只能在此后进行
         initDataStructures();
-//        requestFocus();
-//        showKeyboard();
 
     }
 
@@ -469,22 +386,18 @@ public class ValidatingEditor extends View {
     }
 
     private void initUnderline(int viewMaxWidth) {
-//        Log.i(TAG, "initUnderline: b");
         if(lines ==1) {
-//            Log.i(TAG, "initUnderline: line 1");
+
             for (int i = 0; i < bottomLineSectionAmount; i++) {
                 bottomLineSections[i] = createPath(i, 1, bottomLineHorizontalLength);
             }
         }else {
-//            Log.i(TAG, "initUnderline: lines > 1");
             int sectionsMaxAmountPerLine = (int)(viewMaxWidth/bottomLineHorizontalLength);
             for (int i = 0; i < bottomLineSectionAmount; i++) {
                 int theLine = (i/sectionsMaxAmountPerLine)+1;
-//                Log.i(TAG, "initUnderline: i = "+i+" the Line = "+theLine);
                 int positionInLine = i%sectionsMaxAmountPerLine;
                 bottomLineSections[i] = createPath(positionInLine, theLine, bottomLineHorizontalLength);
             }
-
         }
     }
 
@@ -492,7 +405,6 @@ public class ValidatingEditor extends View {
         float fromX = sectionLength * (float) position + padding;
         float heightPerLine = (sizeChangedHeight-2*padding)/theLine;
         float fromY = heightPerLine*theLine+padding;
-//        Log.i(TAG, "createPath: theLine = "+theLine+" Y = "+fromY+" X = "+fromX);
         return new BottomLineSection(fromX, fromY, fromX + sectionLength, fromY);
     }
 }

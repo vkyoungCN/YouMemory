@@ -3,11 +3,11 @@ package com.vkyoungcn.learningtools.validatingEditor;
 import java.util.Stack;
 
 /**
- * @author Adrián García Lomas
+ * Thanks to origin author Adrián García Lomas
  */
 public class FixedStack<T> extends Stack<T> {
 
-  int maxSize = 0;
+  private int maxSize = 0;
 
   @Override public T push(T object) {
     if (maxSize > size()) {

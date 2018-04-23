@@ -1,19 +1,19 @@
-package com.vkyoungcn.learningtools;
+package com.vkyoungcn.learningtools.fragments;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.app.DialogFragment;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.vkyoungcn.learningtools.R;
 
 
 public class LearningTimeUpDiaFragment extends DialogFragment implements View.OnClickListener {
     private static final String TAG = "LearningTimeUpDiaFragme";
 
-    private OnUserChoiceMadeListener mListener;
+    private OnSimpleDFgButtonClickListener mListener;
 
     public LearningTimeUpDiaFragment() {
         // Required empty public constructor
@@ -48,16 +48,10 @@ public class LearningTimeUpDiaFragment extends DialogFragment implements View.On
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
-            case R.id.confirm_timeEndingDfg:
-                mListener.onUserMadeChoice(true);//点击了确认则将消息传递给调用方
-                dismiss();
-                break;
-            case R.id.cancel_timeEndingDfg:
-                mListener.onUserMadeChoice(false);//点击了取消（不延时，将直接进入未完成的完结程序）
-                dismiss();
-                break;
-        }
+        //不论点击的是确认还是取消或其他按键，直接调用Activity中实现的监听方法，
+        // 将view的id传给调用方处理。
+        mListener.onDfgButtonClick(v.getId());
+        dismiss();
     }
 
 
@@ -70,11 +64,11 @@ public class LearningTimeUpDiaFragment extends DialogFragment implements View.On
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnUserChoiceMadeListener) {
-            mListener = (OnUserChoiceMadeListener) context;
+        if (context instanceof OnSimpleDFgButtonClickListener) {
+            mListener = (OnSimpleDFgButtonClickListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnUserChoiceMadeListener");
+                    + " must implement OnSimpleDFgButtonClickListener");
         }
     }
 
@@ -84,11 +78,4 @@ public class LearningTimeUpDiaFragment extends DialogFragment implements View.On
         mListener = null;
     }
 
-    /*
-    * 用户点击了确认续时的按钮后，通知Activity。
-    * 不必传递布尔值。
-    * */
-    public interface OnUserChoiceMadeListener {
-        void onUserMadeChoice(boolean isConfirmed);
-    }
 }

@@ -16,7 +16,7 @@ import java.util.Date;
 * 【暂定日志记录的数字从0开始，0 是初学】
 * */
 public class LogList {
-    private static final String TAG = "LogList";
+//    private static final String TAG = "LogList";
 
 
     /*
@@ -41,13 +41,11 @@ public class LogList {
     //【待2】应该在时段截至前10或20分钟停止计时，不再等待复习，否则时间不足无法完成复习的。
     public static GroupState getGroupStateBaseOnGroupLogs(String strLogs) {
         GroupState groupState = new GroupState();
-        long timeAmountMinutes = 0;
+        long timeAmountMinutes ;
         int maxRePickingTimes = 12;//最大复习次数，当前设置为12，最后复习时间约在4~8个。
-        int n = 0;
-//        Log.i(TAG, "setCurrentStateForGroup: before");
+        int n ;
 
         if (strLogs == null || strLogs.isEmpty()) {//新建分组，还没开始学习。尽快开始学习。
-//            Log.i(TAG, "setCurrentStateForGroup: list null or ==0, newly group?");
             groupState.setColorResId(GroupState.ColorResId.COLOR_NEWLY);
             return groupState;
         }
@@ -117,9 +115,9 @@ public class LogList {
         long timeRemainingStageII = (2 * (baseTimeFactor * 2 ^ n) - timeAmountMinutes);//距“错过第一次复习”还有多久
         long timeRemainingStageIII = (4 * (baseTimeFactor * 2 ^ n) - timeAmountMinutes);//距“错过两次复习”还有多久
 
-        byte minuteReminder = 0;
-        byte hourReminder = 0;
-        byte dayReminder = 0;
+        byte minuteReminder;
+        byte hourReminder;
+        byte dayReminder;
 
         //以下是有两条及以上日志，除n=2 略有不同外，其余规则一致
         if (timeAmountMinutes < 60) {//此时间段内的复习已完成。
@@ -170,27 +168,17 @@ public class LogList {
     * 根据groupLogs返回对应的ColorResource，是前一方法的简化版*/
     public static int getCurrentColorResourceForGroup(String strLogs) {
 
-        long timeAmountMinutes = 0;
+        long timeAmountMinutes ;
         int maxRePickingTimes = 12;//最大复习次数，当前设置为12，最后复习时间约在4~8个。
-        int n = 0;
-//        Log.i(TAG, "setCurrentStateForGroup: ");
+        int n ;
         if (strLogs == null || strLogs.isEmpty()) {//新建分组，还没开始学习。尽快开始学习。
-//            Log.i(TAG, "setCurrentStateForGroup: list null or ==0, newly group?");
             return GroupState.ColorResId.COLOR_NEWLY;
         }
         String[] strLogsArray = strLogs.split(";");//每个元素是一条形如N#yyyy-MM-dd hh:mm:ss#false;的记录
-//        Log.i(TAG, "getCurrentColorResourceForGroup: log[0] = "+strLogsArray[0]);
         LogModel firstLog = new LogModel(strLogsArray[0]);//所有情形都要和初次学习时间做比较计算
-//        Log.i(TAG, "getCurrentColorResourceForGroup: TimeInMillis = "+firstLog.getTimeInMilli());
 
         long currLong = System.currentTimeMillis();
         timeAmountMinutes = (currLong - firstLog.getTimeInMilli()) / (1000 * 60);//当前时间和初次学习时间相比，已过去多久
-//        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-
-//        String currentStr = simpleDateFormat.format(currLong);
-//        String logTimeStr = simpleDateFormat.format(firstLog.getTimeInMilli());
-//        Log.i(TAG, "getCurrentColorResourceForGroup: In Min by long，timeAmountMinutes = "+timeAmountMinutes+" recalculate by millis: "+(currLong- firstLog.getTimeInMilli())/60000);
-//        Log.i(TAG, "getCurrentColorResourceForGroup: In Str, current = "+currentStr+" log = "+logTimeStr);
         n = strLogsArray.length;
 
         //n=1的计算与其他不同，直接手写；其他条件下函数式判断。
@@ -247,12 +235,10 @@ public class LogList {
      * 根据groupLogs返回对应的state整型数，是简化版*/
     public static GroupState.stateNumber getCurrentStateIntegerForGroup(String strLogs) {
 
-        long timeAmountMinutes = 0;
+        long timeAmountMinutes ;
         int maxRePickingTimes = 12;//最大复习次数，当前设置为12，最后复习时间约在4~8个。
-        int n = 0;
-//        Log.i(TAG, "setCurrentStateForGroup: ");
+        int n ;
         if (strLogs == null || strLogs.isEmpty()) {//新建分组，还没开始学习。尽快开始学习。
-//            Log.i(TAG, "setCurrentStateForGroup: list null or ==0, newly group?");
             return stateNumber.NEWLY_CREATED;
         }
         String[] strLogsArray = strLogs.split(";");//每个元素是一条形如N#yyyy-MM-dd hh:mm:ss#false;的记录
@@ -315,13 +301,11 @@ public class LogList {
     public static RemainingTimeAmount getCurrentRemainingTimeForGroup(String strLogs) {
 
         RemainingTimeAmount remainingTimeAmount = new RemainingTimeAmount((byte) 0,(byte) 0,(byte) 0);
-        long timeAmountMinutes = 0;
+        long timeAmountMinutes ;
         int maxRePickingTimes = 12;//最大复习次数，当前设置为12，最后复习时间约在4~8个。
-        int n = 0;
-//        Log.i(TAG, "setCurrentStateForGroup: before");
+        int n ;
 
         if (strLogs == null || strLogs.isEmpty()) {//新建分组，还没开始学习。尽快开始学习。
-//            Log.i(TAG, "setCurrentStateForGroup: list null or ==0, newly group?");
             return remainingTimeAmount;
         }
         String[] strLogsArray = strLogs.split(";");//每个元素是一条形如N#yyyy-MM-dd hh:mm:ss#false;的记录
@@ -386,9 +370,9 @@ public class LogList {
         long timeRemainingStageII = (2 * (baseTimeFactor * 2 ^ (n+1)) - timeAmountMinutes);//距“错过第一次复习”还有多久
         long timeRemainingStageIII = (4 * (baseTimeFactor * 2 ^ (n+1)) - timeAmountMinutes);//距“错过两次复习”还有多久
 
-        byte minuteReminder = 0;
-        byte hourReminder = 0;
-        byte dayReminder = 0;
+        byte minuteReminder;
+        byte hourReminder;
+        byte dayReminder;
 
         if (timeAmountMinutes < 60) {//此时间段内的复习已完成。
             remainingTimeAmount.setRemainingMinutes((byte) 0);
@@ -761,7 +745,6 @@ public class LogList {
                     groupState.setRemainingDays((short)0);
                 break;
         }*/
-//        Log.i(TAG, "setGroupStateForGroup: done.");
 
 
     /*
@@ -783,7 +766,6 @@ public class LogList {
         //首节为数字N（初学记录：0 ；60'内复习无记录；其后复习从1起编。由复习发起页面控制进入逻辑。）
         String oldNum = sectionOfSingleLog[0];
         if(oldNum == null||oldNum.isEmpty()){
-            Log.e(TAG, "updateStrLogList: something goes wrong, oldLog's n = 0" );
             return null;
         }
 
@@ -797,7 +779,6 @@ public class LogList {
             e.printStackTrace();
         }
         int num = Integer.parseInt(oldNum)+1;//注意，第30~60分钟的复习，不算在LOGS之内，而作为独立标记记录。
-        Log.i(TAG, "updateStrLogList: new num : "+num);
 
         switch (stateColor){
             case R.color.colorGP_AVAILABLE:

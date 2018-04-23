@@ -3,12 +3,12 @@ package com.vkyoungcn.learningtools.models;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+@SuppressWarnings("all")
 /* 单条日志记录
 * 【暂定日志记录的数字从0开始，0 是初学】
 * 对应各组任务的一次学习和复习的记录

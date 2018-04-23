@@ -1,7 +1,8 @@
 package com.vkyoungcn.learningtools.spiralCore;
 
+@SuppressWarnings("all")
 public class RemainingTimeAmount {
-    private static final String TAG = "RemainingTimeAmount";
+//    private static final String TAG = "RemainingTimeAmount";
 
     private byte remainingMinutes = 0;//距离下一阶段还剩余多少分钟。
     private byte remainingHours = 0;//距离下一阶段还剩余多少小时。

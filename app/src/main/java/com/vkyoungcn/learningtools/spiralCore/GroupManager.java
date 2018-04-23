@@ -15,17 +15,13 @@ import java.util.List;
 * ②分组所属项目的列表（在字串形式和List<Integer>形式间）的转换。
 * ③刷新当前任务下所属分组的情况。
 * */
+@SuppressWarnings("all")
 public class GroupManager {
     private static final String TAG = "GroupManager";
     private Context context = null;
 
-    public static final class GroupSpecialMarks {
-        public static final int NORMAL_GROUP = 0;
-        public static final int SPLIT = 1;
-        public static final int FALL_BEHIND_SPLIT = 2;
-        public static final int OBSOLETED =3;
-    }
-
+    //另，原计划增加枚举类：分组状态，用以专门性的标识分组状态（目前是以colorId替代的）；
+    // 后来认为没有必要。
     public GroupManager(Context context) {
         this.context = context;
     }
@@ -48,14 +44,11 @@ public class GroupManager {
     * 基于UIGroup的CS提供相应的显示字串
     * */
     public static String getCurrentStateTimeAmountStringFromUIGroup(GroupState groupState){
-//        Log.i(TAG, "getCurrentStateTimeAmountString: be");
         GroupState.stateNumber stateNumber = groupState.getState();
-
         StringBuilder sbf = new StringBuilder();
 
         switch (stateNumber){
             case NOT_YET:
-//                Log.i(TAG, "getCurrentStateTimeAmountString: color not");
                 sbf.append("未到复习时间,还有");
                 if(groupState.getRemainingDays()!=0){
                     sbf.append(groupState.getRemainingDays());
@@ -125,10 +118,9 @@ public class GroupManager {
     public static List<RvGroup> ascOrderByRemainingTime(List<RvGroup> rvGroups){
         List<RvGroup> resultRvGroups = new ArrayList<>();
 
-        //我不知道我采用的这种排序方式叫什么名字，总之就想出了这种方案【看来的确不只有冒泡这个东西】
+        //此排序属何种算法【？我非科班游击队基本功不行啊】
         for (int i = 0; i < rvGroups.size(); ) {//不能i++，但size每次减少1。
             RvGroup minRvGroup = rvGroups.get(i);//即使用new也是指针形式，最后都是重复数据（且提示new无意义）
-//            Log.i(TAG, "ascOrderByRemainingTime: i: "+i);
 
             for (int j = 1; j < rvGroups.size(); j++) {
                 //计算指针项的值
@@ -145,7 +137,6 @@ public class GroupManager {
             rvGroups.remove(rvGroups.indexOf(minRvGroup));//将最小的删除
             try {
                 RvGroup gp = (RvGroup) minRvGroup.clone();//克隆方式复制。
-//                Log.i(TAG, "ascOrderByRemainingTime: gp="+gp.getId()+",minRv="+minRvGroup.getId());
                 resultRvGroups.add(gp);//一遍检索的最小值加入结果list。
             } catch (CloneNotSupportedException e) {
                 e.printStackTrace();
@@ -153,8 +144,5 @@ public class GroupManager {
         }
         return resultRvGroups;
     }
-
-
-
 
 }

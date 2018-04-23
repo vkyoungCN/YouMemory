@@ -1,10 +1,9 @@
-package com.vkyoungcn.learningtools;
+package com.vkyoungcn.learningtools.fragments;
 
 import android.app.DialogFragment;
 import android.content.Context;
 import android.graphics.Point;
 import android.os.Bundle;
-import android.os.Parcelable;
 
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -14,11 +13,8 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
 
+import com.vkyoungcn.learningtools.R;
 import com.vkyoungcn.learningtools.adapter.LogsOfSingleGroupAdapter;
-import com.vkyoungcn.learningtools.models.LogModel;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**

@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".CreateGroupDiaFragment">
+    tools:context=".fragments.CreateGroupDiaFragment">
 
     <!--
         分组大小选择
@@ -22,6 +22,7 @@
             android:gravity="center"
             android:layout_gravity="center"/>
 
+        <!--竖向分割线-->
         <TextView
             android:layout_width="1dp"
             android:layout_height="match_parent"
@@ -36,7 +37,12 @@
             android:orientation="horizontal"
             android:padding="2dp"
             >
-
+            <RadioButton
+                android:id="@+id/rb_12_group_create_dfg"
+                android:padding="2dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/num_12"/>
             <RadioButton
                 android:id="@+id/rb_36_group_create_dfg"
                 android:padding="2dp"
@@ -44,12 +50,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/num_36"
                 android:checked="true"/>
-            <RadioButton
-                android:id="@+id/rb_54_group_create_dfg"
-                android:padding="2dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/num_54"/>
+
             <RadioButton
                 android:id="@+id/rb_72_group_create_dfg"
                 android:padding="2dp"
@@ -57,13 +58,34 @@
                 android:layout_height="wrap_content"
                 android:text="@string/num_72"/>
             <RadioButton
-                android:id="@+id/rb_90_group_create_dfg"
+                android:id="@+id/rb_108_group_create_dfg"
                 android:padding="2dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/num_90"/>
+                android:text="@string/num_108"/>
 
         </RadioGroup>
+        <!--竖向分割线-->
+       <!-- <TextView
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="#efefefef"
+            />
+
+        <EditText
+            android:id="@+id/numByHand_groupCreate_dfg"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:hint="@string/input_by_hand2"
+            android:lines="1"
+            android:inputType="number"
+            android:ellipsize="end"
+            android:textSize="12sp"
+
+            />-->
 
     </LinearLayout>
 

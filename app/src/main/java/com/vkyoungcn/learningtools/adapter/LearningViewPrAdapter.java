@@ -3,16 +3,15 @@ package com.vkyoungcn.learningtools.adapter;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
-import android.util.Log;
 
-import com.vkyoungcn.learningtools.SingleItemInitLearningFragment;
-import com.vkyoungcn.learningtools.SingleItemRePickingFragment;
+import com.vkyoungcn.learningtools.fragments.SingleItemInitLearningFragment;
+import com.vkyoungcn.learningtools.fragments.SingleItemRePickingFragment;
 import com.vkyoungcn.learningtools.models.SingleItem;
 
 import java.util.List;
 
 public class LearningViewPrAdapter extends FragmentStatePagerAdapter {
-    private static final String TAG = "LearningViewPrAdapter";
+//    private static final String TAG = "LearningViewPrAdapter";
     private List<SingleItem> singleItems;
 
     private int learningType = TYPE_INIT_LEARNING;//学习类型，影响将加载的fg类型
@@ -21,10 +20,8 @@ public class LearningViewPrAdapter extends FragmentStatePagerAdapter {
     public static final int TYPE_EXAMINING = 103;//纯测验
 
 
-
     public LearningViewPrAdapter(FragmentManager fm, List<SingleItem> singleItems, int type) {
         super(fm);
-//        Log.i(TAG, "LearningViewPrAdapter: b");
         this.singleItems = singleItems;
         this.learningType = type;
     }

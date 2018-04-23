@@ -1,4 +1,4 @@
-package com.vkyoungcn.learningtools;
+package com.vkyoungcn.learningtools.fragments;
 
 import android.app.DialogFragment;
 import android.content.Context;
@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.vkyoungcn.learningtools.R;
 
 /**
  * 一个纯粹的提示确认对话框

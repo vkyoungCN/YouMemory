@@ -10,7 +10,7 @@ import java.util.List;
  * 用于RecyclerView的数据模型，只提供直接数据；
  * 运算部分提前完成不能带到适配器内部，否则运行卡顿严重。
  */
-
+@SuppressWarnings("all")
 public class RvGroup implements Cloneable{
     private static final String TAG = "RvGroup";
 

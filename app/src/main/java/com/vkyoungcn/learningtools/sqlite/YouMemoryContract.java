@@ -2,6 +2,7 @@ package com.vkyoungcn.learningtools.sqlite;
 
 import android.provider.BaseColumns;
 
+@SuppressWarnings("all")
 /**
  * Created by VkYoung16 on 2018/3/26 0026.
  * 是数据库的设计方案类；描述了其中的表和字段结构。

@@ -11,13 +11,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.vkyoungcn.learningtools.adapter.GroupsOfMissionRvAdapter;
+import com.vkyoungcn.learningtools.fragments.ConfirmReadyLearningDiaFragment;
+import com.vkyoungcn.learningtools.fragments.ConfirmRemoveRedsDiaFragment;
+import com.vkyoungcn.learningtools.fragments.CreateGroupDiaFragment;
+import com.vkyoungcn.learningtools.fragments.OnSimpleDFgButtonClickListener;
 import com.vkyoungcn.learningtools.models.DBRwaGroup;
 import com.vkyoungcn.learningtools.models.GroupState;
 import com.vkyoungcn.learningtools.models.Mission;
@@ -30,51 +33,43 @@ import com.vkyoungcn.learningtools.sqlite.YouMemoryDbHelper;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /*
- * 单个Mission的详情页；Mission详情及所属任务分组的集合展示（Rv）；
- * 可以新建任务分组；
+ * 单个Mission的详情页；
+ * 页面上部是Mission详情；
+ * 页面下部是所属分组的集合展示（Rv）；默认以排序方式（新组最前，蓝、橙按时间次之，灰、红在后。）
+ * 本页面中：可以新建分组；可以对超时分组（红色）进行删除，所属词汇回归为未选中的Item。
+ * 点击Rv中的条项（绿、蓝、橙）可以进入学习/复习页面；会有确认框弹出提示。
+ * 学习/复习完成或因超时而未能完成的，都会回到本页面；完成则更新RV列表的显示，
+ * 失败则产生一条消息【待实现】。
  * */
-public class MissionDetailActivity extends AppCompatActivity implements CreateGroupDiaFragment.OnFragmentInteractionListener,ConfirmReadyLearningDiaFragment.OnConfirmClick, ConfirmRemoveRedsDiaFragment.OnRemoveRedsConfirmClick {
-    private static final String TAG = "MissionDetailActivity";
+public class MissionDetailActivity extends AppCompatActivity implements OnSimpleDFgButtonClickListener, CreateGroupDiaFragment.OnFragmentInteractionListener,ConfirmReadyLearningDiaFragment.OnConfirmClick, ConfirmRemoveRedsDiaFragment.OnRemoveRedsConfirmClick {
+//    private static final String TAG = "MissionDetailActivity";
+
+    public static final int MESSAGE_PRE_DB_FETCHED =5011;
+    public static final int MESSAGE_UI_RE_FRESH = 5012;
+
+    private static final String ITEM_TABLE_SUFFIX = "item_table_suffix";
+    private static final String GROUP_SUB_ITEM_ID_STR = "group_sub_item_ids_str";
+    public static final int REQUEST_CODE_LEARNING = 2011;//学习完成后，要回送然后更新Rv数据源和显示。
 
     private Mission missionFromIntent;//从前一页面获取。后续页面需要mission的id，suffix字段。
     List<DBRwaGroup> dbRwaGroups = new ArrayList<>();//DB原始数据源
     List<RvGroup> rvGroups = new ArrayList<>();//分开设计的目的是避免适配器内部的转换，让转换在外部完成，适配器直接只用直接数据才能降低卡顿。
+    private YouMemoryDbHelper memoryDbHelper;
+    private String tableItemSuffix;//由于各任务所属的Item表不同，后面所有涉及Item的操作都需要通过后缀才能构建出完整表名。
     private RecyclerView mRv;
-    private FrameLayout maskFrameLayout;
-
-    public static final int MESSAGE_PRE_DB_FETCHED =10;
-    public static final int MESSAGE_UI_REFERSH = 11;
-    private Boolean fetched =false;//是否已执行完成过从DB获取分组数据的任务；如完成，则onResume中可以重启UI-Timer
-    private Boolean uiRefreshingNeeded =true;
-    private Boolean isRefreshingGroupRv = false;
-
-    private static final String GROUP_ID = "group_id";
-    private static final String ITEM_TABLE_SUFFIX = "item_table_suffix";
-    private static final String GROUP_SUB_ITEM_ID_STR = "group_sub_item_ids_str";
-    public static final int REQUEST_CODE_LEARNING = 1;//学习完成后，要会送然后更新adp状态。
+    private GroupsOfMissionRvAdapter adapter = null;//Rv适配器引用
     private int clickPosition;//点击（前往学习页面）发生的位置，需要该数据来更新rv位置
 
-    private String tableItemSuffix;
-    //    private Handler handler;//如果Rv效率高，就用不到多线程。
+    private FrameLayout maskFrameLayout;
+    //另外，页面上部的Mission详情区“任务名称、描述”两个控件不声明为全局变量。在onCreate内以局部变量声明。
+
     private Activity self;//为了后方Timer配合runOnUiThread.
-    private Timer groupsStateTimer;
-
-
-    private GroupsOfMissionRvAdapter adapter = null;//Rv适配器引用
-    private Handler handler = new GroupOfMissionHandler(this);
-
-    //上方Mission详情区控件
-    private TextView missionDetailName;
-    private TextView missionDetailDescription;
-
-    private TextView tvShowGroups;
-    private TextView tvHideGroups;
-
-    private YouMemoryDbHelper memoryDbHelper;
+    private Handler handler = new GroupOfMissionHandler(this);//涉及弱引用【待】，通过其发送消息。
+    private Boolean fetched =false;//是否已执行完成过从DB获取分组数据的任务；如完成，则onResume中可以重启UI-Timer
+    private Boolean uiRefreshingNeeded =true;//退出到Pause状态时，停止定时更新线程【是否会自动停止？】；并在刷新Rv列表时暂停更新。
+    private Boolean isRefreshingGroupRv = false;//点击刷新列表的按键后，会重新执行加载数据的线程，为与首次的自动运行相区分，此标志变量会设true。
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,8 +77,8 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
         this.self = this;
         setContentView(R.layout.activity_mission_main);
 
-        missionDetailName = (TextView) findViewById(R.id.tv_mission_detail_name);
-        missionDetailDescription = (TextView) findViewById(R.id.tv_mission_detail_description);
+        TextView missionDetailName = (TextView) findViewById(R.id.tv_mission_detail_name);
+        TextView missionDetailDescription = (TextView) findViewById(R.id.tv_mission_detail_description);
         maskFrameLayout = (FrameLayout)findViewById(R.id.maskOverRv_MissionDetail);
         findViewById(R.id.groups_refresh_missionDetail).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -111,11 +106,9 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
                 Fragment prev = getFragmentManager().findFragmentByTag("REMOVE_REDS");
 
                 if (prev != null) {
-//                    Log.i(TAG, "inside showDialog(), inside if prev!=null branch");
                     transaction.remove(prev);
                 }
                 DialogFragment dfg = ConfirmRemoveRedsDiaFragment.newInstance();
-//        Log.i(TAG, "createGroup: before show.");
                 dfg.show(transaction, "REMOVE_REDS");
             }
         });
@@ -124,7 +117,7 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
 
 
         if (missionFromIntent == null) {
-//            Log.i(TAG, "onCreate: Intent has no Mission.");
+            Toast.makeText(self, "任务信息传递失败", Toast.LENGTH_SHORT).show();
         } else {
             //根据Mission数据填充Mission信息两项
             missionDetailName.setText(missionFromIntent.getName());
@@ -135,12 +128,6 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
         memoryDbHelper = YouMemoryDbHelper.getInstance(getApplicationContext());
 
         new Thread(new PrepareForMissionDetailRunnable()).start();         // start thread
-
-//        Log.i(TAG, "onCreate: missionId = "+missionFromIntent.getId());
-
-
-        //创建属于主线程的handler
-//        handler=new Handler();
     }
 
 
@@ -160,8 +147,6 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
     protected void onPause() {
         super.onPause();
         uiRefreshingNeeded =false;
-
-        //        groupsStateTimer.cancel();//退出首屏时终止（Terminates）本Timer，onResume中再启动。
     }
 
 
@@ -169,18 +154,16 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
     final static class GroupOfMissionHandler extends Handler{
         private final WeakReference<MissionDetailActivity> activityWeakReference;
 
-        public GroupOfMissionHandler(MissionDetailActivity activity) {
+        private GroupOfMissionHandler(MissionDetailActivity activity) {
             this.activityWeakReference = new WeakReference<>(activity);
         }
 
         @Override
         public void handleMessage(Message msg) {
-//            Log.i(TAG, "handleMessage: b");
             MissionDetailActivity missionDetailActivity = activityWeakReference.get();
             if(missionDetailActivity!=null){
                 missionDetailActivity.handleMessage(msg);
             }
-
         }
     }
 
@@ -192,11 +175,11 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
     public class PrepareForMissionDetailRunnable implements Runnable{
         @Override
         public void run() {
-//            Log.i(TAG, "run: runnable b");
             //获取各分组原始数据
             dbRwaGroups = memoryDbHelper.getAllGroupsByMissionId(missionFromIntent.getId());
             //将各分组原始数据转换为UI所需数据，比较耗时。相关数据直接设置给Activity的成员。
 
+            //5个临时分组
             List<RvGroup> rvGroupsGreen = new ArrayList<>();//存放新建分组的临时list
             List<RvGroup> rvGroupsBlueAndOrange = new ArrayList<>();//存放可复习分组的临时list
             List<RvGroup> rvGroupsGrey = new ArrayList<>();//存放未到时分组的临时list
@@ -214,7 +197,6 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
                         break;
                     case R.color.colorGP_AVAILABLE:
                     case R.color.colorGP_Miss_ONCE:
-//                        Log.i(TAG, "run: blue id: "+rvGroup.getId());
                         rvGroupsBlueAndOrange.add(rvGroup);
                         break;
                     case R.color.colorGP_STILL_NOT:
@@ -229,6 +211,7 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
                 }
             }
 
+            //将不同颜色的分组按设计的先后加入数据源中；其中部分分组需要再执行一次按时间排序的操作后再加入。
             rvGroups.addAll(rvGroupsGreen);
             rvGroups.addAll(GroupManager.ascOrderByRemainingTime(rvGroupsBlueAndOrange));
             rvGroups.addAll(GroupManager.ascOrderByRemainingTime(rvGroupsGrey));
@@ -250,8 +233,6 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
     public class GroupsStateReCalculateRunnable implements Runnable{
         @Override
         public void run() {
-//            Log.i(TAG, "run: b. rvGroup.size = "+rvGroups.size());
-
             int n=0;
             while (uiRefreshingNeeded){
                 n++;//每秒加一【如果改到最后++，这样线程第一轮即可更新一次，适用于onResume；】
@@ -305,7 +286,7 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
                     }
                 }
                 Message message = new Message();
-                message.what = MESSAGE_UI_REFERSH;
+                message.what = MESSAGE_UI_RE_FRESH;
                 message.obj = idListOfGroupsNeedRefreshing;
 
                 handler.sendMessage(message);
@@ -314,11 +295,9 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
     }
 
     void handleMessage(Message message){
-
         switch (message.what){
             case MESSAGE_PRE_DB_FETCHED://此时是从DB获取各分组数据并转换成合适的数据源完成
                 fetched = true;//用于onResume中的判断。
-//                Log.i(TAG, "handleMessage: case 1 b");
                 //取消上方遮罩
                 maskFrameLayout.setVisibility(View.GONE);
 
@@ -338,39 +317,8 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
                 // 要更新显示，必须提供新的数据；这一任务符合较大，改由新线程执行】
                 new Thread(new GroupsStateReCalculateRunnable()).start();         // start thread
 
-                //Timer负责每隔一分钟令Rv的adapter更新CurrentState显示
-                /*groupsStateTimer = new Timer();
-                groupsStateTimer.schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-
-                *//*后来认为，分组超时未复习不需直接删除，应由用户选择是删还是直接重新开始，
-                且提示应该更详细。如果删，再执行下列任务。
-                for (DBRwaGroup d :dbRwaGroups) {
-                    //遍历检查，是否有需要设置为废弃的组。
-                    CurrentState cs = new CurrentState();
-                    LogList.setCurrentStateForGroup(cs,LogList.textListLogToListLog(d.getGroupLogs()));
-                    if(!d.isObsoleted() && cs.getColorResId()==R.color.colorGP_Miss_TWICE){
-                        //还未标为已废止，但是时间已经超了，所以要：标成废止、所属items标回未抽取。
-                        // 并将activity持有的数据源中的这一条group标为已废弃，以防下次继续计算。
-                        d.setObsoleted(true);
-                        memoryDbHelper.setGroupObsoleted(d.getId());
-                        memoryDbHelper.setItemsUnChose(mission.getTableItem_suffix(),d.getSubItemIdsStr());
-
-                    }//其他的虽然不用处理数据库，但是需要改变时间字串
-                    //但是改变字串不需要专门处理，只需令rv重新加载数据源，自动计算新值
-                }
-                Log.i(TAG, "run: on"+android.os.Process.getThreadPriority(android.os.Process.myTid()));*//*
-                        self.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                adapter.notifyDataSetChanged();
-                            }
-                        });
-
-                    }
-                },60*1000,60*1000);*/
-            case MESSAGE_UI_REFERSH:
+                //后来认为，分组超时未复习不需直接删除，应由用户选择是删还是直接重新开始，
+            case MESSAGE_UI_RE_FRESH:
                 List<Integer> positionsNeedUpdate = (ArrayList)(message.obj);
 
                 //所有的批量notify方法都只能用于连续项目，所以只能…
@@ -387,18 +335,23 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
         Fragment prev = getFragmentManager().findFragmentByTag("CREATE_GROUP");
 
         if (prev != null) {
-            Log.i(TAG, "inside showDialog(), inside if prev!=null branch");
+            Toast.makeText(self, "Old DialogFg still there, removing first...", Toast.LENGTH_SHORT).show();
             transaction.remove(prev);
         }
         DialogFragment dfg = CreateGroupDiaFragment.newInstance(missionFromIntent.getTableItem_suffix(), missionFromIntent.getId());
-//        Log.i(TAG, "createGroup: before show.");
         dfg.show(transaction, "CREATE_GROUP");
     }
 
     @Override
-    public void onFragmentInteraction(long lines) {
-//        Log.i(TAG, "onFragmentInteraction: before");
+    public void onDfgButtonClick(int viewId) {
+        switch (viewId) {
+            case R.id.ready_learningDfg_confirm:
+                break;
+        }
+    }
 
+    @Override
+    public void onFragmentInteraction(long lines) {
         //如果新增操作成功，通知adp变更。
         if (lines != -1) {
             //新增操作只影响一行
@@ -406,12 +359,8 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
             GroupState groupState = new GroupState(dGroup.getGroupLogs());
             RvGroup newGroup = new RvGroup(dGroup, groupState, missionFromIntent.getTableItem_suffix());
 
-//            int oldSize = dbRwaGroups.size();
-//            Log.i(TAG, "onFragmentInteraction: old size= "+oldSize);
             rvGroups.add(0,newGroup);//新增分组放在最前【逻辑便于处理】
-//            Log.i(TAG, "onFragmentInteraction: ready to notify.new group size=" +rvGroups.size());
             adapter.notifyItemInserted(0);//（仍是0起算，但是加到最后时似乎比较奇怪）
-//            adapter.notifyItemInserted(rvGroups.size());//【这个方法的意思是在添加后的数据集的第X项上（从1起算，不是0）是新插入的数据】
             mRv.scrollToPosition(0);//设置增加后滚动到新增位置。【这个则是从0起算】
         }
 
@@ -420,11 +369,9 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
 
     @Override
     public void onConfirmClick(int position) {
-
         this.clickPosition = position;
         Intent intent = new Intent(this,ItemLearningActivity.class);
         intent.putExtra("group_id",rvGroups.get(position).getId());
-//        Log.i(TAG, "onConfirmClick: rvgroup.get-position-getId = "+rvGroups.get(position).getId());
         intent.putExtra(ITEM_TABLE_SUFFIX, tableItemSuffix);
         intent.putExtra(GROUP_SUB_ITEM_ID_STR,rvGroups.get(position).getStrSubItemsIds());
         intent.putExtra("learning_type",rvGroups.get(position).getStateColorResId());//在最后的DB操作中，蓝色、橙色的日志生成方式不同，无法统一做“复习”传递。
@@ -436,21 +383,30 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode){
             case REQUEST_CODE_LEARNING:
-                if(data == null) return;
-                String newLogsStr = data.getStringExtra("newLogsStr");
-//                Log.i(TAG, "onActivityResult: new Lg str = "+newLogsStr);
-                if(newLogsStr.isEmpty()) return;//根据当前设计，60分钟内的复习不计入Log且返回空串，【灰色状态下的额外复习亦然】
-                // 所以最终接受到空串后，应直接返回，UI仍按原方式记录即可。
+                switch (resultCode){
+                    case ItemLearningActivity.RESULT_LEARNING_SUCCEEDED:
+                        if(data == null) return;
+                        String newLogsStr = data.getStringExtra("newLogsStr");
+                        if(newLogsStr.isEmpty()) return;//根据当前设计，60分钟内的复习不计入Log且返回空串，【灰色状态下的额外复习亦然】
+                        // 所以最终接受到空串后，应直接返回，UI仍按原方式记录即可。
 
-                //通知adp变更显示
-                RvGroup groupWithNewLog = rvGroups.get(clickPosition);
-                GroupState newGS = new GroupState(newLogsStr);
-                groupWithNewLog.setStateText(GroupManager.getCurrentStateTimeAmountStringFromUIGroup(newGS));
-                groupWithNewLog.setStateColorResId(newGS.getColorResId());
-                groupWithNewLog.setStrGroupLogs(newLogsStr);//UI的定时更新线程需要该字段做计算。否则本条无法按时更新。
+                        //通知adp变更显示
+                        RvGroup groupWithNewLog = rvGroups.get(clickPosition);
+                        GroupState newGS = new GroupState(newLogsStr);
+                        groupWithNewLog.setStateText(GroupManager.getCurrentStateTimeAmountStringFromUIGroup(newGS));
+                        groupWithNewLog.setStateColorResId(newGS.getColorResId());
+                        groupWithNewLog.setStrGroupLogs(newLogsStr);//UI的定时更新线程需要该字段做计算。否则本条无法按时更新。
 
-                rvGroups.set(clickPosition,groupWithNewLog);
-                adapter.notifyItemChanged(clickPosition);
+                        rvGroups.set(clickPosition,groupWithNewLog);
+                        adapter.notifyItemChanged(clickPosition);
+                        break;
+                    case ItemLearningActivity.RESULT_LEARNING_FAILED:
+                        if(data == null) return;
+                        String failedStartTimeMillis = data.getStringExtra("startingTimeMills");
+                        Toast.makeText(self, "Learning starting at ("+failedStartTimeMillis+") has been failed because of TimeUp.", Toast.LENGTH_SHORT).show();
+                        //【下面应该生成一条失败的消息】
+                }
+
         }
     }
 
@@ -459,7 +415,6 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
         ArrayList<Integer> redsPositions = new ArrayList<>();
         for (RvGroup r :rvGroups) {
             if(r.getStateColorResId()==R.color.colorGP_Miss_TWICE){
-//                Log.i(TAG, "onConfirmRemoveRedsClick: r index = "+rvGroups.indexOf(r));
                 redsPositions.add(rvGroups.indexOf(r));
             }
         }
@@ -467,19 +422,14 @@ public class MissionDetailActivity extends AppCompatActivity implements CreateGr
             Toast.makeText(self, "没有需要移除的任务分组", Toast.LENGTH_SHORT).show();
         }else {
             for (Integer i :redsPositions) {
-//                Log.i(TAG, "onConfirmRemoveRedsClick: size"+redsPositions.size());
-//                Log.i(TAG, "onConfirmRemoveRedsClick: rv id"+rvGroups.get(i).getId());
-//                Log.i(TAG, "onConfirmRemoveRedsClick: index"+i);
                 RvGroup rvToRemove = rvGroups.get(i);
                 memoryDbHelper.removeGroupById(rvToRemove.getId(),rvToRemove.getStrSubItemsIds(),tableItemSuffix);
             }
         }
-
     }
-
 }
 
-/*旧片段范例
+/*旧片段
 * groupsStateTimer = new Timer(); 25 28 30
             groupsStateTimer.schedule(new TimerTask() {
                 @Override

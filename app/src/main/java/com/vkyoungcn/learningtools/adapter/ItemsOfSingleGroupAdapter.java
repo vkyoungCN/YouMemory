@@ -14,63 +14,59 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ItemsOfSingleGroupAdapter extends RecyclerView.Adapter<ItemsOfSingleGroupAdapter.ViewHolder> {
-    private static final String TAG = "ItemsOfSingleGroupAdapt";
+//    private static final String TAG = "ItemsOfSingleGroupAdapt";
 
     private List<SingleItem> items = new ArrayList<>();
-    private String ItemTableNameSuffix = "";
+//    private String ItemTableNameSuffix = "";
     private Context context;
 
-    public class ViewHolder extends RecyclerView.ViewHolder{
+    class ViewHolder extends RecyclerView.ViewHolder{
         private final TextView singleItemId;
         private final TextView itemName;
         private final TextView extraField1;
         private final TextView extraField2;
 
-        public ViewHolder(View itemView) {
+        private ViewHolder(View itemView) {
             super(itemView);
-//            Log.i(TAG, "ViewHolder: be");
             singleItemId = itemView.findViewById(R.id.rv_id_itemOfGroup);
             itemName = itemView.findViewById(R.id.rv_name_itemOfGroup);
             extraField1 = itemView.findViewById(R.id.rv_ex1_itemOfGroup);
             extraField2 = itemView.findViewById(R.id.rv_ex2_itemOfGroup);
         }
 
-        public TextView getSingleItemId() {
+        private TextView getSingleItemId() {
             return singleItemId;
         }
 
-        public TextView getItemName() {
+        private TextView getItemName() {
             return itemName;
         }
 
-        public TextView getExtraField1() {
+        private TextView getExtraField1() {
             return extraField1;
         }
 
-        public TextView getExtraField2() {
+        private TextView getExtraField2() {
             return extraField2;
         }
     }
 
     public ItemsOfSingleGroupAdapter(List<SingleItem> items, String itemTableNameSuffix, Context context) {
         this.items = items;
-        ItemTableNameSuffix = itemTableNameSuffix;
+//        ItemTableNameSuffix = itemTableNameSuffix;
         this.context = context;
     }
 
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-//        Log.i(TAG, "onCreateViewHolder: be");
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.rv_row_items_of_group,parent,false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(ItemsOfSingleGroupAdapter.ViewHolder holder, int position) {
-//        Log.i(TAG, "onBindViewHolder: be");
         SingleItem item = items.get(position);
-//        Log.i(TAG, "onBindViewHolder: items.size:"+items.size()+",id:"+item.getId());
 
         holder.getSingleItemId().setText(String.valueOf(item.getId()));
         holder.getItemName().setText(item.getName());

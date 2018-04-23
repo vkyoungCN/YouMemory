@@ -1,11 +1,10 @@
-package com.vkyoungcn.learningtools;
+package com.vkyoungcn.learningtools.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
 import android.text.InputType;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,10 +14,11 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.vkyoungcn.learningtools.R;
 import com.vkyoungcn.learningtools.models.SingleItem;
 import com.vkyoungcn.learningtools.validatingEditor.ValidatingEditor;
 
-
+@SuppressWarnings("all")
 /**
  * 用于单项Item的复习学习
  * 此时，默认显示英文+音标，点击翻面后显示汉译；
@@ -81,7 +81,6 @@ public class SingleItemRePickingFragment extends Fragment implements View.OnClic
 
         tvName.setText(singleItem.getName());
 //        Typeface typeface = Typeface.createFromAsset(getActivity().getAssets(),"fonts/GentiumPlus_I.ttf");
-//        Log.i(TAG, "onCreateView: typeface: "+typeface.toString());
 //        tv_ext1.setTypeface(typeface);
         tv_ext1.setText(singleItem.getExtending_list_1());
         tv_ext2.setText(singleItem.getExtending_list_2());
@@ -91,23 +90,10 @@ public class SingleItemRePickingFragment extends Fragment implements View.OnClic
         tv_validatingEditor.setOnClickListener(this);
         EditorInfo veEditorInfo = new EditorInfo();
         veEditorInfo.inputType = InputType.TYPE_NULL;
-//        veEditorInfo.initialSelStart = 0;
-//        veEditorInfo.initialSelEnd = singleItem.getName().length();
         tv_validatingEditor.onCreateInputConnection(veEditorInfo);
-//        tv_validatingEditor.
-
-//        manager.dispatchKeyEventFromInputMethod(tv_validatingEditor,);
-        //        tv_validatingEditor
 
         return rootView;
     }
-
-/*
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }*/
 
     @Override
     public void onAttach(Context context) {
@@ -126,23 +112,6 @@ public class SingleItemRePickingFragment extends Fragment implements View.OnClic
         mListener = null;
     }
 
-
-/**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     *//*
-
-    public interface OnFragmentInteractionListener {
-        void onFragmentInteraction(Uri uri);
-    }
-*/
-
         @Override
         public void onClick(View v) {
             switch (v.getId()){
@@ -160,7 +129,6 @@ public class SingleItemRePickingFragment extends Fragment implements View.OnClic
                     }
                     break;
                 case R.id.validatingEditor_singleItemLearning:
-                    Log.i(TAG, "onClick: ve-Click");
                     tv_validatingEditor.requestFocus();
                     manager.showSoftInput(tv_validatingEditor,InputMethodManager.RESULT_UNCHANGED_SHOWN);
             }

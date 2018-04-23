@@ -1,9 +1,8 @@
-package com.vkyoungcn.learningtools;
+package com.vkyoungcn.learningtools.fragments;
 
 import android.app.DialogFragment;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +13,7 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.vkyoungcn.learningtools.R;
 import com.vkyoungcn.learningtools.models.DBRwaGroup;
 import com.vkyoungcn.learningtools.spiralCore.GroupManager;
 import com.vkyoungcn.learningtools.sqlite.YouMemoryDbHelper;
@@ -22,18 +22,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link CreateGroupDiaFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link CreateGroupDiaFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+@SuppressWarnings("all")
 public class CreateGroupDiaFragment extends DialogFragment implements View.OnClickListener {
     private static final String TAG = "CreateGroupDiaFragment";
-    private String suffix = " ";
+    private String suffix = " ";//Item表的后缀，每个Mission不同，创建分组时需要从对应的Item表中拉取Items数据。
     private int missionId = 0;
 
     private OnFragmentInteractionListener mListener;
@@ -46,20 +38,11 @@ public class CreateGroupDiaFragment extends DialogFragment implements View.OnCli
     private TextView tv_explanationArea;
     private EditText editText_groupDesc;
 
-    private TextView cancel;
-    private TextView confirm;
-
-
     public CreateGroupDiaFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @return A new instance of fragment CreateGroupDiaFragment.
-     */
+
     public static CreateGroupDiaFragment newInstance(String tableSuffix, int missionId) {
         CreateGroupDiaFragment fragment = new CreateGroupDiaFragment();
         Bundle args = new Bundle();
@@ -73,7 +56,6 @@ public class CreateGroupDiaFragment extends DialogFragment implements View.OnCli
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        Log.i(TAG, "onCreate: before");
         if (getArguments() != null) {
             suffix = getArguments().getString("SUFFIX");//表的后缀
             missionId = getArguments().getInt("M_ID");
@@ -85,21 +67,18 @@ public class CreateGroupDiaFragment extends DialogFragment implements View.OnCli
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-//        Log.i(TAG, "onCreateView: before");
-        // Inflate the layout for this fragment
         View rootView =  inflater.inflate(R.layout.create_group_dialog_fragment, container, false);
         //所有需要用到的8个控件，获取引用
+        //【虽然IDE说redundant，但是不转型后面setText时亲测出错崩溃】
         radioGroup_manner = (RadioGroup) rootView.findViewById(R.id.rg_manner_groupCreateDfg);
         radioGroup_size = (RadioGroup) rootView.findViewById(R.id.rg_size_groupCreateDfg);
         rb_manner_order = (RadioButton) rootView.findViewById(R.id.rb_order_groupCreateDfg);
         rb_manner_random = (RadioButton) rootView.findViewById(R.id.rb_random_groupCreateDfg);
         tv_explanationArea = (TextView) rootView.findViewById(R.id.tv_createGroupDfg_explaining);
         editText_groupDesc = (EditText) rootView.findViewById(R.id.group_desc_in_create_dfg);
-        cancel = (TextView) rootView.findViewById(R.id.btn_cancel_createGroupDfg);
+        TextView cancel = (TextView) rootView.findViewById(R.id.btn_cancel_createGroupDfg);
+        TextView confirm = (TextView) rootView.findViewById(R.id.btn_ok_createGroupDfg);
 
-        confirm = (TextView) rootView.findViewById(R.id.btn_ok_createGroupDfg);
-
-        Log.i(TAG, "onCreateView: fvb");
         //部分需要添加事件监听
         confirm.setOnClickListener(this);
         cancel.setOnClickListener(this);
@@ -116,9 +95,6 @@ public class CreateGroupDiaFragment extends DialogFragment implements View.OnCli
         });
         Log.i(TAG, "onCreateView: done");
         return rootView;
-
-
-
     }
 
 
@@ -140,16 +116,6 @@ public class CreateGroupDiaFragment extends DialogFragment implements View.OnCli
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnFragmentInteractionListener {
         void onFragmentInteraction(long lines);
     }
@@ -172,16 +138,16 @@ public class CreateGroupDiaFragment extends DialogFragment implements View.OnCli
                 //控件选择了那种“item数量”选项
                 switch(radioGroup_size.getCheckedRadioButtonId()){
                     case R.id.rb_36_group_create_dfg:
-                        groupSize = 6; //临时调整为6
+                        groupSize = 36;
                         break;
-                    case R.id.rb_54_group_create_dfg:
-                        groupSize = 54;
+                    case R.id.rb_12_group_create_dfg:
+                        groupSize = 12;
                         break;
                     case R.id.rb_72_group_create_dfg:
                         groupSize = 72;
                         break;
-                    case R.id.rb_90_group_create_dfg:
-                        groupSize = 96;
+                    case R.id.rb_108_group_create_dfg:
+                        groupSize = 108;
                         break;
                 }
 
@@ -195,18 +161,17 @@ public class CreateGroupDiaFragment extends DialogFragment implements View.OnCli
                 switch (radioGroup_manner.getCheckedRadioButtonId()){
                     case R.id.rb_order_groupCreateDfg:
                         //按顺序，获取指定数量的Items
-                        Log.i(TAG, "onClick: ready to select items");
                         itemIds = memoryDbHelper.getCertainAmountItemIdsOrderly(groupSize,suffix);
 
                         if(itemIds.size()==0){
                             Toast.makeText(getContext(), "抽取items数量0，错误号#601（顺序抽取失败）", Toast.LENGTH_SHORT).show();
                             return;
                         }
-                        /* 临时关闭
-                        if(itemIds.size()<36){
-                            Toast.makeText(getContext(), "抽取items数量不足36", Toast.LENGTH_SHORT).show();
+
+                        if(itemIds.size()<12){
+                            Toast.makeText(getContext(), "抽取items数量不足12，凑不够一组了", Toast.LENGTH_SHORT).show();
                             return;
-                        }*/
+                        }
                         //为描述字段获取首词name
                         String firstItemName = memoryDbHelper.getSingleItemNameById((long)itemIds.get(0),suffix);
 
@@ -229,8 +194,8 @@ public class CreateGroupDiaFragment extends DialogFragment implements View.OnCli
                             Toast.makeText(getContext(), "抽取items数量0，错误号#602（随机抽取失败）", Toast.LENGTH_SHORT).show();
                             return;
                         }
-                        if(itemIds.size()<36){
-                            Toast.makeText(getContext(), "抽取items数量不足36", Toast.LENGTH_SHORT).show();
+                        if(itemIds.size()<12){
+                            Toast.makeText(getContext(), "抽取items数量不足12，凑不够一组了", Toast.LENGTH_SHORT).show();
                             return;
                         }
                         //如果描述字段留空，构建默认描述字段“随机分组-时间”

@@ -1,14 +1,15 @@
 package com.vkyoungcn.learningtools.validatingEditor;
 
 /**
- * @author Adrián García Lomas
+ * Thanks to origin author Adrián García Lomas
  */
+@SuppressWarnings("all")
 public class BottomLineSection {
 
-  float fromX;
-  float fromY;
-  float toX;
-  float toY;
+  private float fromX;
+  private float fromY;
+  private float toX;
+  private float toY;
 
   public BottomLineSection() {
   }

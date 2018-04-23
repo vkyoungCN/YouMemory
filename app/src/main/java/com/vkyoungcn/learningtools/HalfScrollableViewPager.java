@@ -3,14 +3,13 @@ package com.vkyoungcn.learningtools;
 import android.content.Context;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 
 /*
 * 配合复习时的Fragment使用，只有在输入了正确的单词后才能向下一fg滑动。
 * */
 public class HalfScrollableViewPager extends ViewPager {
-    private static final String TAG = "HalfScrollableViewPager";
+//    private static final String TAG = "HalfScrollableViewPager";
     private boolean scrollable;
     float initialXValue = 0;
 
@@ -33,7 +32,6 @@ public class HalfScrollableViewPager extends ViewPager {
             initialXValue = event.getX();
         }else if(event.getAction()==MotionEvent.ACTION_MOVE){
             if(detectSwipeToLeft(event,initialXValue)){
-                Log.i(TAG, "onInterceptTouchEvent: to left");
                 return scrollable && super.onInterceptTouchEvent(event);
             }
         }
@@ -42,12 +40,10 @@ public class HalfScrollableViewPager extends ViewPager {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        //if(ev.getOrientation() < 0){//【学习，实践证实一次滑动就产生很多个pointer】
         if(event.getAction()==MotionEvent.ACTION_DOWN){
             initialXValue = event.getX();
         }else if(event.getAction()==MotionEvent.ACTION_MOVE){
             if(detectSwipeToLeft(event,initialXValue)){
-                Log.i(TAG, "onTouchEvent: to left");
                 return scrollable && super.onInterceptTouchEvent(event);
             }
         }

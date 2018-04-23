@@ -6,27 +6,22 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.vkyoungcn.learningtools.ConfirmReadyLearningDiaFragment;
+import com.vkyoungcn.learningtools.fragments.ConfirmReadyLearningDiaFragment;
 import com.vkyoungcn.learningtools.GroupDetailActivity;
 import com.vkyoungcn.learningtools.R;
-import com.vkyoungcn.learningtools.models.GroupState;
 import com.vkyoungcn.learningtools.models.RvGroup;
-import com.vkyoungcn.learningtools.spiralCore.GroupManager;
-import com.vkyoungcn.learningtools.spiralCore.LogList;
 
 import java.util.List;
 
 public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissionRvAdapter.ViewHolder> {
-    private static final String TAG = "AllMissionRvAdapter";
+//    private static final String TAG = "AllMissionRvAdapter";
 
     private List<RvGroup> groups;
     private Context context;//用于启动新activity。
@@ -40,9 +35,8 @@ public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissi
         private final Button btn_group_detail;//绑定点击事件，进入group详情页。
         // ...测验分综合获得，由专门package类提供
 
-        public ViewHolder(View itemView) {
+        private ViewHolder(View itemView) {
             super(itemView);
-//            Log.i(TAG, "ViewHolder: constructor");
 
             group_id = itemView.findViewById(R.id.group_id);
             group_description = itemView.findViewById(R.id.group_description);
@@ -65,7 +59,7 @@ public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissi
             return item_amount;
         }
 
-        public TextView getCurrent_state_time() {
+        private TextView getCurrent_state_time() {
             return current_state_time;
         }
 
@@ -78,15 +72,13 @@ public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissi
 
             switch (view.getId()){
                 case R.id.rv_group_detail:
-
                     //启动GroupDetailActivity，根据missionId进行获取填充。
                         Intent intent = new Intent(context, GroupDetailActivity.class);
                         intent.putExtra("GroupId",groupId);
                         intent.putExtra("TableSuffix",itemTableSuffix);
-                        Log.i(TAG, "onClick: ready to GroupDetailActivity.");
                         context.startActivity(intent);
-
                     break;
+
                 case R.id.current_state://点击了状态TextView大色块，进行学习/复习
                     //根据currentState的情况有不同处理逻辑
                     //①绿：弹出确认框：要开始学习吗？否返回，是进入学习页（新学习逻辑）
@@ -102,7 +94,6 @@ public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissi
                     Fragment prev = ((Activity)context).getFragmentManager().findFragmentByTag("READY_TO_LEARN");
 
                     if (prev != null) {
-                        Log.i(TAG, "inside showDialog(), inside if prev!=null branch");
                         transaction.remove(prev);
                     }
 
@@ -110,33 +101,23 @@ public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissi
                         //在最后的DB操作中，蓝色、橙色的日志生成方式不同，无法统一做“复习”传递。
                         case R.color.colorGP_Newly:
                             //绿色，开始学习。弹出确认框。
-
                             DialogFragment dfgInitLearning = ConfirmReadyLearningDiaFragment.newInstance(groupId,itemTableSuffix,groupSubItemIdsStr,groupStateColorRes,position);
-//        Log.i(TAG, "createGroup: before show.");
                             dfgInitLearning.show(transaction, "READY_TO_LEARN");
-
                             break;
 
                         case 0:
-
                             break;
                         case R.color.colorGP_STILL_NOT://【灰色也可以复习，只是不生成LOG记录】
                         case R.color.colorGP_AVAILABLE:
                         case R.color.colorGP_Miss_ONCE:
                             //复习逻辑i。弹出确认框。
-                            Log.i(TAG, "onClick: Repicking branch.");
                             DialogFragment dfgRePicking = ConfirmReadyLearningDiaFragment.newInstance(groupId,itemTableSuffix,groupSubItemIdsStr,groupStateColorRes,position);
                             dfgRePicking.show(transaction, "READY_TO_LEARN");
                             break;
                         case R.color.colorGP_Miss_TWICE:
-
                             break;
 
-
-
                     }
-
-
                     break;
 
             }
@@ -147,8 +128,6 @@ public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissi
     * 构造器，初始化此适配器的数据源
     * */
     public GroupsOfMissionRvAdapter(List<com.vkyoungcn.learningtools.models.RvGroup> groups, Context context, String itemTableSuffix ) {
-//        Log.i(TAG, "GroupsOfMissionRvAdapter: constructor");
-
         this.groups = groups;
         this.context = context;
         this.itemTableSuffix = itemTableSuffix;
@@ -156,24 +135,19 @@ public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissi
 
     @Override
     public GroupsOfMissionRvAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-//        Log.i(TAG, "onCreateViewHolder: before any.");
 
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.rv_row_groups_in_single_mission, parent, false);
-//        Log.i(TAG, "onCreateViewHolder: after inflate");
-
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-//        Log.i(TAG, "onBindViewHolder: before any. group size = "+groups.size());
         RvGroup group = groups.get(position);
-//        Log.i(TAG, "onBindViewHolder: got group,id:"+group.getId());
+
         holder.getGroup_id().setText(String.valueOf(group.getId()));
         holder.getGroup_description().setText(group.getDescription());
         holder.getItem_amount().setText(String.valueOf(group.getTotalSubItemsNumber()));
-
         holder.getCurrent_state_time().setText(group.getStateText());
         holder.getCurrent_state_time().setBackgroundResource(group.getStateColorResId());
     }
@@ -182,7 +156,5 @@ public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissi
     public int getItemCount() {
         return groups.size();
     }
-
-
 
 }

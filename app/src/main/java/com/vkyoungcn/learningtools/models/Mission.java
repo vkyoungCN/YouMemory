@@ -5,6 +5,7 @@ import android.os.Parcelable;
 
 import java.util.List;
 
+@SuppressWarnings("all")
 /**
  * Created by VkYoung16 on 2018/3/26 0026.
  */
