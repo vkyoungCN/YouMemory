@@ -10,7 +10,9 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.vkyoungcn.learningtools.fragments.ConfirmReadyLearningDiaFragment;
@@ -27,12 +29,13 @@ public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissi
     private Context context;//用于启动新activity。
     private String itemTableSuffix;//用于点击条目查看分组所属items时
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener,View.OnLongClickListener{
         private final TextView group_id;
         private final TextView group_description;//对应DB中的Description列，“起始-末尾”词汇。
         private final TextView item_amount;//所属item的数量
         private final TextView current_state_time;//字面显示（剩余）时间.底色显示状态。
         private final Button btn_group_detail;//绑定点击事件，进入group详情页。
+        private final LinearLayout llt_singleGroupOverall ;//最外层GV，用于绑定长按删除事件。
         // ...测验分综合获得，由专门package类提供
 
         private ViewHolder(View itemView) {
@@ -45,6 +48,9 @@ public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissi
             current_state_time.setOnClickListener(this);//
             btn_group_detail = itemView.findViewById(R.id.rv_group_detail);
             btn_group_detail.setOnClickListener(this);//VH 监听器方案下直接在这里绑定监听器。
+
+            llt_singleGroupOverall = itemView.findViewById(R.id.llt_fullGroup_rvGoM);//【不绑定OnItem版本的长按】
+            llt_singleGroupOverall.setOnLongClickListener(this);
         }
 
         public TextView getGroup_id() {
@@ -121,6 +127,16 @@ public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissi
                     break;
 
             }
+        }
+
+
+        @Override
+        public boolean onLongClick(View v) {
+            //弹出确认框。
+            //确认后删除Group（所属Items回归（DB负责））
+            // 【问，返回false？】，
+
+            return false;
         }
     }
 

@@ -85,4 +85,6 @@
     <string name="num_108">108</string>
     <string name="input_by_hand">手动输入</string>
     <string name="input_by_hand2">(手动输入)</string>
+    <string name="tip_and_over">点击翻面</string>
+    <string name="fill_and_slide_over">填写正确后滑动至下一页</string>
 </resources>

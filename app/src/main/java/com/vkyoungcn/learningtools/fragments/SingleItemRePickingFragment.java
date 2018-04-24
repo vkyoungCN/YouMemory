@@ -75,6 +75,7 @@ public class SingleItemRePickingFragment extends Fragment implements View.OnClic
         TextView tvName = (TextView)rootView.findViewById(R.id.tv_name_singleItemLearning_re);
         TextView tv_ext1 = (TextView) rootView.findViewById(R.id.tv_ext1_singleItemLearning_re);
         TextView tv_ext2 = (TextView) rootView.findViewById(R.id.tv_ext2_singleItemLearning_re);
+        TextView tv_ext2Pos = (TextView) rootView.findViewById(R.id.tv_ext2Pos_singleItemLearning_re);
         tv_validatingEditor = (ValidatingEditor) rootView.findViewById(R.id.validatingEditor_singleItemLearning);
 
 
@@ -84,6 +85,7 @@ public class SingleItemRePickingFragment extends Fragment implements View.OnClic
 //        tv_ext1.setTypeface(typeface);
         tv_ext1.setText(singleItem.getExtending_list_1());
         tv_ext2.setText(singleItem.getExtending_list_2());
+        tv_ext2Pos.setText(singleItem.getExtending_list_2());
 
         tv_validatingEditor.setTargetText(singleItem.getName());
         tv_validatingEditor.setCodeReadyListener(mListener);//该监听由Activity实现，这样就将二者关联起来了。

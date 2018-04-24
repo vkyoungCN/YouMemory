@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.BaseInputConnection;
@@ -389,21 +390,21 @@ public class ValidatingEditor extends View {
         if(lines ==1) {
 
             for (int i = 0; i < bottomLineSectionAmount; i++) {
-                bottomLineSections[i] = createPath(i, 1, bottomLineHorizontalLength);
+                bottomLineSections[i] = createPath(i, 1,1, bottomLineHorizontalLength);
             }
         }else {
             int sectionsMaxAmountPerLine = (int)(viewMaxWidth/bottomLineHorizontalLength);
             for (int i = 0; i < bottomLineSectionAmount; i++) {
-                int theLine = (i/sectionsMaxAmountPerLine)+1;
+                int currentLine = (i/sectionsMaxAmountPerLine)+1;
                 int positionInLine = i%sectionsMaxAmountPerLine;
-                bottomLineSections[i] = createPath(positionInLine, theLine, bottomLineHorizontalLength);
+                bottomLineSections[i] = createPath(positionInLine, lines,currentLine, bottomLineHorizontalLength);
             }
         }
     }
 
-    private BottomLineSection createPath(int position, int theLine, float sectionLength) {
-        float fromX = sectionLength * (float) position + padding;
-        float heightPerLine = (sizeChangedHeight-2*padding)/theLine;
+    private BottomLineSection createPath(int positionInLine, int totalLines, int theLine, float sectionLength) {
+        float fromX = sectionLength * (float) positionInLine + padding;
+        float heightPerLine = (sizeChangedHeight-2*padding)/totalLines;
         float fromY = heightPerLine*theLine+padding;
         return new BottomLineSection(fromX, fromY, fromX + sectionLength, fromY);
     }
