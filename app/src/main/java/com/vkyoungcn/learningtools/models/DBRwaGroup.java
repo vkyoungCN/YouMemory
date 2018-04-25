@@ -31,15 +31,15 @@ public class DBRwaGroup {
         this.description = group.getDescription();
         this.isFallBehind = group.getFallBehind();
 
-        //"N#yyyy-MM-dd hh:mm:ss#false;"
-        List<LogModel> logs = group.getGroupLogs();
+        //"N#yyyy-MM-dd HH:mm:ss#false;"
+        List<SingleLog> logs = group.getGroupLogs();
         StringBuilder sbForStringLogs = new StringBuilder();
 
-        for (LogModel l : logs) {
+        for (SingleLog l : logs) {
             sbForStringLogs.append(l.getN());
             sbForStringLogs.append("#");
 
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             sbForStringLogs.append(sdf.format(new Date(l.getTimeInMilli())));
 
             sbForStringLogs.append("#");

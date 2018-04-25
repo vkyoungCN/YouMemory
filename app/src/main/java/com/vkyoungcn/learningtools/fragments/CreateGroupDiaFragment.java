@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.vkyoungcn.learningtools.R;
 import com.vkyoungcn.learningtools.models.DBRwaGroup;
 import com.vkyoungcn.learningtools.spiralCore.GroupManager;
+import com.vkyoungcn.learningtools.spiralCore.SingleLog;
 import com.vkyoungcn.learningtools.sqlite.YouMemoryDbHelper;
 
 import java.text.SimpleDateFormat;
@@ -201,7 +202,7 @@ public class CreateGroupDiaFragment extends DialogFragment implements View.OnCli
                         //如果描述字段留空，构建默认描述字段“随机分组-时间”
                         if(s.isEmpty()){
                             descriptionSB.append("随机分组-");
-                            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm");
+                            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
                             descriptionSB.append(sdf.format(System.currentTimeMillis()));
                             descString = descriptionSB.toString();
                         }else{
@@ -210,9 +211,11 @@ public class CreateGroupDiaFragment extends DialogFragment implements View.OnCli
                         break;
                 }
 
+                String logOfCreating = SingleLog.getStrSingleLogFromMillis(0,System.currentTimeMillis(),false);//建组Log记录
                 //装填数据
                 dbRwaGroup.setDescription(descString);
                 dbRwaGroup.setMission_id(missionId);
+                dbRwaGroup.setGroupLogs(logOfCreating);
                 dbRwaGroup.setSubItemIdsStr(GroupManager.subItemIdsListIntToString(itemIds));
                 dbRwaGroup.setFallBehind(false);
 

@@ -16,14 +16,12 @@ import android.widget.LinearLayout;
 import com.vkyoungcn.learningtools.R;
 import com.vkyoungcn.learningtools.adapter.LogsOfSingleGroupAdapter;
 
+import java.util.ArrayList;
 
-/**
- * Use the {@link ShowLogsOfGroupDiaFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+
 public class ShowLogsOfGroupDiaFragment extends DialogFragment {
     private static final String TAG = "ShowLogsOfGroupDiaFragm";
-    private static final String ARG_PARAM_Logs = "LOGS";
+    private static final String STRING_GROUP_LOGS = "LOGS";
     private String strGroupLogs;
     private RecyclerView logRv;
 
@@ -32,17 +30,11 @@ public class ShowLogsOfGroupDiaFragment extends DialogFragment {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @return A new instance of fragment ShowLogsOfGroupDiaFragment.
-     */
+
     public static ShowLogsOfGroupDiaFragment newInstance(String strGroupLogs) {
         ShowLogsOfGroupDiaFragment fragment = new ShowLogsOfGroupDiaFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM_Logs, strGroupLogs);
-//        Log.i(TAG, "newInstance: put");
+        args.putString(STRING_GROUP_LOGS, strGroupLogs);
         fragment.setArguments(args);
         return fragment;
     }
@@ -51,8 +43,7 @@ public class ShowLogsOfGroupDiaFragment extends DialogFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            strGroupLogs = getArguments().getString(ARG_PARAM_Logs);
-//            Log.i(TAG, "onCreate: get");
+            strGroupLogs = getArguments().getString(STRING_GROUP_LOGS);
         }
     }
 

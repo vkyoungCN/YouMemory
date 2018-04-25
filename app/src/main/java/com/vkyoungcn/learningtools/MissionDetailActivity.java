@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
@@ -23,7 +24,7 @@ import com.vkyoungcn.learningtools.fragments.ConfirmRemoveRedsDiaFragment;
 import com.vkyoungcn.learningtools.fragments.CreateGroupDiaFragment;
 import com.vkyoungcn.learningtools.fragments.OnSimpleDFgButtonClickListener;
 import com.vkyoungcn.learningtools.models.DBRwaGroup;
-import com.vkyoungcn.learningtools.models.GroupState;
+import com.vkyoungcn.learningtools.spiralCore.GroupState;
 import com.vkyoungcn.learningtools.models.Mission;
 import com.vkyoungcn.learningtools.models.RvGroup;
 import com.vkyoungcn.learningtools.spiralCore.GroupManager;
@@ -34,6 +35,8 @@ import com.vkyoungcn.learningtools.sqlite.YouMemoryDbHelper;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.vkyoungcn.learningtools.ItemLearningActivity.RESULT_EXTRA_LEARNING_SUCCEEDED;
 
 /*
  * 单个Mission的详情页；
@@ -47,7 +50,7 @@ import java.util.List;
 public class MissionDetailActivity extends AppCompatActivity implements OnSimpleDFgButtonClickListener,
         CreateGroupDiaFragment.OnFragmentInteractionListener,ConfirmReadyLearningDiaFragment.OnConfirmClick,
         ConfirmRemoveRedsDiaFragment.OnRemoveRedsConfirmClick, ConfirmDeletingDiaFragment.OnDeletingGroupDfgClickListener {
-//    private static final String TAG = "MissionDetailActivity";
+    private static final String TAG = "MissionDetailActivity";
 
     public static final int MESSAGE_PRE_DB_FETCHED =5011;
     public static final int MESSAGE_UI_RE_FRESH = 5012;
@@ -349,6 +352,19 @@ public class MissionDetailActivity extends AppCompatActivity implements OnSimple
         dfg.show(transaction, "CREATE_GROUP");
     }
 
+    /*
+    * 相应某按钮点击事件，跳转到新页面显示本任务所属全部items
+    * */
+    public void listingItems(View view){
+        Log.i(TAG, "listingItems: ");
+        Intent intent = new Intent(this,ItemsOfMissionActivity.class);
+        intent.putExtra("MissionTableSuffix",tableItemSuffix);
+        intent.putExtra("Mission",missionFromIntent);
+        startActivity(intent);
+
+    }
+
+
     @Override
     public void onDfgButtonClick(int viewId) {
         switch (viewId) {
@@ -412,6 +428,9 @@ public class MissionDetailActivity extends AppCompatActivity implements OnSimple
                         String failedStartTimeMillis = data.getStringExtra("startingTimeMills");
                         Toast.makeText(self, "Learning starting at ("+failedStartTimeMillis+") has been failed because of TimeUp.", Toast.LENGTH_SHORT).show();
                         //【下面应该生成一条失败的消息】
+                    case RESULT_EXTRA_LEARNING_SUCCEEDED:
+                        Toast.makeText(this, "额外学习1次，完成！", Toast.LENGTH_SHORT).show();
+
                 }
 
         }

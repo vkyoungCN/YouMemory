@@ -6,7 +6,6 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,6 +17,7 @@ import java.util.List;
 import com.vkyoungcn.learningtools.R;
 import com.vkyoungcn.learningtools.models.*;
 import com.vkyoungcn.learningtools.spiralCore.LogList;
+import com.vkyoungcn.learningtools.spiralCore.SingleLog;
 
 /**
  * Created by VkYoung16 on 2018/3/26 0026.
@@ -71,20 +71,9 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
                 YouMemoryContract.ItemBasic.COLUMN_NAME + " TEXT, " +
                 YouMemoryContract.ItemBasic.COLUMN_EXTENDING_LIST_1 + " TEXT, " +
                 YouMemoryContract.ItemBasic.COLUMN_EXTENDING_LIST_2 + " TEXT, " +
-//                YouMemoryContract.ItemBasic.COLUMN_PICKING_TIME_LIST + " TEXT, " + //v9删除（升级逻辑未做更改，只是不使用了而已）
                 YouMemoryContract.ItemBasic.COLUMN_HAS_BEEN_CHOSE + " BOOLEAN)";//v6新增
     }
 
-    /* version 5
-    public String getSqlCreateItemWithSuffix(String suffix){
-        return "CREATE TABLE " +
-                YouMemoryContract.ItemBasic.TABLE_NAME + suffix+" (" +
-                YouMemoryContract.ItemBasic._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                YouMemoryContract.ItemBasic.COLUMN_NAME + " TEXT, " +
-                YouMemoryContract.ItemBasic.COLUMN_EXTENDING_LIST_1 + " TEXT, " +
-                YouMemoryContract.ItemBasic.COLUMN_EXTENDING_LIST_2 + " TEXT, " +
-                YouMemoryContract.ItemBasic.COLUMN_PICKING_TIME_LIST + " TEXT)";
-    }*/
 
     private static final String SQL_DROP_MISSION =
             "DROP TABLE IF EXISTS " +  YouMemoryContract.Mission.TABLE_NAME;
@@ -141,8 +130,7 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         Mission defaultMission  = new Mission("EnglishWords13531","螺旋式背单词",DEFAULT_ITEM_SUFFIX);
         createMission(db,defaultMission);//传入db是避免调用getDataBase，后者（会调用onCreate）导致递归调用错误
 
-//      Item_default13531表数据导入
-//        db.execSQL(getSqlCreateItemWithSuffix(DEFAULT_ITEM_SUFFIX));
+        //Item_default13531表数据导入
         importToItemDefaultFromCSV("EbbingWords13531.csv",db);
     }
 
@@ -372,6 +360,36 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
 
     }
 
+    public List<SingleItem> getAllItems(String tableNameSuffix){
+        List<SingleItem> items = new ArrayList<>();
+        String selectQuery = "SELECT * FROM "+ YouMemoryContract.ItemBasic.TABLE_NAME+tableNameSuffix;
+
+        getReadableDatabaseIfClosedOrNull();
+        Cursor cursor = mSQLiteDatabase.rawQuery(selectQuery,null);
+
+        if(cursor.moveToFirst()){
+            do {
+                SingleItem item = new SingleItem();
+                item.setId(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.ItemBasic._ID)));
+                item.setName(cursor.getString(cursor.getColumnIndex(YouMemoryContract.ItemBasic.COLUMN_NAME)));
+                item.setExtending_list_1(cursor.getString(cursor.getColumnIndex(YouMemoryContract.ItemBasic.COLUMN_EXTENDING_LIST_1)));
+                item.setExtending_list_2(cursor.getString(cursor.getColumnIndex(YouMemoryContract.ItemBasic.COLUMN_EXTENDING_LIST_2)));
+                item.setChose(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.ItemBasic.COLUMN_HAS_BEEN_CHOSE))==1);//【待测试。getString .equals(false)可用】
+                items.add(item);
+            }while (cursor.moveToNext());
+        }else{
+            return null;
+        }
+        try {
+            cursor.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        closeDB();
+
+        return items;
+    }
+
 
     public List<SingleItem> getItemsByGroupSubItemIds(String subItemIds, String tableNameSuffix){
         List<SingleItem> items = new ArrayList<>();
@@ -389,7 +407,7 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
                 item.setName(cursor.getString(cursor.getColumnIndex(YouMemoryContract.ItemBasic.COLUMN_NAME)));
                 item.setExtending_list_1(cursor.getString(cursor.getColumnIndex(YouMemoryContract.ItemBasic.COLUMN_EXTENDING_LIST_1)));
                 item.setExtending_list_2(cursor.getString(cursor.getColumnIndex(YouMemoryContract.ItemBasic.COLUMN_EXTENDING_LIST_2)));
-                item.setChose(cursor.getString(cursor.getColumnIndex(YouMemoryContract.ItemBasic.COLUMN_HAS_BEEN_CHOSE)).equals("true"));//数据表设计时已经是BOOLEAN，表内数据太多，不适宜改造成INTEGER
+                item.setChose(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.ItemBasic.COLUMN_HAS_BEEN_CHOSE))==1);//[?]数据表设计时已经是BOOLEAN，表内数据太多，不适宜改造成INTEGER
                 items.add(item);
             }while (cursor.moveToNext());
         }else{
@@ -405,6 +423,8 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         return items;
     }
 
+
+
     /*
     * 建立新分组的时候，必须将所属items置为已抽取；所以需要tableSuffix
     * */
@@ -416,6 +436,7 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
 
         values.put(YouMemoryContract.Group.COLUMN_DESCRIPTION, dbRwaGroup.getDescription());
+        values.put(YouMemoryContract.Group.COLUMN_GROUP_LOGS, dbRwaGroup.getGroupLogs());
         values.put(YouMemoryContract.Group.COLUMN_IS_FALL_BEHIND, dbRwaGroup.isFallBehind());
         values.put(YouMemoryContract.Group.COLUMN_IS_OBSOLETED, dbRwaGroup.isObsoleted());
         values.put(YouMemoryContract.Group.COLUMN_MISSION_ID, dbRwaGroup.getMission_id());
@@ -492,45 +513,16 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
 
 
     /*
-    * 根据传入的完成时间、分组id、学习的类型（初学？无miss学习？已miss一次？），更新目标分组的log记录
-    * 返回生成的log记录
-    *
+    * 更新指定分组的Logs学习记录。
     * */
-    public String updateLogOfGroup(int groupId,long finishTime,int learningTypeColor){
+    public long updateLogOfGroupById(int groupId,String newFullyLogs){
         long lines;
-        switch (learningTypeColor){
-            case R.color.colorGP_Newly:
-                //初学，直接将记录存入DB即可。
-                //生成单条Log记录
-                String singleLogStr = LogModel.getStrSingleLogModelFromLong(0,finishTime,false);
                 getWritableDatabaseIfClosedOrNull();
                 ContentValues values = new ContentValues();
-                values.put(YouMemoryContract.Group.COLUMN_GROUP_LOGS,singleLogStr);
+                values.put(YouMemoryContract.Group.COLUMN_GROUP_LOGS,newFullyLogs);
                 lines = mSQLiteDatabase.update(YouMemoryContract.Group.TABLE_NAME,values,
                         YouMemoryContract.Group._ID+"=?",new String[]{String.valueOf(groupId)});
-                return singleLogStr;
-            case R.color.colorGP_STILL_NOT:
-                return "";//未到时间的额外复习，直接返回空串（空串本身就是一个供接收方判断用的标志）
-
-            case R.color.colorGP_AVAILABLE:
-            case R.color.colorGP_Miss_ONCE:
-                String oldLogsStr = getGroupById(groupId).getGroupLogs();
-                String fullyNewLogListStr = LogList.updateStrLogList(oldLogsStr,finishTime,learningTypeColor);
-                if(fullyNewLogListStr==null||fullyNewLogListStr.isEmpty()) return "";//如果是60分钟内的复习，按设计不计入log，所调用的方法会
-                // 直接返回isEmpty的字串，不再向DB写，直接向调用方返回空串。【目前的逻辑是暂定的，后期应在调用DB前
-                // 进行其他判断，如果在60分钟内，则根本不应调用到方法内。】
-
-                ContentValues values2 = new ContentValues();
-                values2.put(YouMemoryContract.Group.COLUMN_GROUP_LOGS,fullyNewLogListStr);
-                lines = mSQLiteDatabase.update(YouMemoryContract.Group.TABLE_NAME,values2,
-                        YouMemoryContract.Group._ID+"=?",new String[]{String.valueOf(groupId)});
-                return fullyNewLogListStr;
-
-            default:
-                //说明出现错误
-                return null;
-        }
-
+                return lines;
 
     }
 
@@ -582,7 +574,7 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
 
         String itemsGiveBackSql = "UPDATE "+ YouMemoryContract.ItemBasic.TABLE_NAME+tableSuffix+
                 " SET "+YouMemoryContract.ItemBasic.COLUMN_HAS_BEEN_CHOSE+
-                " = 'false' WHERE "+YouMemoryContract.ItemBasic._ID+
+                " = 0 WHERE "+YouMemoryContract.ItemBasic._ID+
                 " IN "+sbr.toString();
 
         mSQLiteDatabase.execSQL(itemsGiveBackSql);
@@ -609,7 +601,7 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
 
         String itemsChoseSql = "UPDATE "+ YouMemoryContract.ItemBasic.TABLE_NAME+tableSuffix+
                 " SET "+YouMemoryContract.ItemBasic.COLUMN_HAS_BEEN_CHOSE+
-                " = 'true' WHERE "+YouMemoryContract.ItemBasic._ID+
+                " = 1 WHERE "+YouMemoryContract.ItemBasic._ID+
                 " IN "+sbr.toString();
 
         mSQLiteDatabase.execSQL(itemsChoseSql);
@@ -625,7 +617,7 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         List<Integer> ids = new ArrayList<>();
         String selectQueryInner = "SELECT "+YouMemoryContract.ItemBasic._ID
                 +" FROM "+YouMemoryContract.ItemBasic.TABLE_NAME+tableNameSuffix
-                +" WHERE "+YouMemoryContract.ItemBasic.COLUMN_HAS_BEEN_CHOSE+" = 0 OR "
+                +" WHERE "+YouMemoryContract.ItemBasic.COLUMN_HAS_BEEN_CHOSE+" =  0  OR "
                 +YouMemoryContract.ItemBasic.COLUMN_HAS_BEEN_CHOSE+" IS NULL";
         String selectQueryOuter = "SELECT "+YouMemoryContract.ItemBasic._ID
                 +" FROM "+YouMemoryContract.ItemBasic.TABLE_NAME+tableNameSuffix

@@ -1,19 +1,17 @@
 package com.vkyoungcn.learningtools.spiralCore;
 
-import android.util.Log;
+import android.content.Context;
 
 import com.vkyoungcn.learningtools.R;
-import com.vkyoungcn.learningtools.models.GroupState;
-import com.vkyoungcn.learningtools.models.GroupState.stateNumber;
-import com.vkyoungcn.learningtools.models.LogModel;
+import com.vkyoungcn.learningtools.spiralCore.GroupState.stateNumber;
+import com.vkyoungcn.learningtools.sqlite.YouMemoryDbHelper;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.ArrayList;
 
 /*
 * 是对应一组任务的所有已完成记忆的Log的集合
-* 【暂定日志记录的数字从0开始，0 是初学】
+* 日志记录数字从0开始：0 是建组，1是初学，复习从2起。】
 * */
 public class LogList {
 //    private static final String TAG = "LogList";
@@ -45,14 +43,18 @@ public class LogList {
         int maxRePickingTimes = 12;//最大复习次数，当前设置为12，最后复习时间约在4~8个。
         int n ;
 
-        if (strLogs == null || strLogs.isEmpty()) {//新建分组，还没开始学习。尽快开始学习。
-            groupState.setColorResId(GroupState.ColorResId.COLOR_NEWLY);
+        if (strLogs == null || strLogs.isEmpty()) {
+            groupState.setColorResId(GroupState.ColorResId.COLOR_MISSED_TWICE);//待处理的错误情况
             return groupState;
         }
-        String[] strLogsArray = strLogs.split(";");//每个元素是一条形如N#yyyy-MM-dd hh:mm:ss#false;的记录
-        LogModel firstLog = new LogModel(strLogsArray[0]);//所有情形都要和初次学习时间做比较计算
+        String[] strLogsArray = strLogs.split(";");//每个元素是一条形如N#yyyy-MM-dd HH:mm:ss#false;的记录
+        if(strLogsArray.length == 1){
+            groupState.setColorResId(GroupState.ColorResId.COLOR_NEWLY);//刚建组，初学
+            return groupState;
+        }
+        SingleLog firstLog = new SingleLog(strLogsArray[1]);//所有情形都要和初次学习时间做比较计算
         timeAmountMinutes = (System.currentTimeMillis() - firstLog.getTimeInMilli()) / (1000 * 60);//当前时间和初次学习时间相比，已过去多久
-        n = strLogsArray.length;
+        n = strLogsArray.length-1;
 
         //n=1的计算与其他不同，直接手写；其他条件下函数式判断。
         if (n == 1) {
@@ -171,15 +173,18 @@ public class LogList {
         long timeAmountMinutes ;
         int maxRePickingTimes = 12;//最大复习次数，当前设置为12，最后复习时间约在4~8个。
         int n ;
-        if (strLogs == null || strLogs.isEmpty()) {//新建分组，还没开始学习。尽快开始学习。
+        if (strLogs == null || strLogs.isEmpty()) {
+            return GroupState.ColorResId.COLOR_MISSED_TWICE;
+        }
+        String[] strLogsArray = strLogs.split(";");//每个元素是一条形如N#yyyy-MM-dd HH:mm:ss#false;的记录
+        if(strLogsArray.length == 1){
             return GroupState.ColorResId.COLOR_NEWLY;
         }
-        String[] strLogsArray = strLogs.split(";");//每个元素是一条形如N#yyyy-MM-dd hh:mm:ss#false;的记录
-        LogModel firstLog = new LogModel(strLogsArray[0]);//所有情形都要和初次学习时间做比较计算
+        SingleLog firstLog = new SingleLog(strLogsArray[1]);//所有情形都要和初次学习时间做比较计算
 
         long currLong = System.currentTimeMillis();
         timeAmountMinutes = (currLong - firstLog.getTimeInMilli()) / (1000 * 60);//当前时间和初次学习时间相比，已过去多久
-        n = strLogsArray.length;
+        n = strLogsArray.length-1;
 
         //n=1的计算与其他不同，直接手写；其他条件下函数式判断。
         if (n == 1) {
@@ -239,12 +244,16 @@ public class LogList {
         int maxRePickingTimes = 12;//最大复习次数，当前设置为12，最后复习时间约在4~8个。
         int n ;
         if (strLogs == null || strLogs.isEmpty()) {//新建分组，还没开始学习。尽快开始学习。
+            //错误情况，【暂未处理】
+            return stateNumber.MISSED_TWICE;
+        }
+        String[] strLogsArray = strLogs.split(";");//每个元素是一条形如N#yyyy-MM-dd HH:mm:ss#false;的记录
+        if(strLogsArray.length ==1){
             return stateNumber.NEWLY_CREATED;
         }
-        String[] strLogsArray = strLogs.split(";");//每个元素是一条形如N#yyyy-MM-dd hh:mm:ss#false;的记录
-        LogModel firstLog = new LogModel(strLogsArray[0]);//所有情形都要和初次学习时间做比较计算
+        SingleLog firstLog = new SingleLog(strLogsArray[1]);//所有情形都要和初次学习时间做比较计算
         timeAmountMinutes = (System.currentTimeMillis() - firstLog.getTimeInMilli()) / (1000 * 60);//当前时间和初次学习时间相比，已过去多久
-        n = strLogsArray.length;
+        n = strLogsArray.length-1;
 
         //n=1的计算与其他不同，直接手写；其他条件下函数式判断。
         if (n == 1) {
@@ -306,12 +315,15 @@ public class LogList {
         int n ;
 
         if (strLogs == null || strLogs.isEmpty()) {//新建分组，还没开始学习。尽快开始学习。
-            return remainingTimeAmount;
+            return remainingTimeAmount;//【实际为错误情况，待处理】
         }
-        String[] strLogsArray = strLogs.split(";");//每个元素是一条形如N#yyyy-MM-dd hh:mm:ss#false;的记录
-        LogModel firstLog = new LogModel(strLogsArray[0]);//所有情形都要和初次学习时间做比较计算
+        String[] strLogsArray = strLogs.split(";");//每个元素是一条形如N#yyyy-MM-dd HH:mm:ss#false;的记录
+        if(strLogsArray.length ==1){
+            return remainingTimeAmount;//初学
+        }
+        SingleLog firstLog = new SingleLog(strLogsArray[1]);//所有情形都要和初次学习时间做比较计算
         timeAmountMinutes = (System.currentTimeMillis() - firstLog.getTimeInMilli()) / (1000 * 60);//当前时间和初次学习时间相比，已过去多久
-        n = strLogsArray.length;
+        n = strLogsArray.length-1;
 
         //n=1的计算与其他不同，直接手写；其他条件下函数式判断。
         if (n == 1) {
@@ -747,49 +759,50 @@ public class LogList {
         }*/
 
 
-    /*
-     * 根据已有log和新记录的时间，组建新log-list记录。
-     * 如果type是miss一次，则连续生成两条，其中稍早一条时间全记0（记-会分不清）
-     * 【记0逻辑上似乎没有冲突，只有首条记录会转为date】
-     * */
-    public static String updateStrLogList(String oldLogs,long timeInMilli,int stateColor){
+    public static String getUpdatedGroupLogs(Context context, int groupId, long finishTime, int learningTypeColor){
+        //调用本方法时传入的learningType需要是绿、蓝、橙三种之一。此三者处理方式一致，都是对旧Log进行附加。
+        // 由复习发起页面控制进入逻辑。
+        YouMemoryDbHelper memoryDbHelper = YouMemoryDbHelper.getInstance(context);
+        String oldLogsStr = memoryDbHelper.getGroupById(groupId).getGroupLogs();
 
-        if(oldLogs==null||oldLogs.isEmpty()){
-            //没有记录，调用初学记录生成方法
-            return LogModel.getStrSingleLogModelFromLong(0,timeInMilli,false);
+        if(oldLogsStr==null||oldLogsStr.isEmpty()){
+            //没有记录是错误情况，现在只要建组就有一条log记录。
+            return null;//以返回null作为错误情况；以返回empty作为额外学习。
         }
 
-        //将传入的oldLogs按条拆分
-        String[] oldLogStrs = oldLogs.split(";");
+        //拆分Logs
+        String[] oldLogs = oldLogsStr.split(";");
         //取最后一条，按分节拆分
-        String[] sectionOfSingleLog = oldLogStrs[oldLogStrs.length-1].split("#");
-        //首节为数字N（初学记录：0 ；60'内复习无记录；其后复习从1起编。由复习发起页面控制进入逻辑。）
+        String[] sectionOfSingleLog = oldLogs[oldLogs.length-1].split("#");
+        //首节为数字N（建组记录为0，初学记录为1 。60'内复习无记录；其后复习从2起编。）
         String oldNum = sectionOfSingleLog[0];
         if(oldNum == null||oldNum.isEmpty()){
             return null;
         }
+        int num = Integer.parseInt(oldNum)+1;//注意，第30~60分钟的复习，不算在LOGS之内，而作为独立标记记录。
+        SimpleDateFormat sdFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+        /* 新方法似乎无此检验的必要了
         //对第二节的时间记录进行转换，判断是否大于60分钟。
-        SimpleDateFormat sdFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         try {
             Date lastLogDate = sdFormat.parse(sectionOfSingleLog[1]);
-            if((timeInMilli-lastLogDate.getTime())<=60*60*1000) return "";
+            if((finishTime-lastLogDate.getTime())<=60*60*1000) return "";
             //如果本次复习时间与上次日志时间间隔在60分钟内，则为30~60间的复习，不计入Logs。且返回空串由调用方处理。
         } catch (ParseException e) {
             e.printStackTrace();
-        }
-        int num = Integer.parseInt(oldNum)+1;//注意，第30~60分钟的复习，不算在LOGS之内，而作为独立标记记录。
+        }*/
 
-        switch (stateColor){
+        switch (learningTypeColor){
+            case R.color.colorGP_Newly:
             case R.color.colorGP_AVAILABLE:
                 //正常状态。生成一条。
                 StringBuilder sbd = new StringBuilder();
 
-                sbd.append(oldLogs);
+                sbd.append(oldLogsStr);
                 sbd.append(num);
                 sbd.append("#");
 
-                String time = sdFormat.format(timeInMilli);
+                String time = sdFormat.format(finishTime);
                 sbd.append(time);
                 sbd.append("#");
 
@@ -802,7 +815,7 @@ public class LogList {
                 //需要连续生成两条，前一条按--填充时间数字，boolean置true
                 StringBuilder sbdMissedOnce = new StringBuilder();
 
-                sbdMissedOnce.append(oldLogs);
+                sbdMissedOnce.append(oldLogsStr);
                 sbdMissedOnce.append(num-1);
                 sbdMissedOnce.append("#");
 
@@ -814,7 +827,7 @@ public class LogList {
                 sbdMissedOnce.append(num);
                 sbdMissedOnce.append("#");
 
-                String time2 = sdFormat.format(timeInMilli);
+                String time2 = sdFormat.format(finishTime);
                 sbdMissedOnce.append(time2);
                 sbdMissedOnce.append("#");
 
@@ -825,7 +838,20 @@ public class LogList {
             default:
                 return null;
         }
-
     }
 
+    public static ArrayList<String[]> getListStrLogsFromLogs(String logsStr){
+        ArrayList<String[]> logSectionArraysInList = new ArrayList<>();
+        if(logsStr == null ||logsStr.isEmpty()){
+            return null;
+        }
+        String[] logStrArray = logsStr.split(";");//拆分后每条项是一条记录
+        if(logStrArray.length==0){return null;}
+
+        for (String s :logStrArray) {
+            String[] logSections = s.split("#");//一条日志记录，以多个分段组合的形式。
+            logSectionArraysInList.add(logSections);
+        }
+        return logSectionArraysInList;
+    }
 }

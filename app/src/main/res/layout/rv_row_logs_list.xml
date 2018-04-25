@@ -47,7 +47,7 @@
         android:layout_marginBottom="2dp"
         />
 
-    <TextView
+   <!-- <TextView
         android:id="@+id/rv_logs_miss"
         android:gravity="center"
         android:padding="4dp"
@@ -57,6 +57,6 @@
         android:text="@string/sharp_x2_default"
         android:ellipsize="end"
         android:lines="1"
-        />
+        />-->
 
 </LinearLayout>

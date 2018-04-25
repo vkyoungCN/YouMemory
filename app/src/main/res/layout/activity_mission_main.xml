@@ -7,15 +7,17 @@
     tools:context="com.vkyoungcn.learningtools.MissionDetailActivity"
     android:orientation="vertical">
 
+    <!--页面上部，横向llt-->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
+        <!--上部的左半llt-->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="2"
+            android:layout_weight="1"
             android:background="#f6f6f6f6"
             android:orientation="vertical">
 
@@ -53,19 +55,19 @@
 
         </LinearLayout>
 
+        <!--竖向分割线-->
         <TextView
             android:layout_width="1dp"
             android:layout_height="match_parent"
             android:background="#efefefef" />
 
-
+        <!--上部的右半区域-->
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="99dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"
             android:orientation="vertical">
 
-            <TextView
+            <!--<TextView
                 android:id="@+id/add_group_for_mission"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
@@ -77,18 +79,48 @@
                 android:textSize="14sp"
                 android:background="#cc64ffda"
                 android:onClick="createGroup"
-                />
+                />-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="1dp"
+                >
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_add_black_24dp"
+                    android:background="#aa64ffda"
+                    android:layout_marginEnd="1dp"
+                    android:onClick="createGroup"
+                    android:contentDescription="@string/items_of_mission"/>
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_list_black_24dp"
+                    android:background="#aac4c6c5"
+                    android:onClick="listingItems"
+                    android:contentDescription="@string/items_of_mission"/>
+
+                <!--竖向分割线-->
+                <TextView
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:background="#efefefef" />
+
+            </LinearLayout>
+
+            <!--横向分割线-->
             <TextView
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:ellipsize="end"
-                android:gravity="center"
-                android:lines="2"
-                android:padding="6dp"
-                android:text="@string/presaved_button"
-                android:textSize="14sp"
+                android:layout_height="1dp"
+                android:background="#efefefef"
                 />
-
 
         </LinearLayout>
 
@@ -96,6 +128,7 @@
 
     </LinearLayout>
 
+    <!--Rv部分上部的题头部分，与Rv独立并列-->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="48dp">
@@ -108,11 +141,19 @@
             android:layout_centerInParent="true"
             android:text="@string/groups_info"
             />
+        <!--竖向分割线-->
+        <TextView
+            android:layout_width="1dp"
+            android:layout_height="36dp"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="4dp"
+            android:background="#efefefef"
+            android:layout_toStartOf="@+id/groups_removeRed_missionDetail"/>
         <ImageView
             android:id="@+id/groups_removeRed_missionDetail"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
-            android:padding ="4dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding ="8dp"
             android:elevation="2dp"
             android:layout_toStartOf="@+id/groups_refresh_missionDetail"
             android:layout_centerVertical="true"
@@ -123,9 +164,9 @@
             />
         <ImageView
             android:id="@+id/groups_refresh_missionDetail"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:padding="4dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="8dp"
             android:elevation="2dp"
             android:layout_marginEnd="6dp"
             android:layout_alignParentEnd="true"
@@ -138,16 +179,19 @@
 
     </RelativeLayout>
 
-
+    <!--横向分割线-->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="#ff666666"
         />
 
+    <!--下部，Rv区域。含遮盖区-->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
+        <!--遮盖区（可能已无存在必要，待删除。）-->
         <FrameLayout
             android:id="@+id/maskOverRv_MissionDetail"
             android:layout_width="match_parent"
@@ -161,6 +205,7 @@
                 android:text="@string/hold_on_a_moment"/>
     </FrameLayout>
 
+        <!--Rv部分-->
         <android.support.v7.widget.RecyclerView
             android:id="@+id/groups_in_single_mission_rv"
             android:layout_width="match_parent"

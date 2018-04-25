@@ -19,6 +19,7 @@ import com.vkyoungcn.learningtools.adapter.LearningViewPrAdapter;
 import com.vkyoungcn.learningtools.fragments.LearningTimeUpDiaFragment;
 import com.vkyoungcn.learningtools.fragments.OnSimpleDFgButtonClickListener;
 import com.vkyoungcn.learningtools.models.SingleItem;
+import com.vkyoungcn.learningtools.spiralCore.LogList;
 import com.vkyoungcn.learningtools.sqlite.YouMemoryDbHelper;
 import com.vkyoungcn.learningtools.validatingEditor.ValidatingEditor;
 
@@ -70,6 +71,7 @@ public class ItemLearningActivity extends AppCompatActivity implements OnSimpleD
     private TextView tv_totalPageNum;
 
     public static final int RESULT_LEARNING_SUCCEEDED = 3020;
+    public static final int RESULT_EXTRA_LEARNING_SUCCEEDED = 3021;
     public static final int RESULT_LEARNING_FAILED = 3030;
 
     public static final int MESSAGE_DB_DATE_FETCHED =5101;
@@ -77,6 +79,8 @@ public class ItemLearningActivity extends AppCompatActivity implements OnSimpleD
     public static final int MESSAGE_ONE_SECOND_CHANGE =5103;
     public static final int MESSAGE_TIME_UP = 5104;
     public static final int MESSAGE_LOGS_SAVED = 5105;
+    public static final int MESSAGE_EXTRA_LEARNING_ACCOMPLISHED = 5106;
+
 
 
     @Override
@@ -134,13 +138,14 @@ public class ItemLearningActivity extends AppCompatActivity implements OnSimpleD
                 if(position==items.size()-1){
                     //最后一张【Ending伪数据页】
                     learningFinished = true;
-//                    timingThread.interrupt();//先结束计时线程。
+                    timingThread.interrupt();//先结束计时线程。
                     // （不需要用户确认完成）向DB写数据；
                     //能到这一页的，属于正常完成
+                    tv_currentPageNum.setText("--");//总不能显示比总数还+1.
+
                     //显示信息：学习记录保存中，请稍等……同时执行向DB写log
                     tv_mask.setText("学习记录保存中，请稍等");
                     fltMask.setVisibility(View.VISIBLE);
-                    tv_currentPageNum.setText("--");//总不能显示比总数还+1.
                     //在新线程处理log的DB保存操作。
                     new Thread(new learningFinishedRunnable()).start();
 
@@ -197,14 +202,31 @@ public class ItemLearningActivity extends AppCompatActivity implements OnSimpleD
 
         @Override
         public void run() {
-            //先更新记录
-            newLogs = memoryDbHelper.updateLogOfGroup(groupId,System.currentTimeMillis(),learningType);
-            //完成后通知UI
-            Message message = new Message();
-            message.what = MESSAGE_LOGS_SAVED ;
-            message.obj = newLogs;
+            //额外复习
+            if(learningType == R.color.colorGP_STILL_NOT){
+                //额外复习处理逻辑
+                //增加DB列，额外学习的记录。也是要操作DB的。
+                Message message = new Message();
+                message.what = MESSAGE_EXTRA_LEARNING_ACCOMPLISHED ;
 
-            handler.sendMessage(message);
+                handler.sendMessage(message);
+            }else {
+                //需要生成新Logs记录存入DB（覆盖旧Logs）
+                //注意，仍然需要传递learningType以区分蓝色、橙色生成几条记录。
+                newLogs = LogList.getUpdatedGroupLogs(ItemLearningActivity.this, groupId, System.currentTimeMillis(),learningType);
+                //向DB更新
+                if(newLogs==null||newLogs.isEmpty()){
+                    Toast.makeText(ItemLearningActivity.this, "学习记录生成失败，未知错误。", Toast.LENGTH_SHORT).show();
+                }
+                long lines = memoryDbHelper.updateLogOfGroupById(groupId,newLogs);
+
+                //完成后通知UI
+                Message message = new Message();
+                message.what = MESSAGE_LOGS_SAVED;
+//                message.obj = lines;//暂时用不到该数据
+
+                handler.sendMessage(message);
+            }
         }
     }
 
@@ -303,7 +325,7 @@ public class ItemLearningActivity extends AppCompatActivity implements OnSimpleD
                 break;
 
             case MESSAGE_LOGS_SAVED:
-                timingThread = null;//停止计时
+//                timingThread = null;//停止计时
                 // 滑动监听的设置代码早于timingThread实例化代码的位置，所以原先的终止方式无效。
                 fltMask.setVisibility(View.GONE);//取消遮盖
                 //在原始activity上给出结束按钮。显示学习信息。
@@ -311,8 +333,15 @@ public class ItemLearningActivity extends AppCompatActivity implements OnSimpleD
                 //可以为返回调用方activity而设置数据了
                 Intent intent = new Intent();
                 intent.putExtra("newLogsStr",newLogs);
+
                 setResult(RESULT_LEARNING_SUCCEEDED,intent);
+                this.finish();
                 break;
+            case MESSAGE_EXTRA_LEARNING_ACCOMPLISHED:
+                Intent intent2 = new Intent();
+
+                setResult(RESULT_EXTRA_LEARNING_SUCCEEDED,intent2);
+                this.finish();
         }
     }
 

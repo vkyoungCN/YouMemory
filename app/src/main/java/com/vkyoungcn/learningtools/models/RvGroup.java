@@ -1,9 +1,7 @@
 package com.vkyoungcn.learningtools.models;
 
 import com.vkyoungcn.learningtools.spiralCore.GroupManager;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.vkyoungcn.learningtools.spiralCore.GroupState;
 
 /**
  * Created by VkYoung16 on 2018/3/26 0026.
@@ -42,7 +40,7 @@ public class RvGroup implements Cloneable{
 
     //用于从DBRawGroup到RvGroup的转换，但是tableSuffix字段前者并不持有，需要额外传入。
     //GroupState需计算后传入，用于设置stateText和stateColor;
-    public RvGroup(DBRwaGroup dbRwaGroup, GroupState groupState,String tableSuffix) {
+    public RvGroup(DBRwaGroup dbRwaGroup, GroupState groupState, String tableSuffix) {
         this.id = dbRwaGroup.getId();
         this.description = dbRwaGroup.getDescription();
         this.isFallBehind = dbRwaGroup.isFallBehind();

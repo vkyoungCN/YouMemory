@@ -1,11 +1,9 @@
-package com.vkyoungcn.learningtools.models;
+package com.vkyoungcn.learningtools.spiralCore;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.vkyoungcn.learningtools.R;
-import com.vkyoungcn.learningtools.spiralCore.LogList;
-import com.vkyoungcn.learningtools.spiralCore.RemainingTimeAmount;
 
 
 /*

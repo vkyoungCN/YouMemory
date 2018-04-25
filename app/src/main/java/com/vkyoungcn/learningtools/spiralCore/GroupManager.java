@@ -1,9 +1,7 @@
 package com.vkyoungcn.learningtools.spiralCore;
 
 import android.content.Context;
-import android.util.Log;
 
-import com.vkyoungcn.learningtools.models.GroupState;
 import com.vkyoungcn.learningtools.models.RvGroup;
 
 import java.util.ArrayList;

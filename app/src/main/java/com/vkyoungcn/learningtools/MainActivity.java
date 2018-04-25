@@ -4,6 +4,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.KeyEvent;
+import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.vkyoungcn.learningtools.adapter.AllMissionRvAdapter;
@@ -41,4 +44,18 @@ public class MainActivity extends AppCompatActivity {
         allMissionRecyclerView.setAdapter(new AllMissionRvAdapter(allMissions,this));
 
     }
+
+    /*
+    * 似乎只有这种方式才能禁止返回到起始页。
+    * 可以直接退出程序。
+    */
+    @Override
+    public boolean onKeyDown(int keyCode,KeyEvent event){
+        if(keyCode==KeyEvent.KEYCODE_BACK){
+            moveTaskToBack(true);
+            return true;//不执行父类点击事件
+        }
+        return super.onKeyDown(keyCode, event);//继续执行父类其他点击事件
+    }
+
 }

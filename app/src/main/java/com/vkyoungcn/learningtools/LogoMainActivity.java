@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
+import android.view.animation.LinearInterpolator;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -90,7 +91,7 @@ public class LogoMainActivity extends AppCompatActivity {
         @Override
         public void run() {
             try {
-                Thread.sleep(300);
+                Thread.sleep(400);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -129,10 +130,10 @@ public class LogoMainActivity extends AppCompatActivity {
                 startActivity(intent);
                 break;
             case MESSAGE_SLEEP_DONE:
-                ValueAnimator LogoDisAnimator = ValueAnimator.ofFloat(100,0);
-                LogoDisAnimator.setDuration(300);
+                ValueAnimator LogoDisAnimator = ValueAnimator.ofFloat(30,100,100,0);
+                LogoDisAnimator.setDuration(900);
                 LogoDisAnimator.addUpdateListener(new LogoDisAnimatorListener());
-                LogoDisAnimator.setInterpolator(new AccelerateInterpolator());
+                LogoDisAnimator.setInterpolator(new LinearInterpolator());
                 LogoDisAnimator.addListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationStart(Animator animation) {
@@ -149,6 +150,7 @@ public class LogoMainActivity extends AppCompatActivity {
 
                             Intent intent= new Intent(LogoMainActivity.this,MainActivity.class);
                             intent.putParcelableArrayListExtra("All_Missions",missions);
+//                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(intent);
                         }else {
                             Toast.makeText(LogoMainActivity.this, "任务拉取失败", Toast.LENGTH_SHORT).show();

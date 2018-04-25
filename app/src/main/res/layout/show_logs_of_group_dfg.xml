@@ -15,8 +15,16 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="36dp"
-            android:gravity="center"
+            android:gravity="center|bottom"
             android:text="@string/log_detail"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="12sp"
+            android:textColor="@color/bottomLine_nonCorrect_color"
+            android:lines="2"
+            android:text="@string/zero_and_numbers"/>
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/rv_logs_list"

@@ -8,19 +8,21 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.vkyoungcn.learningtools.adapter.ItemsOfSingleGroupAdapter;
 import com.vkyoungcn.learningtools.fragments.ShowLogsOfGroupDiaFragment;
 import com.vkyoungcn.learningtools.models.DBRwaGroup;
-import com.vkyoungcn.learningtools.models.GroupState;
+import com.vkyoungcn.learningtools.spiralCore.GroupState;
 import com.vkyoungcn.learningtools.models.RvGroup;
 import com.vkyoungcn.learningtools.models.SingleItem;
 import com.vkyoungcn.learningtools.spiralCore.GroupManager;
+import com.vkyoungcn.learningtools.spiralCore.LogList;
+import com.vkyoungcn.learningtools.spiralCore.SingleLog;
 import com.vkyoungcn.learningtools.sqlite.YouMemoryDbHelper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GroupDetailActivity extends Activity {

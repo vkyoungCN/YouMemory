@@ -93,4 +93,6 @@
     <string name="YouMemoryCN">优记</string>
     <string name="YouMemoryEn">YouMemory</string>
     <string name="re_try">重试</string>
+    <string name="items_of_mission">任务所属Items</string>
+    <string name="zero_and_numbers">0代表建组时间/1为初次学习记录/复习从2起递增</string>
 </resources>
