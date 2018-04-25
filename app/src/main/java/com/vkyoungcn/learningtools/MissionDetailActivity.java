@@ -17,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.vkyoungcn.learningtools.adapter.GroupsOfMissionRvAdapter;
+import com.vkyoungcn.learningtools.fragments.ConfirmDeletingDiaFragment;
 import com.vkyoungcn.learningtools.fragments.ConfirmReadyLearningDiaFragment;
 import com.vkyoungcn.learningtools.fragments.ConfirmRemoveRedsDiaFragment;
 import com.vkyoungcn.learningtools.fragments.CreateGroupDiaFragment;
@@ -43,7 +44,9 @@ import java.util.List;
  * 学习/复习完成或因超时而未能完成的，都会回到本页面；完成则更新RV列表的显示，
  * 失败则产生一条消息【待实现】。
  * */
-public class MissionDetailActivity extends AppCompatActivity implements OnSimpleDFgButtonClickListener, CreateGroupDiaFragment.OnFragmentInteractionListener,ConfirmReadyLearningDiaFragment.OnConfirmClick, ConfirmRemoveRedsDiaFragment.OnRemoveRedsConfirmClick {
+public class MissionDetailActivity extends AppCompatActivity implements OnSimpleDFgButtonClickListener,
+        CreateGroupDiaFragment.OnFragmentInteractionListener,ConfirmReadyLearningDiaFragment.OnConfirmClick,
+        ConfirmRemoveRedsDiaFragment.OnRemoveRedsConfirmClick, ConfirmDeletingDiaFragment.OnDeletingGroupDfgClickListener {
 //    private static final String TAG = "MissionDetailActivity";
 
     public static final int MESSAGE_PRE_DB_FETCHED =5011;
@@ -251,6 +254,10 @@ public class MissionDetailActivity extends AppCompatActivity implements OnSimple
                         //空则为新建--不更新
                         continue;
                     }
+                    if(strLogs.split(";").length == 1){
+                        //新建，不更新
+                        continue;
+                    }
                     RemainingTimeAmount remainingTimeAmount = LogList.getCurrentRemainingTimeForGroup(strLogs);
                     if(remainingTimeAmount.getRemainingDays()!=0){
                         //【按设计逻辑，剩余时间大于1天的，不显示分钟数，每小时更新一次即可】
@@ -426,6 +433,14 @@ public class MissionDetailActivity extends AppCompatActivity implements OnSimple
                 memoryDbHelper.removeGroupById(rvToRemove.getId(),rvToRemove.getStrSubItemsIds(),tableItemSuffix);
             }
         }
+    }
+
+    //在Rv中对单项长按删除。长按后，弹出对话框，点击确认后调用本回调，删除单项。
+    @Override
+    public void onDeletingConfirmClick(int position) {
+        RvGroup rvGroupToRemove = rvGroups.get(position);
+        memoryDbHelper.removeGroupById(rvGroupToRemove.getId(),rvGroupToRemove.getStrSubItemsIds(),tableItemSuffix);
+        adapter.notifyItemRemoved(position);
     }
 }
 

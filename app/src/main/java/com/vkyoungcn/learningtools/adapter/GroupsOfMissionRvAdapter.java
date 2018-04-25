@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.vkyoungcn.learningtools.fragments.ConfirmDeletingDiaFragment;
 import com.vkyoungcn.learningtools.fragments.ConfirmReadyLearningDiaFragment;
 import com.vkyoungcn.learningtools.GroupDetailActivity;
 import com.vkyoungcn.learningtools.R;
@@ -45,7 +46,8 @@ public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissi
             group_description = itemView.findViewById(R.id.group_description);
             item_amount = itemView.findViewById(R.id.item_amount);
             current_state_time = itemView.findViewById(R.id.current_state);
-            current_state_time.setOnClickListener(this);//
+            current_state_time.setOnClickListener(this);
+            current_state_time.setOnLongClickListener(this);//如果只在llt上设置长按监听，则此按键只响应click事件。
             btn_group_detail = itemView.findViewById(R.id.rv_group_detail);
             btn_group_detail.setOnClickListener(this);//VH 监听器方案下直接在这里绑定监听器。
 
@@ -135,8 +137,15 @@ public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissi
             //弹出确认框。
             //确认后删除Group（所属Items回归（DB负责））
             // 【问，返回false？】，
+            FragmentTransaction transaction = ((Activity)context).getFragmentManager().beginTransaction();
+            Fragment prev = ((Activity)context).getFragmentManager().findFragmentByTag("READY_TO_DELETE");
+            if (prev != null) {
+                transaction.remove(prev);
+            }
+            DialogFragment dfgDeleting = ConfirmDeletingDiaFragment.newInstance(getAdapterPosition());
 
-            return false;
+            dfgDeleting.show(transaction, "READY_TO_DELETE");
+            return true;
         }
     }
 
