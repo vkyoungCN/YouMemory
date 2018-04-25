@@ -18,6 +18,7 @@ import android.widget.Toast;
 import com.vkyoungcn.learningtools.adapter.LearningViewPrAdapter;
 import com.vkyoungcn.learningtools.fragments.LearningTimeUpDiaFragment;
 import com.vkyoungcn.learningtools.fragments.OnSimpleDFgButtonClickListener;
+import com.vkyoungcn.learningtools.models.DBRwaGroup;
 import com.vkyoungcn.learningtools.models.SingleItem;
 import com.vkyoungcn.learningtools.spiralCore.LogList;
 import com.vkyoungcn.learningtools.sqlite.YouMemoryDbHelper;
@@ -69,9 +70,11 @@ public class ItemLearningActivity extends AppCompatActivity implements OnSimpleD
     private TextView tv_currentPageNum;
     private int currentLearnedAmount;//用于最后判断是否完成，是只增不减的量。
     private TextView tv_totalPageNum;
+    private TextView confirmAndFinish;//额外复习完成后的返回按钮，初始隐藏。
 
     public static final int RESULT_LEARNING_SUCCEEDED = 3020;
     public static final int RESULT_EXTRA_LEARNING_SUCCEEDED = 3021;
+    public static final int RESULT_EXTRA_LEARNING_SUCCEEDED_UNDER24H = 3022;
     public static final int RESULT_LEARNING_FAILED = 3030;
 
     public static final int MESSAGE_DB_DATE_FETCHED =5101;
@@ -80,6 +83,8 @@ public class ItemLearningActivity extends AppCompatActivity implements OnSimpleD
     public static final int MESSAGE_TIME_UP = 5104;
     public static final int MESSAGE_LOGS_SAVED = 5105;
     public static final int MESSAGE_EXTRA_LEARNING_ACCOMPLISHED = 5106;
+    public static final int MESSAGE_EXTRA_LEARNING_UNDER_1H = 5107;
+    public static final int MESSAGE_EXTRA_LEARNING_1H_24H = 5108;
 
 
 
@@ -101,6 +106,7 @@ public class ItemLearningActivity extends AppCompatActivity implements OnSimpleD
         tv_currentPageNum = (TextView)findViewById(R.id.currentPageNum_learningActivity);
         tv_totalPageNum = (TextView)findViewById(R.id.totalPageNum_learningActivity);//总数字需要在数据加载完成后设置，在handleMessage中处理
         totalMinutes = (TextView) findViewById(R.id.tv_num_itemLearningActivity);
+        confirmAndFinish = (TextView)findViewById(R.id.learningFinish) ;
 
         viewPager = (HalfScrollableViewPager) findViewById(R.id.viewPager_ItemLearning);
         if(learningType == R.color.colorGP_Newly) {
@@ -121,6 +127,7 @@ public class ItemLearningActivity extends AppCompatActivity implements OnSimpleD
                     scrollablePage = position;
                 }//end if, 向前滑动不设新值。
 
+                //非初学状态下，不能超越上限滑动
                 if((learningType == R.color.colorGP_AVAILABLE ||
                         learningType == R.color.colorGP_Miss_ONCE ||
                         learningType == R.color.colorGP_STILL_NOT )&& position>=scrollablePage) {
@@ -205,11 +212,45 @@ public class ItemLearningActivity extends AppCompatActivity implements OnSimpleD
             //额外复习
             if(learningType == R.color.colorGP_STILL_NOT){
                 //额外复习处理逻辑
-                //增加DB列，额外学习的记录。也是要操作DB的。
-                Message message = new Message();
-                message.what = MESSAGE_EXTRA_LEARNING_ACCOMPLISHED ;
+                String oldLogs = memoryDbHelper.getGroupById(groupId).getGroupLogs();
+                int minutesPast = LogList.getMinutesBetweenInitLearningAndNow(oldLogs);
+                if(minutesPast<60){
+                    //1小时内的额外复习
+                    //DB记录字段置true
+                    //返回调用方后更新UI
+                    int lines = memoryDbHelper.updateExtraLearningOneAsTrue(groupId);
+                    if(lines == -1 || lines ==0){
+                        //失败逻辑，待处理
+                        return;
+                    }
+                    Message message = new Message();
+                    message.what = MESSAGE_EXTRA_LEARNING_UNDER_1H ;
 
-                handler.sendMessage(message);
+                    handler.sendMessage(message);
+                }else if(minutesPast<24*60){
+                    //1~24h
+                    //DB相应字段值+1
+                    //返回调用方后通知更新UI
+                    int lines2 = memoryDbHelper.updateExtraLearning24HourAsAddOne(groupId);
+                    if(lines2 == -1 || lines2 ==0){
+                        //失败逻辑，待处理
+                        return;
+                    }
+                    Message message = new Message();
+                    message.what = MESSAGE_EXTRA_LEARNING_1H_24H ;
+
+                    handler.sendMessage(message);
+                }else {
+                    //超过24小时，没有特殊处理
+                    Message message = new Message();
+                    message.what = MESSAGE_EXTRA_LEARNING_ACCOMPLISHED ;
+
+                    handler.sendMessage(message);
+                }
+
+                //判断时间，在1h内的；在1h以上，24h内的；在24h以上的。
+                //增加DB列，额外学习的记录。也是要操作DB的。
+
             }else {
                 //需要生成新Logs记录存入DB（覆盖旧Logs）
                 //注意，仍然需要传递learningType以区分蓝色、橙色生成几条记录。
@@ -337,11 +378,23 @@ public class ItemLearningActivity extends AppCompatActivity implements OnSimpleD
                 setResult(RESULT_LEARNING_SUCCEEDED,intent);
                 this.finish();
                 break;
-            case MESSAGE_EXTRA_LEARNING_ACCOMPLISHED:
-                Intent intent2 = new Intent();
 
-                setResult(RESULT_EXTRA_LEARNING_SUCCEEDED,intent2);
+            case MESSAGE_EXTRA_LEARNING_1H_24H:
+            case MESSAGE_EXTRA_LEARNING_UNDER_1H:
+                fltMask.setVisibility(View.GONE);//取消遮盖
+                //在原始activity上给出结束按钮。显示学习信息。
+
+                //可以为返回调用方activity而设置数据了
+                Intent intent2 = new Intent();
+//                intent2.putExtra("GroupId",groupId);
+                setResult(RESULT_EXTRA_LEARNING_SUCCEEDED_UNDER24H,intent2);
                 this.finish();
+                break;
+
+            case MESSAGE_EXTRA_LEARNING_ACCOMPLISHED:
+                fltMask.setVisibility(View.GONE);
+                confirmAndFinish.setVisibility(View.VISIBLE);
+                //其返回操作在设visible的控件点击事件完成
         }
     }
 
@@ -392,6 +445,12 @@ public class ItemLearningActivity extends AppCompatActivity implements OnSimpleD
                 this.finish();
                 break;
         }
+    }
+
+    public void confirmAndFinish(View view){
+        Intent intent2 = new Intent();
+        setResult(RESULT_EXTRA_LEARNING_SUCCEEDED,intent2);
+        this.finish();
     }
 
     @Override

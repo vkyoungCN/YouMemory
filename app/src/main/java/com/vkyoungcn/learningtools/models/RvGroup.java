@@ -29,6 +29,9 @@ public class RvGroup implements Cloneable{
     private String strSubItemsIds = "";//DB数据。RV-row点击进入GroupDetail后所属Items详情列表使用。
     private String strGroupLogs ="";//DB数据。RV-row点击进入GroupDetail后点击日志按键时使用。可在使用前转换为List<String>。
 
+    private String extra_1h = "";//30~60的额外复习是否完成。Raw数据为布尔，此置空或☆。
+    private String extra_24hAccomplishTimes = "";//24小时内的额外复习次数。DB数据。
+
     /* 备用字段
     private short additionalRePickingTimes_24 = 0;//额外加班补充的次数（24小时内）
     private short additionalRePickTimes_24_72 = 0;//额外加班补充的次数（24~72小时间）*/
@@ -53,6 +56,9 @@ public class RvGroup implements Cloneable{
 
         this.stateText = GroupManager.getCurrentStateTimeAmountStringFromUIGroup(groupState);
         this.stateColorResId = groupState.getColorResId();
+
+        this.extra_1h = dbRwaGroup.isExtra_1hAccomplished()==true?"☆":"";
+        this.extra_24hAccomplishTimes = dbRwaGroup.getExtra_24hAccomplishTimes()==0?"":String.valueOf(dbRwaGroup.getExtra_24hAccomplishTimes());
 
     }
 
@@ -142,6 +148,22 @@ public class RvGroup implements Cloneable{
         this.totalSubItemsNumber = subItemsStr.length;
     }
 
+    public String getExtra_1h() {
+        return extra_1h;
+    }
+
+    public void setExtra_1h(String extra_1h) {
+        this.extra_1h = extra_1h;
+    }
+
+    public String getExtra_24hAccomplishTimes() {
+        return extra_24hAccomplishTimes;
+    }
+
+    public void setExtra_24hAccomplishTimes(String extra_24hAccomplishTimes) {
+        this.extra_24hAccomplishTimes = extra_24hAccomplishTimes;
+    }
+
     @Override
     public Object clone() throws CloneNotSupportedException {
         //如果不包含GroupState则全是初级类型，浅复制即可
@@ -156,7 +178,7 @@ public class RvGroup implements Cloneable{
     }
 
     /*
-     * Parcelable接口所要求覆写的一些内容
+     * Parcelable接口所要求覆写的一些内容【后期增加的1h 24h两字段暂未加入Parcelable】
      * */
     /*public int describeContents(){
         return 0;

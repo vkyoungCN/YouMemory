@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.vkyoungcn.learningtools.ItemLearningActivity.RESULT_EXTRA_LEARNING_SUCCEEDED;
+import static com.vkyoungcn.learningtools.ItemLearningActivity.RESULT_EXTRA_LEARNING_SUCCEEDED_UNDER24H;
 
 /*
  * 单个Mission的详情页；
@@ -254,7 +255,7 @@ public class MissionDetailActivity extends AppCompatActivity implements OnSimple
                 for (RvGroup singleRvGroup :rvGroups) {
                     String strLogs = singleRvGroup.getStrGroupLogs();
                     if(strLogs==null||strLogs.isEmpty()){
-                        //空则为新建--不更新
+                        //空为出错
                         continue;
                     }
                     if(strLogs.split(";").length == 1){
@@ -375,6 +376,7 @@ public class MissionDetailActivity extends AppCompatActivity implements OnSimple
 
     @Override
     public void onFragmentInteraction(long lines) {
+        Log.i(TAG, "onFragmentInteraction: +1");
         //如果新增操作成功，通知adp变更。
         if (lines != -1) {
             //新增操作只影响一行
@@ -428,7 +430,12 @@ public class MissionDetailActivity extends AppCompatActivity implements OnSimple
                         String failedStartTimeMillis = data.getStringExtra("startingTimeMills");
                         Toast.makeText(self, "Learning starting at ("+failedStartTimeMillis+") has been failed because of TimeUp.", Toast.LENGTH_SHORT).show();
                         //【下面应该生成一条失败的消息】
+                    case RESULT_EXTRA_LEARNING_SUCCEEDED_UNDER24H:
+                        if(data == null) return;
+                        adapter.notifyItemChanged(clickPosition);//【直接从当初离开的点击事件取位置？】
+
                     case RESULT_EXTRA_LEARNING_SUCCEEDED:
+
                         Toast.makeText(this, "额外学习1次，完成！", Toast.LENGTH_SHORT).show();
 
                 }
@@ -457,8 +464,10 @@ public class MissionDetailActivity extends AppCompatActivity implements OnSimple
     //在Rv中对单项长按删除。长按后，弹出对话框，点击确认后调用本回调，删除单项。
     @Override
     public void onDeletingConfirmClick(int position) {
+//        Log.i(TAG, "onDeletingConfirmClick: position="+position);
         RvGroup rvGroupToRemove = rvGroups.get(position);
         memoryDbHelper.removeGroupById(rvGroupToRemove.getId(),rvGroupToRemove.getStrSubItemsIds(),tableItemSuffix);
+        rvGroups.remove(position);
         adapter.notifyItemRemoved(position);
     }
 }

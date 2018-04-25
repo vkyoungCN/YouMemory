@@ -95,4 +95,9 @@
     <string name="re_try">重试</string>
     <string name="items_of_mission">任务所属Items</string>
     <string name="zero_and_numbers">0代表建组时间/1为初次学习记录/复习从2起递增</string>
+    <string name="confirm_finish">确认并返回</string>
+    <string name="star_symbol">☆</string>
+    <string name="one_hour_extra">1小时内多次复习</string>
+    <string name="zero">0</string>
+    <string name="alpha_zero_three">（工程测试α-0.3.1）</string>
 </resources>

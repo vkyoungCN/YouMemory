@@ -10,8 +10,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -35,7 +33,9 @@ public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissi
         private final TextView group_description;//对应DB中的Description列，“起始-末尾”词汇。
         private final TextView item_amount;//所属item的数量
         private final TextView current_state_time;//字面显示（剩余）时间.底色显示状态。
-        private final Button btn_group_detail;//绑定点击事件，进入group详情页。
+        private final TextView extra1h;
+        private final TextView extra24h;
+        private final TextView tv_group_detail;//绑定点击事件，进入group详情页。
         private final LinearLayout llt_singleGroupOverall ;//最外层GV，用于绑定长按删除事件。
         // ...测验分综合获得，由专门package类提供
 
@@ -45,11 +45,13 @@ public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissi
             group_id = itemView.findViewById(R.id.group_id);
             group_description = itemView.findViewById(R.id.group_description);
             item_amount = itemView.findViewById(R.id.item_amount);
+            extra1h = itemView.findViewById(R.id.extra_1h);
+            extra24h = itemView.findViewById(R.id.extra_24h);
             current_state_time = itemView.findViewById(R.id.current_state);
             current_state_time.setOnClickListener(this);
             current_state_time.setOnLongClickListener(this);//如果只在llt上设置长按监听，则此按键只响应click事件。
-            btn_group_detail = itemView.findViewById(R.id.rv_group_detail);
-            btn_group_detail.setOnClickListener(this);//VH 监听器方案下直接在这里绑定监听器。
+            tv_group_detail = itemView.findViewById(R.id.rv_group_detail);
+            tv_group_detail.setOnClickListener(this);//VH 监听器方案下直接在这里绑定监听器。
 
             llt_singleGroupOverall = itemView.findViewById(R.id.llt_fullGroup_rvGoM);//【不绑定OnItem版本的长按】
             llt_singleGroupOverall.setOnLongClickListener(this);
@@ -69,6 +71,14 @@ public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissi
 
         private TextView getCurrent_state_time() {
             return current_state_time;
+        }
+
+        public TextView getExtra1h() {
+            return extra1h;
+        }
+
+        public TextView getExtra24h() {
+            return extra24h;
         }
 
         @Override
@@ -175,6 +185,9 @@ public class GroupsOfMissionRvAdapter extends RecyclerView.Adapter<GroupsOfMissi
         holder.getItem_amount().setText(String.valueOf(group.getTotalSubItemsNumber()));
         holder.getCurrent_state_time().setText(group.getStateText());
         holder.getCurrent_state_time().setBackgroundResource(group.getStateColorResId());
+
+        holder.getExtra1h().setText(group.getExtra_1h());
+        holder.getExtra24h().setText(group.getExtra_24hAccomplishTimes());
     }
 
     @Override

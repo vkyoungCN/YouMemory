@@ -26,7 +26,7 @@ import com.vkyoungcn.learningtools.spiralCore.SingleLog;
 public class YouMemoryDbHelper extends SQLiteOpenHelper {
     //如果修改了数据库结构方案，则应当改动（增加）版本号
     private static final String TAG = "YouMemory-DbHelper";
-    private static final int DATABASE_VERSION = 8;
+    private static final int DATABASE_VERSION = 9;
     private static final String DATABASE_NAME = "YouMemory.db";
     private volatile static YouMemoryDbHelper sYouMemoryDbHelper = null;
     private SQLiteDatabase mSQLiteDatabase = null;
@@ -56,6 +56,8 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
                     YouMemoryContract.Group.COLUMN_IS_OBSOLETED + " BOOLEAN, "+
                     YouMemoryContract.Group.COLUMN_GROUP_LOGS + " TEXT, "+ //version4新增列。
                     YouMemoryContract.Group.COLUMN_SUB_ITEM_IDS + " TEXT, " +
+                    YouMemoryContract.Group.COLUMN_EXTRA_1H + " BOOLEAN, "+ //V9
+                    YouMemoryContract.Group.COLUMN_EXTRA_24H + " INTEGER, "+ //V9
                     YouMemoryContract.Group.COLUMN_MISSION_ID + " INTEGER REFERENCES "+ //version5新增列。
                     YouMemoryContract.Mission.TABLE_NAME+"("+YouMemoryContract.Mission._ID+") " +
                     "ON DELETE CASCADE)";//version4新增列。
@@ -88,7 +90,7 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         return "DROP TABLE IF EXISTS " +  YouMemoryContract.ItemBasic.TABLE_NAME + suffix;
     }
 
-    public YouMemoryDbHelper(Context context) {
+    private YouMemoryDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         this.context = context;
 
@@ -139,55 +141,13 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         // 使用for实现跨版本升级数据库
         for (int i = oldVersion; i < newVersion; i++) {
             switch (i) {
-                case 4:
+               /* case 4:
                     // 上次错误升级，版本号可能4、5；改名的临时表删除。新表无数据。
                     // 原计划删除的交叉表继续删除
                     db.execSQL("DROP TABLE IF EXISTS temp_old_group");
                     db.execSQL("DROP TABLE IF EXISTS "+YouMemoryContract.GroupCrossItem.TABLE_NAME + DEFAULT_ITEM_SUFFIX);
-                    break;
-
-                case 5:
-                    //Item_默认表，新增一列。
-                    String alterItem_default ="ALTER TABLE "+YouMemoryContract.ItemBasic.TABLE_NAME
-                            +DEFAULT_ITEM_SUFFIX+" ADD COLUMN "
-                            +YouMemoryContract.ItemBasic.COLUMN_HAS_BEEN_CHOSE+" BOOLEAN";
-                    db.execSQL(alterItem_default);
-                    break;
-                case 6:
-                    //group表有错误，missionId列没有。故升级一次。
-                    db.execSQL(SQL_DROP_GROUP);
-                    db.execSQL(SQL_CREATE_GROUP);
-                    break;
-
-                case 7:
-                    //group删一列，增两列。
-                    String sqlAlt = "ALTER TABLE "+YouMemoryContract.Group.TABLE_NAME+" RENAME TO "+
-                            YouMemoryContract.Group.TABLE_NAME+"_temp";
-                    db.execSQL(sqlAlt);
-                    db.execSQL(SQL_CREATE_GROUP);//按新版重建表
-                    //读取旧数据（注意列数不同）插入新表，新字段用默认值。
-                    Cursor c = db.rawQuery("SELECT * FROM "+YouMemoryContract.Group.TABLE_NAME+"_temp",null);
-                    long l = 0;
-                    if(c.moveToFirst()){
-                        db.beginTransaction();
-                        do{
-                            ContentValues cv = new ContentValues();
-                            cv.put(YouMemoryContract.Group._ID,c.getInt(c.getColumnIndex(YouMemoryContract.Group._ID)));
-                            cv.put(YouMemoryContract.Group.COLUMN_DESCRIPTION,c.getString(c.getColumnIndex(YouMemoryContract.Group.COLUMN_DESCRIPTION)));
-                            cv.put(YouMemoryContract.Group.COLUMN_SUB_ITEM_IDS,c.getString(c.getColumnIndex(YouMemoryContract.Group.COLUMN_SUB_ITEM_IDS)));
-                            //手动变更此记录，作测试。
-                            cv.put(YouMemoryContract.Group.COLUMN_GROUP_LOGS,"1#2018-04-05 08:01:01#false;");
-                            cv.put(YouMemoryContract.Group.COLUMN_MISSION_ID,c.getInt(c.getColumnIndex(YouMemoryContract.Group.COLUMN_MISSION_ID)));
-                            cv.put(YouMemoryContract.Group.COLUMN_IS_FALL_BEHIND,0);
-                            cv.put(YouMemoryContract.Group.COLUMN_IS_OBSOLETED,0);
-
-                             l+= db.insert(YouMemoryContract.Group.TABLE_NAME,null,cv);
-
-                        }while (c.moveToNext());
-                        db.setTransactionSuccessful();
-                        db.endTransaction();
-                    }
-                    db.execSQL("DROP TABLE IF EXISTS "+YouMemoryContract.Group.TABLE_NAME+"_temp");
+                    break;*/
+                //旧版升级不再支持，以上为示例片段保留。
 
                 default:
                     break;
@@ -440,6 +400,8 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         values.put(YouMemoryContract.Group.COLUMN_IS_FALL_BEHIND, dbRwaGroup.isFallBehind());
         values.put(YouMemoryContract.Group.COLUMN_IS_OBSOLETED, dbRwaGroup.isObsoleted());
         values.put(YouMemoryContract.Group.COLUMN_MISSION_ID, dbRwaGroup.getMission_id());
+        values.put(YouMemoryContract.Group.COLUMN_EXTRA_1H,dbRwaGroup.isExtra_1hAccomplished());
+        values.put(YouMemoryContract.Group.COLUMN_EXTRA_24H, dbRwaGroup.getExtra_24hAccomplishTimes());
         values.put(YouMemoryContract.Group.COLUMN_SUB_ITEM_IDS, dbRwaGroup.getSubItemIdsStr());
 
         l = mSQLiteDatabase.insert(YouMemoryContract.Group.TABLE_NAME, null, values);
@@ -468,6 +430,8 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
                 group.setSubItemIdsStr(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_SUB_ITEM_IDS)));
                 group.setGroupLogs(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_GROUP_LOGS)));
                 group.setMission_id(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_MISSION_ID)));
+                group.setExtra_24hAccomplishTimes(cursor.getShort(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_EXTRA_24H)));
+                group.setExtra_1hAccomplished(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_EXTRA_1H))==1);
                 group.setFallBehind(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_IS_FALL_BEHIND))==1);
                 group.setObsoleted(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_IS_OBSOLETED))==1);
 
@@ -498,6 +462,8 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
                 group.setSubItemIdsStr(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_SUB_ITEM_IDS)));
                 group.setGroupLogs(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_GROUP_LOGS)));
                 group.setMission_id(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_MISSION_ID)));
+            group.setExtra_24hAccomplishTimes(cursor.getShort(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_EXTRA_24H)));
+            group.setExtra_1hAccomplished(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_EXTRA_1H))==1);
                 group.setFallBehind(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_IS_FALL_BEHIND))==1);
                 group.setObsoleted(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_IS_OBSOLETED))==1);
         }
@@ -517,14 +483,66 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
     * */
     public long updateLogOfGroupById(int groupId,String newFullyLogs){
         long lines;
-                getWritableDatabaseIfClosedOrNull();
-                ContentValues values = new ContentValues();
-                values.put(YouMemoryContract.Group.COLUMN_GROUP_LOGS,newFullyLogs);
-                lines = mSQLiteDatabase.update(YouMemoryContract.Group.TABLE_NAME,values,
-                        YouMemoryContract.Group._ID+"=?",new String[]{String.valueOf(groupId)});
-                return lines;
+        getWritableDatabaseIfClosedOrNull();
+        ContentValues values = new ContentValues();
+        values.put(YouMemoryContract.Group.COLUMN_GROUP_LOGS,newFullyLogs);
+        lines = mSQLiteDatabase.update(YouMemoryContract.Group.TABLE_NAME,values,
+                YouMemoryContract.Group._ID+"=?",new String[]{String.valueOf(groupId)});
+        closeDB();
+        return lines;
+
 
     }
+
+    public int updateExtraLearningOneAsTrue(int groupId){
+        int lines;
+        getWritableDatabaseIfClosedOrNull();
+
+        ContentValues values = new ContentValues();
+        values.put(YouMemoryContract.Group.COLUMN_EXTRA_1H,true);
+        lines = mSQLiteDatabase.update(YouMemoryContract.Group.TABLE_NAME,values,
+                YouMemoryContract.Group._ID+"=?",new String[]{String.valueOf(groupId)});
+        closeDB();
+        return lines;
+    }
+
+    public int updateExtraLearning24HourAsAddOne(int groupId){
+        int lines;
+        getWritableDatabaseIfClosedOrNull();
+
+        short oldTimes = getExtraLearningTimes(groupId);
+
+        ContentValues values = new ContentValues();
+        values.put(YouMemoryContract.Group.COLUMN_EXTRA_24H,oldTimes+1);
+        lines = mSQLiteDatabase.update(YouMemoryContract.Group.TABLE_NAME,values,
+                YouMemoryContract.Group._ID+"=?",new String[]{String.valueOf(groupId)});
+        closeDB();
+        return lines;
+    }
+
+    private short getExtraLearningTimes(int groupId){
+        short times = 0;
+        String selectQuery = "SELECT "+YouMemoryContract.Group.COLUMN_EXTRA_24H+" FROM "
+                +YouMemoryContract.Group.TABLE_NAME+" WHERE "+YouMemoryContract.Group._ID+" = "
+                +groupId;
+
+        getReadableDatabaseIfClosedOrNull();
+        Cursor cursor = mSQLiteDatabase.rawQuery(selectQuery, null);
+
+        if(cursor.moveToFirst()){
+            times = cursor.getShort(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_EXTRA_24H));
+        }
+
+        try {
+            cursor.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        closeDB();
+        return times;
+
+    }
+
 
     public void removeGroupById(int groupId,String subItemIdsStr,String itemTableNameSuffix){
         getWritableDatabaseIfClosedOrNull();

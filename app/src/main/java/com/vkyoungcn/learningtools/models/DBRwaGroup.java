@@ -17,6 +17,9 @@ public class DBRwaGroup {
     //格式上，要求不同id记录间以英文分号分隔。
     private int mission_id=0;//v5新增。
 
+    private boolean extra_1hAccomplished = false;//30~60的额外复习是否完成。初始false
+    private short extra_24hAccomplishTimes = 0;//24小时内的额外复习次数。
+
 
     /* 备用字段
     private short additionalRePickingTimes_24 = 0;//额外加班补充的次数（24小时内）
@@ -126,7 +129,21 @@ public class DBRwaGroup {
         this.mission_id = mission_id;
     }
 
+    public boolean isExtra_1hAccomplished() {
+        return extra_1hAccomplished;
+    }
 
+    public void setExtra_1hAccomplished(boolean extra_1hAccomplished) {
+        this.extra_1hAccomplished = extra_1hAccomplished;
+    }
+
+    public short getExtra_24hAccomplishTimes() {
+        return extra_24hAccomplishTimes;
+    }
+
+    public void setExtra_24hAccomplishTimes(short extra_24hAccomplishTimes) {
+        this.extra_24hAccomplishTimes = extra_24hAccomplishTimes;
+    }
 
     public static String subItemIdsListIntToString(List<Integer> idsList){
 

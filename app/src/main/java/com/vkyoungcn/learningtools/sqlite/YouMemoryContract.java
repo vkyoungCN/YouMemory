@@ -41,16 +41,7 @@ public final class YouMemoryContract {
         public static final String COLUMN_GROUP_ID = "group_id";
     }
 
-   /* v6
-    public static class Group implements BaseColumns{
-        public static final String TABLE_NAME = "group_table";
-        public static final String COLUMN_DESCRIPTION = "description";
-        public static final String COLUMN_SPECIAL_MARK = "special_mark";
-        public static final String COLUMN_MISSION_ID = "mission_id";//v5新增，替代n:1任务-分组表
-        public static final String COLUMN_GROUP_LOGS = "group_logs";//v4新增；替代1:n日志交叉表
-        public static final String COLUMN_SUB_ITEM_IDS = "sub_item_ids";//v4新增；替代1:n交叉表
-    }*/
-/* version 8 */
+/* version 9 */
     public static class Group implements BaseColumns{
         public static final String TABLE_NAME = "group_table";
         public static final String COLUMN_DESCRIPTION = "description";
@@ -59,6 +50,9 @@ public final class YouMemoryContract {
         public static final String COLUMN_MISSION_ID = "mission_id";//v5新增，替代n:1任务-分组表
         public static final String COLUMN_GROUP_LOGS = "group_logs";//v4新增；替代1:n日志交叉表
         public static final String COLUMN_SUB_ITEM_IDS = "sub_item_ids";//v4新增；替代1:n交叉表
+        public static final String COLUMN_EXTRA_1H = "extra_1h";//1小时内的复习是否执行（即30~60分的那次，不计入log，以本字段（布尔型）记录）
+        public static final String COLUMN_EXTRA_24H = "extra_24h";//1h以上，24小时以内的额外学习次数，是INTEGER型。
+
     }
 
     public static class GroupCrossItem implements BaseColumns{

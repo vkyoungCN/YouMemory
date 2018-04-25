@@ -3,71 +3,118 @@
     android:id="@+id/llt_fullGroup_rvGoM"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="wrap_content">
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="48dp"
-    android:gravity="center">
 
-    <!-- id前的#号 -->
-    <TextView
-        android:layout_width="wrap_content"
+    <!--上半行-->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="48dp"
         android:gravity="center"
-        android:text="@string/sharp_x1_default"
-        />
+        android:orientation="horizontal">
 
-    <TextView
-        android:id="@+id/group_id"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:padding="4dp"
-        android:layout_marginEnd="4dp"
-        android:gravity="center"
-        android:text="@string/sharp_x2_default"
-        />
-    <TextView
-        android:id="@+id/group_description"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:padding="4dp"
-        android:gravity="center"
-        android:text="@string/sharp_x24_default"
-        />
+        <!--上半行左半部-->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            >
+            <!-- id前的#号 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:gravity="center"
+                android:text="@string/sharp_x1_default"
+                />
 
-    <!-- 数量前的（号 -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:layout_marginStart="12dp"
-        android:gravity="center"
-        android:text="@string/left_parenthesis"
-        />
+            <TextView
+                android:id="@+id/group_id"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:padding="4dp"
+                android:layout_marginEnd="4dp"
+                android:gravity="center"
+                android:text="@string/sharp_x2_default"
+                />
+            <TextView
+                android:id="@+id/group_description"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:padding="4dp"
+                android:gravity="center"
+                android:text="@string/sharp_x24_default"
+                />
 
-    <TextView
-        android:id="@+id/item_amount"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:padding="4dp"
-        android:gravity="center"
-        android:text="@string/sharp_x2_default"
-        />
+            <!-- 数量前的（号 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_marginStart="12dp"
+                android:gravity="center"
+                android:text="@string/left_parenthesis"
+                />
 
-    <!-- 数量后的）号 -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:gravity="center"
-        android:text="@string/right_parenthesis"
-        />
+            <TextView
+                android:id="@+id/item_amount"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:padding="4dp"
+                android:gravity="center"
+                android:text="@string/sharp_x2_default"
+                />
+
+            <!-- 数量后的）号 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:gravity="center"
+                android:text="@string/right_parenthesis"
+                />
+
+        </LinearLayout>
+
+        <!--右半部分，放置两个额外学习标记-->
+        <LinearLayout
+            android:layout_width="64dp"
+            android:layout_height="48dp"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            >
+
+            <TextView
+                android:id="@+id/extra_1h"
+                android:layout_width="match_parent"
+                android:layout_height="24dp"
+                android:gravity="center"
+                android:textSize="14sp"
+                android:background="#fff3e0"
+                android:textColor="#ff3d00"/>
+                <!--android:background="#22ffd180"-->
+
+            <TextView
+                android:id="@+id/extra_24h"
+                android:layout_width="match_parent"
+                android:layout_height="24dp"
+                android:gravity="center"
+                android:background="#aaefefef"
+                android:textSize="14sp"/>
+                <!--android:background="#221de9b6"-->
+
+
+        </LinearLayout>
 
 </LinearLayout>
+
+    <!--中间横分割线-->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="#efefef"/>
 
     <!-- 颜色在LinearLayout设置，两个ImageView仅在红色状态下出现-->
-<LinearLayout
+
+    <!--下半部分-->
+    <LinearLayout
     android:id="@+id/llt_color_set_groups_rv"
     android:layout_width="match_parent"
     android:layout_height="48dp"
@@ -83,12 +130,20 @@
             android:text="@string/sharp_x15_default"
             />
 
-    <Button
+        <!--竖向分割线-->
+        <TextView
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="#ffffff"
+            />
+
+    <TextView
         android:id="@+id/rv_group_detail"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="4dp"
+        android:layout_width="76dp"
+        android:layout_height="match_parent"
+        android:layout_margin="1dp"
         android:gravity="center"
+        android:background="#ffcdd2"
         android:text="@string/detail01"
         />
 

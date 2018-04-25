@@ -1,6 +1,7 @@
 package com.vkyoungcn.learningtools.spiralCore;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.vkyoungcn.learningtools.R;
 import com.vkyoungcn.learningtools.spiralCore.GroupState.stateNumber;
@@ -14,7 +15,7 @@ import java.util.ArrayList;
 * 日志记录数字从0开始：0 是建组，1是初学，复习从2起。】
 * */
 public class LogList {
-//    private static final String TAG = "LogList";
+    private static final String TAG = "LogList";
 
 
     /*
@@ -131,7 +132,7 @@ public class LogList {
             groupState.setColorResId(GroupState.ColorResId.COLOR_STILL_NOT);
 
             minuteReminder = (byte) (timeRemainingStageI % 60);
-            hourReminder = (byte) (timeRemainingStageI % (60 * 24));
+            hourReminder = (byte) ((timeRemainingStageI /60) % 24);
             dayReminder = (byte) (timeRemainingStageI / (60 * 24));
 
             groupState.setRemainingMinutes(minuteReminder);
@@ -141,7 +142,7 @@ public class LogList {
             groupState.setColorResId(GroupState.ColorResId.COLOR_AVAILABLE);
 
             minuteReminder = (byte) (timeRemainingStageII % 60);
-            hourReminder = (byte) (timeRemainingStageII % (60 * 24));
+            hourReminder = (byte) ((timeRemainingStageI /60) % 24);
             dayReminder = (byte) (timeRemainingStageII / (60 * 24));
 
             groupState.setRemainingMinutes(minuteReminder);
@@ -151,7 +152,7 @@ public class LogList {
             groupState.setColorResId(GroupState.ColorResId.COLOR_MISSED_ONCE);
 
             minuteReminder = (byte) (timeRemainingStageIII % 60);
-            hourReminder = (byte) (timeRemainingStageIII % (60 * 24));
+            hourReminder = (byte) ((timeRemainingStageI /60) % 24);
             dayReminder = (byte) (timeRemainingStageIII / (60 * 24));
 
             groupState.setRemainingMinutes(minuteReminder);
@@ -324,6 +325,7 @@ public class LogList {
         SingleLog firstLog = new SingleLog(strLogsArray[1]);//所有情形都要和初次学习时间做比较计算
         timeAmountMinutes = (System.currentTimeMillis() - firstLog.getTimeInMilli()) / (1000 * 60);//当前时间和初次学习时间相比，已过去多久
         n = strLogsArray.length-1;
+//        Log.i(TAG, "getCurrentRemainingTimeForGroup: n="+n);
 
         //n=1的计算与其他不同，直接手写；其他条件下函数式判断。
         if (n == 1) {
@@ -382,25 +384,27 @@ public class LogList {
         long timeRemainingStageII = (2 * (baseTimeFactor * 2 ^ (n+1)) - timeAmountMinutes);//距“错过第一次复习”还有多久
         long timeRemainingStageIII = (4 * (baseTimeFactor * 2 ^ (n+1)) - timeAmountMinutes);//距“错过两次复习”还有多久
 
-        byte minuteReminder;
-        byte hourReminder;
-        byte dayReminder;
-
+        byte minuteReminder = 0;
+        byte hourReminder = 0;
+        byte dayReminder = 0;
+//        Log.i(TAG, "getCurrentRemainingTimeForGroup: TimeAmount="+timeAmountMinutes);
+//        Log.i(TAG, "getCurrentRemainingTimeForGroup: timeRemainingStageI = "+timeRemainingStageI);
         if (timeAmountMinutes < 60) {//此时间段内的复习已完成。
             remainingTimeAmount.setRemainingMinutes((byte) 0);
             remainingTimeAmount.setRemainingHours((byte) 0);
             remainingTimeAmount.setRemainingDays((byte) 0);
         } else if (timeRemainingStageI > 0) {
             minuteReminder = (byte) (timeRemainingStageI % 60);
-            hourReminder = (byte) (timeRemainingStageI % (60 * 24));
+            hourReminder = (byte) ((timeRemainingStageI /60) % 24);
             dayReminder = (byte) (timeRemainingStageI / (60 * 24));
+//            Log.i(TAG, "getCurrentRemainingTimeForGroup: Remainder M H D:"+ minuteReminder+hourReminder+dayReminder);
 
             remainingTimeAmount.setRemainingMinutes(minuteReminder);
             remainingTimeAmount.setRemainingHours(hourReminder);
             remainingTimeAmount.setRemainingDays(dayReminder);
         } else if (timeRemainingStageII > 0) {
             minuteReminder = (byte) (timeRemainingStageII % 60);
-            hourReminder = (byte) (timeRemainingStageII % (60 * 24));
+            hourReminder = (byte) ((timeRemainingStageI /60) % 24);
             dayReminder = (byte) (timeRemainingStageII / (60 * 24));
 
             remainingTimeAmount.setRemainingMinutes(minuteReminder);
@@ -408,7 +412,7 @@ public class LogList {
             remainingTimeAmount.setRemainingDays(dayReminder);
         } else if (timeRemainingStageIII > 0) {
             minuteReminder = (byte) (timeRemainingStageIII % 60);
-            hourReminder = (byte) (timeRemainingStageIII % (60 * 24));
+            hourReminder = (byte) ((timeRemainingStageI /60) % 24);
             dayReminder = (byte) (timeRemainingStageIII / (60 * 24));
 
             remainingTimeAmount.setRemainingMinutes(minuteReminder);
@@ -419,6 +423,7 @@ public class LogList {
             remainingTimeAmount.setRemainingHours((byte) 0);
             remainingTimeAmount.setRemainingDays((byte) 0);
         }
+//        Log.i(TAG, "getCurrentRemainingTimeForGroup: H-M-S:"+remainingTimeAmount.getRemainingHours()+" "+remainingTimeAmount.getRemainingMinutes()+" "+remainingTimeAmount.getRemainingMinutes());
         return remainingTimeAmount;
     }
 
@@ -853,5 +858,21 @@ public class LogList {
             logSectionArraysInList.add(logSections);
         }
         return logSectionArraysInList;
+    }
+
+    /*
+    * 额外学习完成时调用，计算当前与初学的时间间隔
+    * */
+    public static int getMinutesBetweenInitLearningAndNow(String strLogs){
+        if (strLogs == null || strLogs.isEmpty()) {
+            return 0;//【实际为错误情况，待处理】
+        }
+        String[] strLogsArray = strLogs.split(";");//每个元素是一条形如N#yyyy-MM-dd HH:mm:ss#false;的记录
+        if(strLogsArray.length ==1){
+            return 0;//只有建组记录，本次就是初学，错误
+        }
+        SingleLog firstLog = new SingleLog(strLogsArray[1]);//所有情形都要和初次学习时间做比较计算
+        return (int)((System.currentTimeMillis() - firstLog.getTimeInMilli()) / (1000 * 60));//当前时间和初次学习时间相比，已过去多少分钟
+
     }
 }

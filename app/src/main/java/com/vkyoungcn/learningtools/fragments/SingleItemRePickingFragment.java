@@ -77,6 +77,7 @@ public class SingleItemRePickingFragment extends Fragment implements View.OnClic
         TextView tv_ext2 = (TextView) rootView.findViewById(R.id.tv_ext2_singleItemLearning_re);
         TextView tv_ext2Pos = (TextView) rootView.findViewById(R.id.tv_ext2Pos_singleItemLearning_re);
         tv_validatingEditor = (ValidatingEditor) rootView.findViewById(R.id.validatingEditor_singleItemLearning);
+        tv_validatingEditor.requestFocus();//因为发现焦点默认在cardView上。
 
 
 

@@ -111,7 +111,7 @@
 
     </LinearLayout>
 
-    <!-- Fragment在此 -->
+    <!-- ViewPager和Fragment在此 -->
     <com.vkyoungcn.learningtools.HalfScrollableViewPager
         android:layout_below="@id/header_learningActivity"
         android:layout_above="@id/footer_learningActivity"
@@ -121,16 +121,28 @@
 
     </com.vkyoungcn.learningtools.HalfScrollableViewPager>
 
-
+    <!--额外的复习需要一个返回按钮，不是自动返回的-->
+    <TextView
+        android:id="@+id/learningFinish"
+        android:layout_above="@+id/footer_learningActivity"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center"
+        android:text="@string/confirm_finish"
+        android:background="#eeeeee"
+        android:onClick="confirmAndFinish"
+        android:visibility="gone"
+        />
     <LinearLayout
         android:id="@+id/footer_learningActivity"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_horizontal"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="8dp"
         >
+
         <!--最后不需要确认完成的按钮，初学：敢划拉完就敢算你完成；复习：每页都有检验，能到ending页自然是完成的-->
         <TextView
             android:id="@+id/currentPageNum_learningActivity"

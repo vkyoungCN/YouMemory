@@ -25,6 +25,14 @@
         android:background="#efefef"
         android:layout_gravity="bottom|center_horizontal"
         />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:textSize="12sp"
+        android:text="@string/alpha_zero_three"
+        />
+
 
     <TextView
         android:layout_width="wrap_content"
