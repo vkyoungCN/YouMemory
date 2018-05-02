@@ -1,65 +1,99 @@
 package com.vkyoungcn.learningtools.models;
 
+import com.vkyoungcn.learningtools.R;
 import com.vkyoungcn.learningtools.spiralCore.GroupManager;
-import com.vkyoungcn.learningtools.spiralCore.GroupState;
 
 /**
- * Created by VkYoung16 on 2018/3/26 0026.
+ * Updated by VkYoung16 on 2018/5/1 21:24.
  * 用于RecyclerView的数据模型，只提供直接数据；
  * 运算部分提前完成不能带到适配器内部，否则运行卡顿严重。
  */
-@SuppressWarnings("all")
 public class RvGroup implements Cloneable{
     private static final String TAG = "RvGroup";
 
     private int id = 0;//DB数据，RvUI使用。
     private String description="";//DB数据。RvUI使用。
-    private boolean isFallBehind =false;//DB数据，RvUI使用。是不是掉队重组词汇。本组废弃后也应置废弃。
-    private boolean isObsoleted=false;//DB数据，RvUI使用。是否因未及时复习而废止分组。对应Items应改回未抽取。
 
-    private int totalSubItemsNumber = 0;//计算数据，RvUI使用。
-//    private GroupState groupCurrentState = new GroupState();//计算数据。【在直接设计下方两条的情况下，本计算数据可以不再持有】
-    private String stateText = "";//计算数据，RvUI使用。
-    private int stateColorResId = 0;//0 是移除底色。//计算数据，RvUI使用。
+    private String timePast = "";//根据“初学时间”字段计算
+    private int stageColorRes = 0;
 
-
-    private String missionItemTableSuffix ="";//RV-row点击进入GroupDetail后,展示所属Item时使用。
-//    private List<String> groupLogs = new ArrayList<>();//本组记忆与复习日志；RV-row点击进入GroupDetail后点击日志按键时使用。
-//    private List<Integer> strSubItemsIds = new ArrayList<>();//RV-row点击进入GroupDetail后所属Items详情列表使用。
+    private String missionItemTableSuffix ="";//RV-row点击进入GroupDetail后,展示所属Item时使用。由调用方Activity传递。
     private String strSubItemsIds = "";//DB数据。RV-row点击进入GroupDetail后所属Items详情列表使用。
-    private String strGroupLogs ="";//DB数据。RV-row点击进入GroupDetail后点击日志按键时使用。可在使用前转换为List<String>。
+    private int totalSubItemsNumber = 0;//计算数据，RvUI使用。
 
-    private String extra_1h = "";//30~60的额外复习是否完成。Raw数据为布尔，此置空或☆。
-    private String extra_24hAccomplishTimes = "";//24小时内的额外复习次数。DB数据。
+    /*本版新增区域*/
+    private int rePickingTimes_30m;//前30分钟内的复习次数。
+    private int earlyTimeRePickingTimes;//包括30m内的次数在内。
+    private boolean doubleKill = false;//是否有连续的两次复习；复习逻辑在复习完成时对本次开始和上次结束时间进行比较，（如果本字段为否且）时差6分钟内视作连续，对字段记真。
+    private boolean tripleKill = false;//是否有连续的三次复习；
 
-    /* 备用字段
-    private short additionalRePickingTimes_24 = 0;//额外加班补充的次数（24小时内）
-    private short additionalRePickTimes_24_72 = 0;//额外加班补充的次数（24~72小时间）*/
 
     public RvGroup() {
     }
 
 
-
-    //用于从DBRawGroup到RvGroup的转换，但是tableSuffix字段前者并不持有，需要额外传入。
-    //GroupState需计算后传入，用于设置stateText和stateColor;
-    public RvGroup(DBRwaGroup dbRwaGroup, GroupState groupState, String tableSuffix) {
+    public RvGroup(DBRwaGroup dbRwaGroup,int id, String timePast, int stageColorRes, String missionItemTableSuffix, int rePickingTimes_30m, int earlyTimeRePickingTimes, boolean doubleKill, boolean tripleKill) {
         this.id = dbRwaGroup.getId();
         this.description = dbRwaGroup.getDescription();
-        this.isFallBehind = dbRwaGroup.isFallBehind();
-        this.isObsoleted = dbRwaGroup.isObsoleted();
         this.strSubItemsIds = dbRwaGroup.getSubItemIdsStr();
-        this.strGroupLogs = dbRwaGroup.getGroupLogs();
+        this.totalSubItemsNumber = (GroupManager.getItemAmountFromSubItemStr(dbRwaGroup.getSubItemIdsStr()));this.id = id;
+        this.rePickingTimes_30m = dbRwaGroup.getRePickingTimes_30m();
+        this.earlyTimeRePickingTimes = dbRwaGroup.getEarlyTimeRePickingTimes();
+        this.doubleKill = dbRwaGroup.isDoubleKill();
+        this.tripleKill = dbRwaGroup.isTripleKill();
 
-        this.totalSubItemsNumber = (GroupManager.getItemAmountFromSubItemStr(dbRwaGroup.getSubItemIdsStr()));
-        this.missionItemTableSuffix = tableSuffix;
+        this.timePast = toTimePastStr(dbRwaGroup.getInitLearningLong());
+        this.stageColorRes = calculateStageColor(dbRwaGroup.getInitLearningLong());
 
-        this.stateText = GroupManager.getCurrentStateTimeAmountStringFromUIGroup(groupState);
-        this.stateColorResId = groupState.getColorResId();
+        this.missionItemTableSuffix = missionItemTableSuffix;
 
-        this.extra_1h = dbRwaGroup.isExtra_1hAccomplished()==true?"☆":"";
-        this.extra_24hAccomplishTimes = dbRwaGroup.getExtra_24hAccomplishTimes()==0?"":String.valueOf(dbRwaGroup.getExtra_24hAccomplishTimes());
 
+    }
+
+    private static String toTimePastStr(long initLearningLong){
+        long currentLong = System.currentTimeMillis();
+        long timeBetweenMinutes = (currentLong - initLearningLong)/1000*60;
+        if(timeBetweenMinutes==0){
+            //不足一分钟，输出“刚刚”
+            return "刚刚";
+        }else if(timeBetweenMinutes<60){
+            //不足1小时，超出1分钟，启用M字段
+            return "+"+timeBetweenMinutes+"分钟";
+        }else if(timeBetweenMinutes<60*24){
+            //不足一天，超出1小时，启用H/m字段，不启用D字段。
+            byte hourSection = (byte)(timeBetweenMinutes/60);
+            byte minuteSection = (byte)(timeBetweenMinutes%60);
+            return "+"+hourSection+"H"+minuteSection+"min";
+        }else {
+            //超出一天，启用D字段
+            short daySection = (short)((timeBetweenMinutes/60)/24);
+//            byte hourSection = (byte)((timeBetweenMinutes%(60*24))/60);
+            return "+"+daySection+"天";
+        }
+    }
+
+    private static int calculateStageColor(long initLearningLong){
+        long currentLong = System.currentTimeMillis();
+        long timeBetweenMinutes = (currentLong - initLearningLong)/1000*60;
+        if(timeBetweenMinutes<=30){
+            return R.color.color_GroupStage_30m;
+        }else if(timeBetweenMinutes<=360){
+            return R.color.color_GroupStage_6h;
+        }else if(timeBetweenMinutes<720){
+            return R.color.color_GroupStage_12h;
+        }else if(timeBetweenMinutes<60*24){
+            return R.color.color_GroupStage_24h;
+        }else if(timeBetweenMinutes<60*24*2){
+            return R.color.color_GroupStage_2d;
+        }else if(timeBetweenMinutes<60*24*4){
+            return R.color.color_GroupStage_4d;
+        }else if(timeBetweenMinutes<60*24*8){
+            return R.color.color_GroupStage_8d;
+        }else if(timeBetweenMinutes<60*24*15){
+            return R.color.color_GroupStage_15d;
+        }else {
+            return R.color.color_GroupStage_15d_U;
+        }
     }
 
 
@@ -87,28 +121,28 @@ public class RvGroup implements Cloneable{
         this.id = id;
     }
 
-    public boolean isFallBehind() {
-        return isFallBehind;
-    }
-
-    public void setFallBehind(boolean fallBehind) {
-        isFallBehind = fallBehind;
-    }
-
-    public boolean isObsoleted() {
-        return isObsoleted;
-    }
-
-    public void setObsoleted(boolean obsoleted) {
-        isObsoleted = obsoleted;
-    }
-
     public String getDescription() {
         return description;
     }
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getTimePast() {
+        return timePast;
+    }
+
+    public void setTimePast(String timePast) {
+        this.timePast = timePast;
+    }
+
+    public int getStageColorRes() {
+        return stageColorRes;
+    }
+
+    public void setStageColorRes(int stageColorRes) {
+        this.stageColorRes = stageColorRes;
     }
 
     public String getStrSubItemsIds() {
@@ -119,28 +153,36 @@ public class RvGroup implements Cloneable{
         this.strSubItemsIds = strSubItemsIds;
     }
 
-    public String getStrGroupLogs() {
-        return strGroupLogs;
+    public int getRePickingTimes_30m() {
+        return rePickingTimes_30m;
     }
 
-    public void setStrGroupLogs(String strGroupLogs) {
-        this.strGroupLogs = strGroupLogs;
+    public void setRePickingTimes_30m(int rePickingTimes_30m) {
+        this.rePickingTimes_30m = rePickingTimes_30m;
     }
 
-    public String getStateText() {
-        return stateText;
+    public int getEarlyTimeRePickingTimes() {
+        return earlyTimeRePickingTimes;
     }
 
-    public void setStateText(String stateText) {
-        this.stateText = stateText;
+    public void setEarlyTimeRePickingTimes(int earlyTimeRePickingTimes) {
+        this.earlyTimeRePickingTimes = earlyTimeRePickingTimes;
     }
 
-    public int getStateColorResId() {
-        return stateColorResId;
+    public boolean isDoubleKill() {
+        return doubleKill;
     }
 
-    public void setStateColorResId(int stateColorResId) {
-        this.stateColorResId = stateColorResId;
+    public void setDoubleKill(boolean doubleKill) {
+        this.doubleKill = doubleKill;
+    }
+
+    public boolean isTripleKill() {
+        return tripleKill;
+    }
+
+    public void setTripleKill(boolean tripleKill) {
+        this.tripleKill = tripleKill;
     }
 
     public void calculateAndSetTotalSubItemsNumber() {
@@ -148,21 +190,7 @@ public class RvGroup implements Cloneable{
         this.totalSubItemsNumber = subItemsStr.length;
     }
 
-    public String getExtra_1h() {
-        return extra_1h;
-    }
 
-    public void setExtra_1h(String extra_1h) {
-        this.extra_1h = extra_1h;
-    }
-
-    public String getExtra_24hAccomplishTimes() {
-        return extra_24hAccomplishTimes;
-    }
-
-    public void setExtra_24hAccomplishTimes(String extra_24hAccomplishTimes) {
-        this.extra_24hAccomplishTimes = extra_24hAccomplishTimes;
-    }
 
     @Override
     public Object clone() throws CloneNotSupportedException {

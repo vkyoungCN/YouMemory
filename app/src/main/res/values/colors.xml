@@ -9,6 +9,20 @@
     <color name="colorGP_Miss_TWICE">#ccef5350</color>
     <color name="colorGP_STILL_NOT">#cce0e0e0</color>
 
+    <color name="color_GroupStage_Newly">#cce0e0e0</color>
+    <color name="color_GroupStage_30m">#ccd50000</color>
+    <color name="color_GroupStage_6h">#88d50000</color>
+    <color name="color_GroupStage_12h">#bbf4511e</color>
+    <color name="color_GroupStage_24h">#ffb74d</color>
+    <color name="color_GroupStage_2d">#aaffb74d</color>
+    <color name="color_GroupStage_4d">#ccd4e157</color>
+    <color name="color_GroupStage_8d">#d4e157</color>
+    <color name="color_GroupStage_15d">#cddc39</color>
+    <color name="color_GroupStage_15d_U">#9964dd17</color>
+
+
+
+
     <color name="bottomLine_default_color">#aeea00</color>
     <color name="bottomLine_nonCorrect_color">#eef44336</color>
     <color name="textColor">#1a237e</color>

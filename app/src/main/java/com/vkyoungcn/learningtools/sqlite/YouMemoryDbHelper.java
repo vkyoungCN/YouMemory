@@ -52,12 +52,12 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
             "CREATE TABLE " + YouMemoryContract.Group.TABLE_NAME + " (" +
                     YouMemoryContract.Group._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                     YouMemoryContract.Group.COLUMN_DESCRIPTION + " TEXT, "+
-                    YouMemoryContract.Group.COLUMN_IS_FALL_BEHIND + " BOOLEAN, "+
-                    YouMemoryContract.Group.COLUMN_IS_OBSOLETED + " BOOLEAN, "+
-                    YouMemoryContract.Group.COLUMN_GROUP_LOGS + " TEXT, "+ //version4新增列。
                     YouMemoryContract.Group.COLUMN_SUB_ITEM_IDS + " TEXT, " +
-                    YouMemoryContract.Group.COLUMN_EXTRA_1H + " BOOLEAN, "+ //V9
-                    YouMemoryContract.Group.COLUMN_EXTRA_24H + " INTEGER, "+ //V9
+                    YouMemoryContract.Group.COLUMN_INIT_LEARNING_LONG + " INTEGER, "+
+                    YouMemoryContract.Group.COLUMN_DOUBLE_KILL + " BOOLEAN, "+
+                    YouMemoryContract.Group.COLUMN_TRIPLE_KILL + " BOOLEAN, "+
+                    YouMemoryContract.Group.COLUMN_RE_PICKING_TIMES_30 + " INTEGER, "+
+                    YouMemoryContract.Group.COLUMN_RE_PICKING_TIMES_EARLY + " INTEGER, "+
                     YouMemoryContract.Group.COLUMN_MISSION_ID + " INTEGER REFERENCES "+ //version5新增列。
                     YouMemoryContract.Mission.TABLE_NAME+"("+YouMemoryContract.Mission._ID+") " +
                     "ON DELETE CASCADE)";//version4新增列。
@@ -81,8 +81,8 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
             "DROP TABLE IF EXISTS " +  YouMemoryContract.Mission.TABLE_NAME;
     private static final String SQL_DROP_GROUP =
             "DROP TABLE IF EXISTS " + YouMemoryContract.Group.TABLE_NAME;
-    private static final String SQL_DROP_MISSION_X_GROUP =
-            "DROP TABLE IF EXISTS " + YouMemoryContract.MissionCrossGroup.TABLE_NAME;
+ /*   private static final String SQL_DROP_MISSION_X_GROUP =
+            "DROP TABLE IF EXISTS " + YouMemoryContract.MissionCrossGroup.TABLE_NAME;*/
 
     /*以下两种表的删除语句动态生成*/
     //原名……WithMissionId()
@@ -396,12 +396,12 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
 
         values.put(YouMemoryContract.Group.COLUMN_DESCRIPTION, dbRwaGroup.getDescription());
-        values.put(YouMemoryContract.Group.COLUMN_GROUP_LOGS, dbRwaGroup.getGroupLogs());
-        values.put(YouMemoryContract.Group.COLUMN_IS_FALL_BEHIND, dbRwaGroup.isFallBehind());
-        values.put(YouMemoryContract.Group.COLUMN_IS_OBSOLETED, dbRwaGroup.isObsoleted());
+        values.put(YouMemoryContract.Group.COLUMN_DOUBLE_KILL, dbRwaGroup.isDoubleKill());
+        values.put(YouMemoryContract.Group.COLUMN_TRIPLE_KILL, dbRwaGroup.isTripleKill());
+        values.put(YouMemoryContract.Group.COLUMN_INIT_LEARNING_LONG, dbRwaGroup.getInitLearningLong());
         values.put(YouMemoryContract.Group.COLUMN_MISSION_ID, dbRwaGroup.getMission_id());
-        values.put(YouMemoryContract.Group.COLUMN_EXTRA_1H,dbRwaGroup.isExtra_1hAccomplished());
-        values.put(YouMemoryContract.Group.COLUMN_EXTRA_24H, dbRwaGroup.getExtra_24hAccomplishTimes());
+        values.put(YouMemoryContract.Group.COLUMN_RE_PICKING_TIMES_30,dbRwaGroup.getRePickingTimes_30m());
+        values.put(YouMemoryContract.Group.COLUMN_RE_PICKING_TIMES_EARLY, dbRwaGroup.getEarlyTimeRePickingTimes());
         values.put(YouMemoryContract.Group.COLUMN_SUB_ITEM_IDS, dbRwaGroup.getSubItemIdsStr());
 
         l = mSQLiteDatabase.insert(YouMemoryContract.Group.TABLE_NAME, null, values);
@@ -428,12 +428,12 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
                 group.setId(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group._ID)));
                 group.setDescription(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_DESCRIPTION)));
                 group.setSubItemIdsStr(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_SUB_ITEM_IDS)));
-                group.setGroupLogs(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_GROUP_LOGS)));
+                group.setInitLearningLong(cursor.getLong(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_INIT_LEARNING_LONG)));
                 group.setMission_id(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_MISSION_ID)));
-                group.setExtra_24hAccomplishTimes(cursor.getShort(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_EXTRA_24H)));
-                group.setExtra_1hAccomplished(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_EXTRA_1H))==1);
-                group.setFallBehind(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_IS_FALL_BEHIND))==1);
-                group.setObsoleted(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_IS_OBSOLETED))==1);
+                group.setRePickingTimes_30m(cursor.getShort(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_RE_PICKING_TIMES_30)));
+                group.setEarlyTimeRePickingTimes(cursor.getShort(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_RE_PICKING_TIMES_EARLY)));
+                group.setDoubleKill(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_DOUBLE_KILL))==1);
+                group.setTripleKill(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_TRIPLE_KILL))==1);
 
                 groups.add(group);
             }while (cursor.moveToNext());
@@ -457,15 +457,15 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
         Cursor cursor = mSQLiteDatabase.rawQuery(selectQuery, null);
 
         if(cursor.moveToFirst()){
-                group.setId(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group._ID)));
-                group.setDescription(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_DESCRIPTION)));
-                group.setSubItemIdsStr(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_SUB_ITEM_IDS)));
-                group.setGroupLogs(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_GROUP_LOGS)));
-                group.setMission_id(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_MISSION_ID)));
-            group.setExtra_24hAccomplishTimes(cursor.getShort(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_EXTRA_24H)));
-            group.setExtra_1hAccomplished(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_EXTRA_1H))==1);
-                group.setFallBehind(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_IS_FALL_BEHIND))==1);
-                group.setObsoleted(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_IS_OBSOLETED))==1);
+            group.setId(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group._ID)));
+            group.setDescription(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_DESCRIPTION)));
+            group.setSubItemIdsStr(cursor.getString(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_SUB_ITEM_IDS)));
+            group.setInitLearningLong(cursor.getLong(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_INIT_LEARNING_LONG)));
+            group.setMission_id(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_MISSION_ID)));
+            group.setRePickingTimes_30m(cursor.getShort(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_RE_PICKING_TIMES_30)));
+            group.setEarlyTimeRePickingTimes(cursor.getShort(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_RE_PICKING_TIMES_EARLY)));
+            group.setDoubleKill(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_DOUBLE_KILL))==1);
+            group.setTripleKill(cursor.getInt(cursor.getColumnIndex(YouMemoryContract.Group.COLUMN_TRIPLE_KILL))==1);
         }
 
         try {
@@ -564,14 +564,14 @@ public class YouMemoryDbHelper extends SQLiteOpenHelper {
     /*
     * Timer中每隔1分钟检查一次当前mission的各group，符合条件的会调用此函数设为废弃。
     * */
-    public void setGroupObsoleted(int groupId){
+   /* public void setGroupObsoleted(int groupId){
         getWritableDatabaseIfClosedOrNull();
         String setGroupObsoletedSql = "UPDATE "+YouMemoryContract.Group.TABLE_NAME+
                 " SET "+YouMemoryContract.Group.COLUMN_IS_OBSOLETED+
                 " = 'true' WHERE "+YouMemoryContract.Group._ID+" = "+groupId;
         mSQLiteDatabase.execSQL(setGroupObsoletedSql);
         closeDB();
-    }
+    }*/
 
     /*该方法将位于其他方法开启的事务内，因而不能有关DB操作*/
     private void setItemsUnChose(String tableSuffix, String itemIds){

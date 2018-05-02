@@ -10,67 +10,41 @@ public class DBRwaGroup {
     private static final String TAG = "Group";
     private int id = 0;//DB列
     private String description="";//DB列。默认填入该组“起始-末尾”词汇
-    private boolean isFallBehind =false;//DB列。是不是掉队重组词汇
-    private boolean isObsoleted = false;//v7新增列。是否因超时废止，相应ITEMs应改回未抽取；color应为红色。
-    private String groupLogs="";//DB列本组记忆与复习日志；
     private String subItemIdsStr ="";//DB列。本组所属Items的id集合（替代了额外1：N的那个交叉表）。实际应是List<Integer>类型。
-    //格式上，要求不同id记录间以英文分号分隔。
     private int mission_id=0;//v5新增。
+    private long initLearningLong;//初学时间，需据此记录计算已过时间和当前所处时间段的颜色。
 
-    private boolean extra_1hAccomplished = false;//30~60的额外复习是否完成。初始false
-    private short extra_24hAccomplishTimes = 0;//24小时内的额外复习次数。
+    /*本版新增区域*/
+    private int rePickingTimes_30m = 0;//前30分钟内的复习次数。
+    private int earlyTimeRePickingTimes = 0;//包括30m内的次数在内。
+    private boolean doubleKill = false;//是否有连续的两次复习；复习逻辑在复习完成时对本次开始和上次结束时间进行比较，（如果本字段为否且）时差6分钟内视作连续，对字段记真。
+    private boolean tripleKill = false;//是否有连续的三次复习；
 
 
-    /* 备用字段
-    private short additionalRePickingTimes_24 = 0;//额外加班补充的次数（24小时内）
-    private short additionalRePickTimes_24_72 = 0;//额外加班补充的次数（24~72小时间）*/
+
+//    private boolean isFallBehind =false;//DB列。是不是掉队重组词汇
+//    private boolean isObsoleted = false;//v7新增列。是否因超时废止，相应ITEMs应改回未抽取；color应为红色。
+//    private String groupLogs="";//DB列本组记忆与复习日志；
+    //格式上，要求不同id记录间以英文分号分隔。
+
+//    private boolean extra_1hAccomplished = false;//30~60的额外复习是否完成。初始false
+//    private short extra_24hAccomplishTimes = 0;//24小时内的额外复习次数。
+
 
     public DBRwaGroup() {
     }
 
-    /*以下的转换式构造器无法使用，UiGroup缺少最后一列，只有苏bItems的数量，没有id详细列表。
-    public DBRwaGroup(RvGroup group) {
-        this.id = group.getId();
-        this.description = group.getDescription();
-        this.isFallBehind = group.getFallBehind();
 
-        //"N#yyyy-MM-dd HH:mm:ss#false;"
-        List<SingleLog> logs = group.getGroupLogs();
-        StringBuilder sbForStringLogs = new StringBuilder();
-
-        for (SingleLog l : logs) {
-            sbForStringLogs.append(l.getN());
-            sbForStringLogs.append("#");
-
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            sbForStringLogs.append(sdf.format(new Date(l.getTimeInMilli())));
-
-            sbForStringLogs.append("#");
-            sbForStringLogs.append(l.isMiss());
-            sbForStringLogs.append(";");
-        }
-        this.groupLogs = sbForStringLogs.toString();
-        this.subItemIdsStr = null;
-    }*/
-
-
-    public DBRwaGroup(int id, String description, boolean isFallBehind, String groupLogs, String subItemIdsStr, int mission_id) {
+    public DBRwaGroup(int id, String description, String subItemIdsStr, int mission_id, long initLearningLong, int rePickingTimes_30m, int earlyTimeRePickingTimes, boolean doubleKill, boolean tripleKill) {
         this.id = id;
         this.description = description;
-        this.isFallBehind = isFallBehind;
-        this.groupLogs = groupLogs;
         this.subItemIdsStr = subItemIdsStr;
         this.mission_id = mission_id;
-    }
-
-    public DBRwaGroup(int id, String description, boolean isFallBehind, boolean isObsoleted, String groupLogs, String subItemIdsStr, int mission_id) {
-        this.id = id;
-        this.description = description;
-        this.isFallBehind = isFallBehind;
-        this.isObsoleted = isObsoleted;
-        this.groupLogs = groupLogs;
-        this.subItemIdsStr = subItemIdsStr;
-        this.mission_id = mission_id;
+        this.initLearningLong = initLearningLong;
+        this.rePickingTimes_30m = rePickingTimes_30m;
+        this.earlyTimeRePickingTimes = earlyTimeRePickingTimes;
+        this.doubleKill = doubleKill;
+        this.tripleKill = tripleKill;
     }
 
     public int getId() {
@@ -81,36 +55,12 @@ public class DBRwaGroup {
         this.id = id;
     }
 
-    public boolean isFallBehind() {
-        return isFallBehind;
-    }
-
-    public void setFallBehind(boolean fallBehind) {
-        isFallBehind = fallBehind;
-    }
-
-    public boolean isObsoleted() {
-        return isObsoleted;
-    }
-
-    public void setObsoleted(boolean obsoleted) {
-        isObsoleted = obsoleted;
-    }
-
     public String getDescription() {
         return description;
     }
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getGroupLogs() {
-        return groupLogs;
-    }
-
-    public void setGroupLogs(String groupLogs) {
-        this.groupLogs = groupLogs;
     }
 
     public String getSubItemIdsStr() {
@@ -129,20 +79,44 @@ public class DBRwaGroup {
         this.mission_id = mission_id;
     }
 
-    public boolean isExtra_1hAccomplished() {
-        return extra_1hAccomplished;
+    public long getInitLearningLong() {
+        return initLearningLong;
     }
 
-    public void setExtra_1hAccomplished(boolean extra_1hAccomplished) {
-        this.extra_1hAccomplished = extra_1hAccomplished;
+    public void setInitLearningLong(long initLearningLong) {
+        this.initLearningLong = initLearningLong;
     }
 
-    public short getExtra_24hAccomplishTimes() {
-        return extra_24hAccomplishTimes;
+    public int getRePickingTimes_30m() {
+        return rePickingTimes_30m;
     }
 
-    public void setExtra_24hAccomplishTimes(short extra_24hAccomplishTimes) {
-        this.extra_24hAccomplishTimes = extra_24hAccomplishTimes;
+    public void setRePickingTimes_30m(int rePickingTimes_30m) {
+        this.rePickingTimes_30m = rePickingTimes_30m;
+    }
+
+    public int getEarlyTimeRePickingTimes() {
+        return earlyTimeRePickingTimes;
+    }
+
+    public void setEarlyTimeRePickingTimes(int earlyTimeRePickingTimes) {
+        this.earlyTimeRePickingTimes = earlyTimeRePickingTimes;
+    }
+
+    public boolean isDoubleKill() {
+        return doubleKill;
+    }
+
+    public void setDoubleKill(boolean doubleKill) {
+        this.doubleKill = doubleKill;
+    }
+
+    public boolean isTripleKill() {
+        return tripleKill;
+    }
+
+    public void setTripleKill(boolean tripleKill) {
+        this.tripleKill = tripleKill;
     }
 
     public static String subItemIdsListIntToString(List<Integer> idsList){

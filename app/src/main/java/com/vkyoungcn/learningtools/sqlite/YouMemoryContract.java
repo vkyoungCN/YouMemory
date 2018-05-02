@@ -35,25 +35,32 @@ public final class YouMemoryContract {
         public static final String COLUMN_TABLE_ITEM_SUFFIX = "table_item_suffix";
     }
 
-    public static class MissionCrossGroup implements BaseColumns{
+    /*public static class MissionCrossGroup implements BaseColumns{
         public static final String TABLE_NAME ="mission_cross_group";
         public static final String COLUMN_MISSION_ID = "mission_id";
         public static final String COLUMN_GROUP_ID = "group_id";
-    }
+    }*/
 
 /* version 9 */
     public static class Group implements BaseColumns{
         public static final String TABLE_NAME = "group_table";
         public static final String COLUMN_DESCRIPTION = "description";
-        public static final String COLUMN_IS_FALL_BEHIND= "is_fall_behind";//v8
-        public static final String COLUMN_IS_OBSOLETED= "is_obsoleted";//v8
+//        public static final String COLUMN_IS_FALL_BEHIND= "is_fall_behind";//v8
+//        public static final String COLUMN_IS_OBSOLETED= "is_obsoleted";//v8
         public static final String COLUMN_MISSION_ID = "mission_id";//v5新增，替代n:1任务-分组表
-        public static final String COLUMN_GROUP_LOGS = "group_logs";//v4新增；替代1:n日志交叉表
+//        public static final String COLUMN_GROUP_LOGS = "group_logs";//v4新增；替代1:n日志交叉表
         public static final String COLUMN_SUB_ITEM_IDS = "sub_item_ids";//v4新增；替代1:n交叉表
-        public static final String COLUMN_EXTRA_1H = "extra_1h";//1小时内的复习是否执行（即30~60分的那次，不计入log，以本字段（布尔型）记录）
-        public static final String COLUMN_EXTRA_24H = "extra_24h";//1h以上，24小时以内的额外学习次数，是INTEGER型。
+//        public static final String COLUMN_EXTRA_1H = "extra_1h";//1小时内的复习是否执行（即30~60分的那次，不计入log，以本字段（布尔型）记录）
+//        public static final String COLUMN_EXTRA_24H = "extra_24h";//1h以上，24小时以内的额外学习次数，是INTEGER型。
+        public static final String COLUMN_INIT_LEARNING_LONG = "init_learning_time";//long型（DB整型）；初始学习时间。
+        public static final String COLUMN_RE_PICKING_TIMES_30 = "re_picking_times_30";//整型；30min内的复习总次数。
+        public static final String COLUMN_RE_PICKING_TIMES_EARLY = "re_picking_times_early";//整型；6小时内的复习总次数（含30min加总计算）。
+        public static final String COLUMN_DOUBLE_KILL = "has_double_kill";//布尔；是否有连续地两次复习。
+        public static final String COLUMN_TRIPLE_KILL = "has_triple_kill";//布尔；是否有连续地三次复习。
 
-    }
+
+
+}
 
     public static class GroupCrossItem implements BaseColumns{
         public static final String TABLE_NAME = "group_cross_item";

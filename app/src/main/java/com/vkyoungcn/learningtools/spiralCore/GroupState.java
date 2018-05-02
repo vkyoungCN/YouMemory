@@ -7,8 +7,8 @@ import com.vkyoungcn.learningtools.R;
 
 
 /*
-* 此类是分组的一项状态集（阶段（以颜色表示）+剩余时间）
-* 不是直接存入DB的字段；而是由分组的Log字段和当前时间计算而来。
+* 此类是分组的一项状态集（阶段（以颜色表示）+ 距初学的已过时间）
+* 颜色和时间均根据分组的“初学时间”进行计算而获得、初学时间在新版本中是DB字段，位于Group表中。
 * */
 public class GroupState implements Parcelable {
     private stateNumber state = stateNumber.NEWLY_CREATED;//用于判断的标志。初版采用颜色资源判断，开销太大。
